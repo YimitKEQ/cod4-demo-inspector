@@ -27,6 +27,10 @@ const MAPMESH = root.DM1_MAPMESH;
 const MODEL = root.DM1_MODEL;
 
 const EYE_H = 60;
+/* A camera pulled in by a wall stops this far short of it, and never closer
+   to the player than the second value, or it ends up inside his head. */
+const CAM_WALL_GAP = 16;
+const CAM_MIN_DIST = 40;
 const PLAYER_H = 72;
 
 const MODES = ["fly", "orbit", "follow", "eyes", "eyesApprox", "tactical"];
@@ -295,10 +299,14 @@ function createCameraRig(THREE, dom, state){
         const eye = V(pos.x, pos.y, pos.z + EYE_H);
         cam.position.lerp(eye, 1 - Math.exp(-22 * dt));
         const yaw = (pos.yaw * Math.PI) / 180;
-        /* Only yaw is carried into the tracks, so the pitch is level. That is
-           a limitation of what buildMap keeps, not of the demo. */
+        /* Pitch comes with entity samples (positive looks down, as in the
+           game); the recorder's own frames have none and stay level. */
+        const sample = m.tracks[String(client)][pos.sample];
+        const pitchDeg = sample && sample[7] !== null && sample[7] !== undefined ? sample[7] : 0;
+        const pitch = (Math.max(-85, Math.min(85, pitchDeg)) * Math.PI) / 180;
         const look = eye.clone().add(new THREE.Vector3(
-          Math.cos(yaw) * 1000, 0, -Math.sin(yaw) * 1000));
+          Math.cos(yaw) * Math.cos(pitch) * 1000, -Math.sin(pitch) * 1000,
+          -Math.sin(yaw) * Math.cos(pitch) * 1000));
         cam.lookAt(look);
         return;
       }
@@ -340,14 +348,64 @@ function createCameraRig(THREE, dom, state){
       target.y + Math.sin(pitch) * dist,
       target.z + Math.sin(yaw) * Math.cos(pitch) * dist
     );
+    /* With a real map there are real walls, and a follow camera that swings
+       through one shows the inside of a brick. Pull it in to just short of
+       whatever stands between it and the player, and do not ease into that
+       spot: easing is exactly how it would pass through the wall. */
+    if (collider && mode === "follow") {
+      const view = clearView(target, yaw, pitch, dist);
+      if (view) {
+        /* Remember the swing so the camera stays on the open side instead of
+           searching again, and flickering, every frame. */
+        orbit.yaw = view.yaw;
+        orbit.pitch = Math.max(orbit.pitch, view.pitch);
+        want.copy(target).addScaledVector(view.dir, view.reach);
+        cam.position.copy(want);
+        cam.lookAt(target);
+        return;
+      }
+    }
     cam.position.lerp(want, 1 - Math.exp(-9 * dt));
     cam.lookAt(target);
   }
 
+  /**
+   * Where a follow camera can see the player from, near the framing asked for.
+   *
+   * Tries the requested angle first, then swings left and right in growing
+   * steps and lifts, as a game's third person camera does in an alley. The
+   * first angle with most of the distance clear wins; failing that, the one
+   * with the most room. Returns null when the requested angle is already
+   * clear, so the normal eased framing carries on.
+   */
+  const SWINGS = [0, 0.45, -0.45, 0.9, -0.9, 1.4, -1.4, 2.0, -2.0, Math.PI];
+  const LIFTS = [0, 0.35, 0.75];
+  function clearView(target, yaw, pitch, dist){
+    let best = null;
+    for (const lift of LIFTS) {
+      const p = Math.min(1.35, pitch + lift);
+      for (const swing of SWINGS) {
+        const y = yaw + swing;
+        const dir = new THREE.Vector3(Math.cos(y) * Math.cos(p), Math.sin(p), Math.sin(y) * Math.cos(p));
+        const hit = collider(target, dir, dist);
+        const room = Math.min(dist, hit - CAM_WALL_GAP);
+        if (swing === 0 && lift === 0 && hit >= dist) return null;
+        if (room >= dist * 0.7) return { yaw: y, pitch: p, dir, reach: room };
+        if (!best || room > best.reach) best = { yaw: y, pitch: p, dir, reach: Math.max(CAM_MIN_DIST, room) };
+      }
+    }
+    return best;
+  }
+
+  /** A function (origin, unit direction, max distance) -> distance to the
+      first wall, or null to switch collision off. */
+  let collider = null;
+  function setCollider(fn){ collider = fn || null; }
+
   return {
     group,
     active: () => cam,
-    update, reset, setBounds, setAspect, setMode,
+    update, reset, setBounds, setAspect, setMode, setCollider,
     startReplay, cancelReplay,
     get mode(){ return mode; },
     label: () => (mode === "replay" ? "Replay" : MODE_LABEL[mode] || mode),

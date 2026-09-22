@@ -138,7 +138,11 @@ function createViewport3D(container, state){
         zenith: { value: SKY.zenith },
         horizon: { value: SKY.horizon },
         sunColour: { value: SKY.sun },
-        sunDir: { value: SUN_DIR.clone() }
+        sunDir: { value: SUN_DIR.clone() },
+        /* The map's own skybox, once it has loaded; until then, and for maps
+           without one, the painted dome below. */
+        skyMap: { value: null },
+        useSkyMap: { value: 0 }
       },
       vertexShader:
         "varying vec3 vDir;" +
@@ -146,8 +150,17 @@ function createViewport3D(container, state){
         "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
       fragmentShader:
         "uniform vec3 zenith; uniform vec3 horizon; uniform vec3 sunColour;" +
-        "uniform vec3 sunDir; varying vec3 vDir;" +
+        "uniform vec3 sunDir; uniform samplerCube skyMap; uniform float useSkyMap;" +
+        "varying vec3 vDir;" +
         "void main(){" +
+        /* The game's cube map is addressed in game space, Z up, so the scene
+           direction (Y up) is turned back before the lookup: (x, y, z) in the
+           scene is (x, -z, y) in the game. */
+        "  if (useSkyMap > 0.5) {" +
+        "    vec3 d = normalize(vDir);" +
+        "    gl_FragColor = vec4(textureCube(skyMap, vec3(d.x, -d.z, d.y)).rgb, 1.0);" +
+        "    return;" +
+        "  }" +
         "  float h = clamp(vDir.y, 0.0, 1.0);" +
         /* The haze is a band sitting on the horizon, not a wash over the whole
            sky. Blending it across the full dome is what made the first attempt
@@ -176,7 +189,8 @@ function createViewport3D(container, state){
 
   /* Sky bounce: cool from above, warm bounce off the sand below. Kept low,
      because its job is to open the shadows, not to light the scene. */
-  scene.add(new THREE.HemisphereLight(0x9FC0E0, 0x6B5B42, 0.85));
+  const hemi = new THREE.HemisphereLight(0x9FC0E0, 0x6B5B42, 0.85);
+  scene.add(hemi);
 
   const key = new THREE.DirectionalLight(0xFFF1D2, 3.1);
   key.position.copy(SUN_DIR).multiplyScalar(9000);
@@ -195,6 +209,62 @@ function createViewport3D(container, state){
    * too big and the shadows turn to mush, too small and they stop at a line
    * across the middle of the map.
    */
+  /* How strongly the baked light reads against the realtime sun. The game
+     stores it in gamma space at roughly half range. */
+  const LIGHTMAP_INTENSITY = 2.2;
+
+  /**
+   * Take the map's own sun, where the fastfile gave one: its direction and
+   * colour are what the level designer set, and the baked shadows in the
+   * lightmap only line up with realtime ones if the two suns agree.
+   * CoD angles are pitch then yaw; a negative pitch points up into the sky.
+   */
+  function applySun(sun){
+    if (!sun || !Array.isArray(sun.angles)) return;
+    const D = Math.PI / 180;
+    const p = sun.angles[0] * D, y = sun.angles[1] * D;
+    const fx = Math.cos(p) * Math.cos(y), fy = Math.cos(p) * Math.sin(y), fz = -Math.sin(p);
+    if (fz <= 0.05) return;
+    SUN_DIR.copy(V(fx, fy, fz)).normalize();
+    if (Array.isArray(sun.sunColor)) key.color.setRGB(sun.sunColor[0], sun.sunColor[1], sun.sunColor[2]);
+    /* Strength and fill as the level designer set them: Crash is a hard
+       afternoon sun, Bog a dim blue night. 2.4 per unit of the game's
+       sunLight lands Crash where the hand tuned light already was. */
+    if (Number.isFinite(sun.sunLight) && sun.sunLight > 0) key.intensity = Math.min(4.5, 2.4 * sun.sunLight);
+    if (Array.isArray(sun.ambientColor)) {
+      hemi.color.setRGB(sun.ambientColor[0], sun.ambientColor[1], sun.ambientColor[2]);
+    }
+    if (sky.material.uniforms && sky.material.uniforms.sunDir) sky.material.uniforms.sunDir.value.copy(SUN_DIR);
+  }
+
+  /**
+   * The map's own sky. Faces arrive in the game's order and orientation, and
+   * the shader does the axis swap, so they are uploaded exactly as stored.
+   * The fog takes the sky's horizon colour so the far edge of the map
+   * dissolves into this sky and not the painted one.
+   */
+  function applySkybox(spec, base){
+    const u = sky.material.uniforms;
+    u.useSkyMap.value = 0;
+    scene.fog.color.copy(SKY.horizon);
+    scene.background = SKY.horizon.clone();
+    if (!spec || !Array.isArray(spec.faces) || spec.faces.length !== 6) return;
+    track("textures", 1);
+    new THREE.CubeTextureLoader().load(spec.faces.map(f => base + f), cube => {
+      cube.colorSpace = THREE.NoColorSpace;
+      cube.flipY = false;
+      cube.needsUpdate = true;
+      u.skyMap.value = cube;
+      u.useSkyMap.value = 1;
+      if (spec.horizon) {
+        const c = new THREE.Color(spec.horizon);
+        scene.fog.color.copy(c);
+        scene.background = c.clone();
+      }
+      tick();
+    }, undefined, () => tick());
+  }
+
   function fitSun(b){
     if (!b) return;
     const cx = (b.minX + b.maxX) / 2, cy = (b.minY + b.maxY) / 2;
@@ -316,6 +386,13 @@ const MATERIAL_TINTS = [
   [/paper|decal|poster/, 0x9A9384]
 ];
 
+/* Competitive mods ship stock maps under their own names with only clipping
+   and exploit fixes: promod's mp_backlot_x has the same layout and the same
+   coordinates as mp_backlot (checked against both builds' bounds), so it
+   draws the stock map's extracted world rather than a lesser copy. */
+const MAP_ALIASES = { mp_backlot_x: "mp_backlot" };
+const mapFolder = name => MAP_ALIASES[name] || name;
+
 function materialColour(name){
   const n = String(name || "").toLowerCase();
   for (const [re, colour] of MATERIAL_TINTS) if (re.test(n)) return colour;
@@ -335,7 +412,7 @@ function materialColour(name){
    */
   function tryRealGeometry(then){
     const map = state.model.info.map;
-    const base = "maps3d/" + map + "/";
+    const base = "maps3d/" + mapFolder(map) + "/";
     track("map", 1);
     fetch(base + "geometry.json")
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("no manifest"))))
@@ -349,14 +426,20 @@ function materialColour(name){
       .then(({ manifest, buf, tex, base }) => {
         const find = n => manifest.layout.find(l => l.name === n);
         const pos = find("position"), nor = find("normal");
-        const uv = find("uv"), idx = find("index");
+        const uv = find("uv"), idx = find("index"), uv1 = find("uv1");
         const geo = new THREE.BufferGeometry();
         geo.setAttribute("position", new THREE.BufferAttribute(
           new Float32Array(buf, pos.byteOffset, pos.byteLength / 4), 3));
-        geo.setAttribute("normal", new THREE.BufferAttribute(
-          new Float32Array(buf, nor.byteOffset, nor.byteLength / 4), 3));
+        /* Fastfile maps pack normals as normalised bytes. */
+        geo.setAttribute("normal", nor.type === "Int8"
+          ? new THREE.BufferAttribute(new Int8Array(buf, nor.byteOffset, nor.byteLength), 3, true)
+          : new THREE.BufferAttribute(new Float32Array(buf, nor.byteOffset, nor.byteLength / 4), 3));
         geo.setAttribute("uv", new THREE.BufferAttribute(
           new Float32Array(buf, uv.byteOffset, uv.byteLength / 4), 2));
+        /* The game's lightmap coordinates, where the map was built from the
+           fastfile. three.js reads a light map from the uv1 channel. */
+        if (uv1) geo.setAttribute("uv1", new THREE.BufferAttribute(
+          new Float32Array(buf, uv1.byteOffset, uv1.byteLength / 4), 2));
         geo.setIndex(new THREE.BufferAttribute(
           new Uint32Array(buf, idx.byteOffset, idx.byteLength / 4), 1));
         geo.computeBoundingSphere();
@@ -525,71 +608,81 @@ function materialColour(name){
   }
 
   /**
-   * The game's own multiplayer bodies, when they have been extracted.
+   * The game's own multiplayer soldiers, skinned and animated.
    *
-   * tools/players.js writes one per side into maps3d/_players. They are
-   * skinned with no animation baked in, which means the vertex data is the
-   * rest pose and can be read straight: joint matrices times inverse bind
-   * matrices are identity when nothing has moved the skeleton.
+   * tools/players.js writes a body and a head per side into maps3d/_players,
+   * and tools/xanim.js the animations they play. Each player gets his own
+   * skeleton driven by what the demo says he is doing (see playeranim.js),
+   * so he walks, runs, crouches and crawls instead of gliding in a T pose.
    *
    * Loading is asynchronous, so every player starts as the built in figure and
    * is upgraded in place when the real model arrives. Nothing is ever waiting
-   * on a download to show something.
+   * on a download to show something. Without the animation file the soldiers
+   * still load, holding their rest pose.
    */
   let playerModels = null;
   function loadPlayerModels(){
     if (playerModels) { applyPlayerModels(); return; }
+    const SK = root.DM1_SKINNED, PA = root.DM1_PLAYERANIM;
+    if (!SK || !PA) return;
+    const anims = fetch("maps3d/_players/anims.json")
+      .then(r => (r.ok ? r.json() : null)).catch(() => null);
     fetch("maps3d/_players/players.json")
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("none"))))
-      .then(spec => {
+      .then(spec => anims.then(animSpec => {
         const jobs = [];
         playerModels = {};
         for (const side of ["allies", "opfor"]) {
           const entry = spec.sides && spec.sides[side];
           if (!entry) continue;
+          const urls = [entry.body, entry.head].filter(Boolean).map(f => "maps3d/_players/" + f);
           track("bodies", 1);
-          jobs.push(root.DM1_GLB.load(THREE, "maps3d/_players/" + entry.body)
-            .then(built => { playerModels[side] = built; tick(); })
-            .catch(() => { tick(); }));
+          jobs.push(SK.loadTemplate(THREE, urls)
+            .then(template => {
+              /* Clips are built against one instance's rest pose; every
+                 instance of a template shares that rest pose. */
+              const probe = SK.instantiate(THREE, template);
+              const clips = animSpec ? PA.buildClips(THREE, animSpec, probe.rest) : new Map();
+              playerModels[side] = { template, clips };
+              tick();
+            })
+            .catch(err => { console.warn("player model " + side + ": " + err.message); tick(); }));
         }
         return Promise.all(jobs);
-      })
+      }))
       .then(() => applyPlayerModels())
       .catch(() => { playerModels = null; });
   }
 
-  /** Swap each player's placeholder figure for the real body. */
+  /** Swap each player's placeholder figure for an animated soldier. */
   function applyPlayerModels(){
     if (!playerModels) return;
+    const SK = root.DM1_SKINNED, PA = root.DM1_PLAYERANIM;
     const m = state.model;
     for (const [client, node] of players) {
       const side = m.teamOf(client) === m.teamNames[0] ? "allies" : "opfor";
-      const built = playerModels[side];
-      if (!built || node.real) continue;
+      const model = playerModels[side];
+      if (!model || node.real) continue;
 
-      /* Shared geometry, per player materials so ghosting can fade one player
-         without fading the whole team. */
-      const mats = built.materials.map(src => {
-        const c = src.clone();
-        c.transparent = true;
-        return c;
-      });
-      const mesh = new THREE.Mesh(built.geometry, mats);
-
+      const soldier = SK.instantiate(THREE, model.template);
       node.holder.remove(node.body);
-      node.holder.add(mesh);
-      node.body = mesh;
-      node.parts = [mesh];
+      node.holder.add(soldier.group);
+      node.body = soldier.group;
+      node.parts = soldier.meshes;
+      node.animator = model.clips.size ? new PA.Animator(THREE, soldier, model.clips) : null;
       node.real = true;
 
-      /* A team stripe so sides stay readable at a glance, because two brown
-         soldiers at two hundred units apart are not obviously enemies. */
+      /* A team ring on the ground so sides stay readable at a glance: two
+         brown soldiers two hundred units apart are not obviously enemies. It
+         sits at the feet rather than around the chest, where a band reads as
+         a pool float and hides the model it is meant to label. */
       const band = new THREE.Mesh(
-        new THREE.CylinderGeometry(13, 13, 5, 12, 1, true),
+        new THREE.RingGeometry(15, 19, 28),
         new THREE.MeshBasicMaterial({ color: node.colour, transparent: true,
-                                      opacity: 0.85, side: THREE.DoubleSide })
+                                      opacity: 0.9, side: THREE.DoubleSide, depthWrite: false })
       );
-      band.position.y = 50;
+      band.rotation.x = -Math.PI / 2;
+      band.position.y = 1.5;
       node.holder.add(band);
       node.parts.push(band);
     }
@@ -670,17 +763,86 @@ function materialColour(name){
     }
   }
 
+  /* How long a killed soldier stays on screen, and when he starts to fade. */
+  const DEATH_SHOW_S = 3.2;
+  const DEATH_FADE_S = 2.2;
+
+  /**
+   * A killed player falls where he stood, with the game's death animation for
+   * how he was moving, then fades. Returns false once he should be gone, or
+   * when there is nothing real to animate.
+   */
+  function showDeath(node, client, death, t, step){
+    const since = t - death.tS;
+    const PA = root.DM1_PLAYERANIM;
+    if (since > DEATH_SHOW_S || !node.animator || !PA) return false;
+    const m = state.model;
+    const pos = MODEL.positionAt(m.tracks, client, death.tS, 1);
+    if (!pos) return false;
+    const tr = m.tracks[String(client)];
+    const v = PA.velocityAt(tr, pos.sample);
+    const stance = PA.stanceOf(tr[pos.sample][6]);
+    const role = stance !== "stand" ? "death_crouch" : v.speed > 150 ? "death_run" : "death_stand";
+    node.holder.visible = true;
+    V(pos.x, pos.y, pos.z, node.holder.position);
+    node.holder.rotation.y = ((pos.yaw - 90) * Math.PI) / 180;
+    node.animator.update(role, 1, step);
+    const alpha = since < DEATH_FADE_S ? 1 : Math.max(0, 1 - (since - DEATH_FADE_S) / (DEATH_SHOW_S - DEATH_FADE_S));
+    for (const part of node.parts) setOpacity(part, alpha);
+    node.cone.visible = false;
+    node.label.visible = false;
+    node.ring.visible = false;
+    return true;
+  }
+
+  /* Match time the animations were last advanced to. */
+  let animT = null;
+
+  /** Set every material of a part, whether it has one or an array. */
+  function setOpacity(part, alpha){
+    const mats = Array.isArray(part.material) ? part.material : [part.material];
+    for (const mt of mats) mt.opacity = alpha;
+  }
+
   function updatePlayers(t, round){
     const m = state.model;
     const camPos = cameras.active().position;
+    const PA = root.DM1_PLAYERANIM;
+    /* Animations follow match time, so pause freezes them and fast forward
+       speeds them up. A seek is a jump, not time passing. */
+    const dt = animT === null ? 0 : t - animT;
+    animT = t;
+    const step = dt > 0 && dt < 0.5 ? dt : 0;
     for (const [client, node] of players) {
-      const dead = round && round.deaths.some(d => d.client === client && d.tS <= t);
-      const pos = dead ? null : MODEL.positionAt(m.tracks, client, t, null);
+      const death = round && round.deaths.find(d => d.client === client && d.tS <= t);
+      if (death) {
+        if (!showDeath(node, client, death, t, step)) node.holder.visible = false;
+        continue;
+      }
+      const pos = MODEL.positionAt(m.tracks, client, t, null);
       const stale = pos && round && pos.ageS > t - round.startS;
       if (!pos || stale) { node.holder.visible = false; continue; }
 
       node.holder.visible = true;
-      V(pos.x, pos.y, pos.z, node.holder.position);
+      /* Samples arrive at the snapshot rate. Holding each one until the next
+         makes a runner stutter across the map; blending toward the next
+         sample, when it is close, makes him move. */
+      const tr = m.tracks[String(client)];
+      const cur = tr[pos.sample], nxt = tr[pos.sample + 1];
+      let px = pos.x, py = pos.y, pz = pos.z;
+      if (nxt && (nxt[0] - cur[0]) / 100 < 0.35) {
+        const f = Math.max(0, Math.min(1, (t * 100 - cur[0]) / (nxt[0] - cur[0])));
+        px += (nxt[1] - cur[1]) * f; py += (nxt[2] - cur[2]) * f; pz += (nxt[3] - cur[3]) * f;
+      }
+      V(px, py, pz, node.holder.position);
+
+      if (node.animator && PA) {
+        const v = PA.velocityAt(tr, pos.sample);
+        const stance = PA.stanceOf(cur[6]);
+        const dir = PA.directionOf(v.vx, v.vy, pos.yaw);
+        const pick = PA.chooseRole(stance, v.speed, dir);
+        node.animator.update(pick.role, pick.rate, step);
+      }
       /* CoD yaw 0 looks along world +X. A three.js object with rotation.y = 0
          looks along its own -Z, which the world to scene mapping puts at world
          +Y. That is a quarter turn apart, and without this correction every
@@ -692,7 +854,7 @@ function materialColour(name){
 
       const fresh = pos.ageS <= FRESH_S;
       const bodyAlpha = fresh ? 1 : 0.28;
-      for (const part of node.parts) part.material.opacity = bodyAlpha;
+      for (const part of node.parts) setOpacity(part, bodyAlpha);
       node.cone.material.opacity = fresh ? 0.22 : 0.07;
       node.label.material.opacity = fresh ? 1 : 0.4;
       node.ring.visible = state.followClient === client;
@@ -1017,7 +1179,7 @@ function materialColour(name){
       return;
     }
     const map = state.model.info.map;
-    const base = "maps3d/" + map + "/";
+    const base = "maps3d/" + mapFolder(map) + "/";
 
     fetch(base + "props.json")
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("none"))))
@@ -1061,7 +1223,25 @@ function materialColour(name){
             const mat = new THREE.Matrix4();
             const pos = new THREE.Vector3();
             const scl = new THREE.Vector3();
+            const rot = new THREE.Matrix4();
+            const conj = new THREE.Matrix4().makeRotationFromQuaternion(qM);
+            const conjInv = new THREE.Matrix4().makeRotationFromQuaternion(qMi);
             rows.forEach((i, n) => {
+              if (inst.axis) {
+                /* Fastfile props carry the game's own rotation: three rows,
+                   forward, left and up, which become the matrix columns. */
+                const a = inst.axis, o = i * 9;
+                rot.set(a[o], a[o + 3], a[o + 6], 0,
+                        a[o + 1], a[o + 4], a[o + 7], 0,
+                        a[o + 2], a[o + 5], a[o + 8], 0,
+                        0, 0, 0, 1);
+                const k = inst.scale[i] || 1;
+                mat.copy(conj).multiply(rot).multiply(conjInv)
+                  .scale(scl.set(k, k, k))
+                  .setPosition(V(inst.x[i], inst.y[i], inst.z[i], pos));
+                mesh.setMatrixAt(n, mat);
+                return;
+              }
               /* CoD angles are pitch, yaw, roll about Y, Z and X. */
               const q = new THREE.Quaternion()
                 .setFromAxisAngle(az, inst.yaw[i] * D)
@@ -1185,6 +1365,7 @@ function materialColour(name){
 
   /** Swap the reconstruction for real geometry once it has loaded. */
   function applyRealGeometry(real){
+    cameras.setCollider(null);
     if (!real) { state.geometrySource = "reconstructed"; state.emit("geometry"); return; }
     clearGroup(gMap);
 
@@ -1193,6 +1374,27 @@ function materialColour(name){
     const textures = (real.tex && real.tex.textures) || {};
     const loader = new THREE.TextureLoader();
     const mats = [];
+    const normalizedUv = real.manifest.uvSpace === "normalized";
+
+    /* Baked lighting, one texture per bank, shared by every range in it.
+       It carries what the realtime sun cannot: light bounced into alleys,
+       dark interiors, lamps. With it the sky fill drops right down, or
+       every room would glow. */
+    const bankFiles = real.manifest.lightmaps || [];
+    const banks = bankFiles.map(file => {
+      if (!file) return null;
+      track("textures", 1);
+      const t = loader.load(real.base + file, () => { tick(); state.emit("geometry"); },
+                            undefined, () => tick());
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.channel = 1;
+      t.flipY = false;
+      return t;
+    });
+    const baked = banks.some(Boolean);
+    applySkybox(real.manifest.sky, real.base);
+    hemi.intensity = baked ? 0.55 : 0.85;
+    applySun(real.manifest.sun);
 
     geo.clearGroups();
     ranges.forEach((r, i) => {
@@ -1204,8 +1406,40 @@ function materialColour(name){
         color: info ? 0xFFFFFF : materialColour(r.material),
         roughness: 0.92, metalness: 0, side: THREE.DoubleSide
       });
+      /* Maps built from the fastfile say how the game draws each material.
+         Cutouts (foliage, fences, wire) test alpha, decals sit on top of the
+         surface they mark, and blended surfaces (glass, grime) do not write
+         depth so what is behind them still shows. */
+      if (r.lightmap !== undefined && banks[r.lightmap]) {
+        mat.lightMap = banks[r.lightmap];
+        mat.lightMapIntensity = LIGHTMAP_INTENSITY;
+      }
+      if (r.alphaTest) { mat.alphaTest = 0.5; }
+      if (r.water) {
+        /* The game's water shader has no stand in here, and its colour slot
+           holds a placeholder; murky, glossy and slightly see through is
+           closer than anything drawn from that texture. */
+        mat.color.set(0x2E3B33);
+        mat.roughness = 0.12;
+        mat.metalness = 0.25;
+        mat.transparent = true;
+        mat.opacity = 0.86;
+        mat.depthWrite = false;
+      }
+      /* CoD sorts decals over their wall by sort key rather than by depth
+         bias, so a blended surface here is almost always a decal lying flat
+         on another one, and needs pulling forward to not flicker. */
+      if (r.decal || r.blend) {
+        mat.polygonOffset = true;
+        mat.polygonOffsetFactor = -1;
+        mat.polygonOffsetUnits = -4;
+      }
+      if (r.blend || r.decal) {
+        mat.transparent = true;
+        mat.depthWrite = false;
+      }
 
-      if (info) {
+      if (info && !r.water) {
         /* The mesh carries texture coordinates in texels, because the image
            size was not known when it was built. Dividing by the real size
            here is what turns them into the coordinates the game used. */
@@ -1214,7 +1448,9 @@ function materialColour(name){
           tex.colorSpace = THREE.SRGBColorSpace;
           tex.wrapS = THREE.RepeatWrapping;
           tex.wrapT = THREE.RepeatWrapping;
-          tex.repeat.set(1 / info.width, -1 / info.height);
+          /* Fastfile maps carry the game's own 0..1 coordinates. */
+          if (normalizedUv) tex.repeat.set(1, -1);
+          else tex.repeat.set(1 / info.width, -1 / info.height);
           tex.anisotropy = renderer.capabilities.getMaxAnisotropy
             ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 4;
           mat.map = tex;
@@ -1224,6 +1460,15 @@ function materialColour(name){
       }
       mats.push(mat);
     });
+
+    /* Solid surfaces for the camera to stop at. Cutouts, glass and decals
+       are left out: a camera should see through a fence, not bounce off it. */
+    const C = root.DM1_COLLIDE;
+    if (C) {
+      const solid = ranges.filter(r => r.count && !r.alphaTest && !r.blend && !r.decal);
+      const grid = C.buildGrid(geo.attributes.position.array, geo.index.array, solid);
+      cameras.setCollider(grid ? (o, d, max) => C.raycast(grid, o.x, o.y, o.z, d.x, d.y, d.z, max) : null);
+    }
 
     const shell = new THREE.Mesh(geo, mats.length ? mats : new THREE.MeshStandardMaterial({
       color: 0x8A9380, roughness: 0.92, side: THREE.DoubleSide }));
@@ -1325,7 +1570,18 @@ function materialColour(name){
     get stats(){ return mapMesh ? mapMesh.stats : null; },
     get running(){ return running; },
     cameras, scene, renderer,
-    canvas: renderer.domElement
+    canvas: renderer.domElement,
+    /** What each player is showing, for probes and tests: visible, animated
+        and which clip is playing. */
+    playerStates(){
+      const out = [];
+      for (const [client, node] of players || []) {
+        const a = node.animator && node.animator.current;
+        out.push({ client, visible: node.holder.visible, real: !!node.real,
+                   clip: a ? a.getClip().name : null });
+      }
+      return out;
+    }
   };
 }
 

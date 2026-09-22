@@ -93,12 +93,13 @@ function connect(url){
 }
 
 function parseArgs(argv){
-  const out = { url: null, out: null, waitMs: 25000, width: 1680, height: 950, settleMs: 700 };
+  const out = { url: null, out: null, waitMs: 25000, width: 1680, height: 950, settleMs: 700, evals: [] };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--wait") out.waitMs = parseInt(argv[++i], 10) || out.waitMs;
     else if (a === "--settle") out.settleMs = parseInt(argv[++i], 10) || out.settleMs;
+    else if (a === "--eval") out.evals.push(argv[++i]);
     else if (a === "--size") {
       const [w, h] = String(argv[++i]).split(",").map(Number);
       if (w) out.width = w;
@@ -191,6 +192,20 @@ async function main(){
 
     /* Let late arrivals (the map image) finish painting. */
     await sleep(args.settleMs);
+
+    /* Anything the caller wants done or read before the capture: move a
+       camera, pick a player, read a value. Results are printed, so a probe
+       and a screenshot are one command. Each runs after the previous one had
+       a second to render. */
+    for (const expr of args.evals) {
+      const r = await client.send("Runtime.evaluate", {
+        expression: expr, returnByValue: true, awaitPromise: true
+      }, sessionId);
+      const v = r.exceptionDetails ? "threw: " + r.exceptionDetails.text
+        : JSON.stringify(r.result && r.result.value);
+      process.stdout.write("  eval: " + (v || "undefined") + "\n");
+      await sleep(1000);
+    }
 
     const shot = await client.send("Page.captureScreenshot", { format: "png" }, sessionId);
     fs.writeFileSync(args.out, Buffer.from(shot.data, "base64"));

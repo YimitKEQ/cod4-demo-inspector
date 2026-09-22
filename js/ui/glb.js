@@ -201,7 +201,7 @@ function build(THREE, json, bin){
          one shared folder keyed by the same bare name: see tools/modeltex.js.
          Without this every prop and every character draws flat grey. */
       const bare = image.uri.split("/").pop().replace(/\.[^.]+$/, "").toLowerCase();
-      out = new THREE.TextureLoader().load(IMAGE_BASE + safeName(bare) + ".png");
+      out = new THREE.TextureLoader().load(IMAGE_BASE + safeName(bare) + ".webp");
       out.colorSpace = THREE.SRGBColorSpace;
       out.wrapS = THREE.RepeatWrapping;
       out.wrapT = THREE.RepeatWrapping;
