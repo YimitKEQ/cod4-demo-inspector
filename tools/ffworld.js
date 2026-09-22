@@ -38,7 +38,7 @@ const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
 const { buildIndex, readEntry, parseIwi, decodeIwi, writePNG, decodeDXT } = require("./iwd");
-const { shrinkToFit, safeName } = require("./modeltex");
+const { shrinkToFit, safeName, readGlbJson } = require("./modeltex");
 const { findModel } = require("./props");
 
 const DEFAULT_MAIN = "C:/Program Files (x86)/Activision/Call of Duty 4 - Modern Warfare/main";
@@ -326,6 +326,94 @@ function loadImage(index, dumpDir, rawName){
  * Static models, grouped per model, with their full rotation matrix.
  * The matrix is the game's own, so there is no Euler order to get wrong.
  */
+/** CoD's AnglesToAxis: pitch, yaw, roll in degrees to forward, left, up. */
+function anglesToAxis(pitch, yaw, roll){
+  const D = Math.PI / 180;
+  const sp = Math.sin(pitch * D), cp = Math.cos(pitch * D);
+  const sy = Math.sin(yaw * D), cy = Math.cos(yaw * D);
+  const sr = Math.sin(roll * D), cr = Math.cos(roll * D);
+  const forward = [cp * cy, cp * sy, -sp];
+  const right = [-sr * sp * cy + cr * sy, -sr * sp * sy - cr * cy, -sr * cp];
+  const up = [cr * sp * cy + sr * sy, cr * sp * sy - sr * cy, cr * cp];
+  return [...forward, -right[0], -right[1], -right[2], ...up];
+}
+
+/** The map's entities, as plain objects of their key/value pairs. */
+function readEntities(text){
+  const out = [];
+  for (const block of String(text).match(/\{[^{}]*\}/g) || []) {
+    const e = {};
+    for (const m of block.matchAll(/"([^"]+)"\s+"([^"]*)"/g)) e[m[1]] = m[2];
+    out.push(e);
+  }
+  return out;
+}
+
+/**
+ * Script models that are part of the scenery in a Search and Destroy match:
+ * destructibles (cars, barrels), which are cover and kill people, and the
+ * S&D bomb sites. Other gametypes' objectives and pickups are left out, as
+ * the game hides them too.
+ */
+function sceneryEntities(ents){
+  const out = [];
+  for (const e of ents) {
+    if (e.classname !== "script_model" || !e.model || e.model.startsWith("*")) continue;
+    const scenery = e.targetname === "destructible" ||
+      (e.script_gameobjectname || "").split(/\s+/).includes("bombzone");
+    if (!scenery) continue;
+    const o = (e.origin || "0 0 0").split(/\s+/).map(Number);
+    const a = (e.angles || "0 0 0").split(/\s+/).map(Number);
+    if (o.length < 3 || !o.every(Number.isFinite)) continue;
+    out.push({ model: e.model, origin: o.slice(0, 3),
+               axis: anglesToAxis(a[0] || 0, a[1] || 0, a[2] || 0),
+               scale: Number(e.modelscale) || 1 });
+  }
+  return out;
+}
+
+/**
+ * How a model material is drawn, from the game's own Material as
+ * OpenAssetTools dumps it (materials/<name>.json). Same rule as the world:
+ * only the lit pass counts. The GLB export says "opaque, double sided" for
+ * every material, which is why this has to come from the source.
+ */
+function propMaterialStyle(json){
+  const entry = json && json.stateBitsEntry;
+  const bits = json && json.stateBits;
+  if (!Array.isArray(entry) || !Array.isArray(bits)) return null;
+  /* No lit or unlit pass at all means the game never draws it: a proxy mesh
+     that only casts shadows (trees carry one). Drawn, it is a solid blob. */
+  if (/shadowcaster/i.test(json.techniqueSet || "")) return { shadowOnly: true };
+  let sb = null;
+  for (const t of [TECHNIQUE_LIT_SUN, TECHNIQUE_LIT, TECHNIQUE_UNLIT]) {
+    const i = entry[t];
+    if (Number.isInteger(i) && i >= 0 && bits[i]) { sb = bits[i]; break; }
+  }
+  if (!sb) return { shadowOnly: true };
+  const style = {};
+  if (sb.alphaTest && sb.alphaTest !== "disabled") style.alphaTest = true;
+  if (sb.cullFace === "none") style.twoSided = true;
+  if (sb.dstBlendRgb && sb.dstBlendRgb !== "zero" && sb.dstBlendRgb !== "disabled") style.blend = true;
+  return style;
+}
+
+/** Style per material index of one GLB, from the dump's material files. */
+function stylesForGlb(glbFile, dumpDir){
+  const json = readGlbJson(glbFile);
+  if (!json || !json.materials) return null;
+  const out = {};
+  json.materials.forEach((m, i) => {
+    const file = path.join(dumpDir, "materials", String(m.name || "") + ".json");
+    if (!m.name || !fs.existsSync(file)) return;
+    try {
+      const st = propMaterialStyle(JSON.parse(fs.readFileSync(file, "utf8")));
+      if (st) out[i] = st;
+    } catch (e) { /* an unreadable material keeps the loader's default */ }
+  });
+  return out;
+}
+
 function buildProps(spec, modelDir, outDir){
   const used = new Map();
   for (const s of spec.staticModels) {
@@ -344,7 +432,8 @@ function buildProps(spec, modelDir, outDir){
     fs.copyFileSync(src, path.join(propsDir, file));
     bytes += fs.statSync(src).size;
     indexOf.set(name, models.length);
-    models.push({ name, file, uses: used.get(name) });
+    const styles = stylesForGlb(src, path.dirname(modelDir));
+    models.push(Object.assign({ name, file, uses: used.get(name) }, styles ? { styles } : {}));
   }
 
   const inst = { model: [], x: [], y: [], z: [], pitch: [], yaw: [], roll: [], scale: [], axis: [] };
@@ -549,6 +638,10 @@ function findWorldJson(dumpDir, map){
 function main(){
   const argv = process.argv.slice(2);
   let max = 512;
+  /* Rebuild only props.json and props/, in seconds, when the geometry and
+     textures are already current. */
+  const propsOnly = argv.includes("--props-only");
+  if (propsOnly) argv.splice(argv.indexOf("--props-only"), 1);
   const maxAt = argv.indexOf("--max");
   if (maxAt >= 0) { max = parseInt(argv[maxAt + 1], 10) || max; argv.splice(maxAt, 2); }
   const [dumpDir, map, outDir] = argv;
@@ -574,13 +667,24 @@ function main(){
   const index = buildIndex(mainDir);
   fs.mkdirSync(outDir, { recursive: true });
 
+  const modelDir = path.join(dumpDir, "model_export");
+  const entsFile = path.join(path.dirname(worldJson), map + ".d3dbsp.ents");
+  const extras = fs.existsSync(entsFile) ? sceneryEntities(readEntities(fs.readFileSync(entsFile, "latin1"))) : [];
+  const buildAllProps = () => buildProps({ staticModels: spec.staticModels.concat(extras) },
+                                         fs.existsSync(modelDir) ? modelDir : null, outDir);
+  if (propsOnly) {
+    fs.rmSync(path.join(outDir, "props"), { recursive: true, force: true });
+    const p = buildAllProps();
+    process.stdout.write("  " + map + ": " + p.placed + " props of " + p.models + " models\n");
+    return;
+  }
+
   const world = readWorld(spec, bin);
   world.lightmapFiles = writeLightmaps(outDir, spec, path.dirname(worldJson));
   world.sky = writeSky(outDir, dumpDir, spec.skyImage);
   const geoBytes = writeGeometry(outDir, world, spec, map);
   const tex = writeTextures(outDir, world, index, dumpDir, max);
-  const modelDir = path.join(dumpDir, "model_export");
-  const props = buildProps(spec, fs.existsSync(modelDir) ? modelDir : null, outDir);
+  const props = buildAllProps();
 
   /* PNG is the portable fallback; WebP is what ships when Pillow is there. */
   let webp = "left as PNG (no Python with Pillow)";
@@ -604,4 +708,5 @@ function main(){
 }
 
 if (require.main === module) main();
-module.exports = { unpackUnitVec, drawStyle, colourImageOf, readWorld, parseDds };
+module.exports = { unpackUnitVec, drawStyle, colourImageOf, readWorld, parseDds,
+                   anglesToAxis, readEntities, sceneryEntities, propMaterialStyle };

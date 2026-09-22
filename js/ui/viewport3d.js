@@ -621,7 +621,17 @@ function materialColour(name){
    * still load, holding their rest pose.
    */
   let playerModels = null;
+  let weaponsLoaded = false;
+  function loadWeapons(){
+    if (weaponsLoaded) return;
+    weaponsLoaded = true;
+    fetch("maps3d/_players/weapons.json")
+      .then(r => (r.ok ? r.json() : null))
+      .then(spec => { if (spec && spec.weapons) cameras.setWeapons(spec.weapons); })
+      .catch(() => {});
+  }
   function loadPlayerModels(){
+    loadWeapons();
     if (playerModels) { applyPlayerModels(); return; }
     const SK = root.DM1_SKINNED, PA = root.DM1_PLAYERANIM;
     if (!SK || !PA) return;
@@ -797,6 +807,8 @@ function materialColour(name){
 
   /* Match time the animations were last advanced to. */
   let animT = null;
+  /* The server's legs animation indices, named from this demo (playeranim.js). */
+  let animCalib = null, animCalibFor = null;
 
   /** Set every material of a part, whether it has one or an array. */
   function setOpacity(part, alpha){
@@ -813,7 +825,14 @@ function materialColour(name){
     const dt = animT === null ? 0 : t - animT;
     animT = t;
     const step = dt > 0 && dt < 0.5 ? dt : 0;
+    if (PA && animCalibFor !== m) { animCalib = PA.calibrate(m.tracks); animCalibFor = m; }
+    /* Looking through the recorder's eyes, his own body would fill the
+       screen from the inside. */
+    const P = root.DM1_POV;
+    const povState = cameras.mode === "eyes" && m.pov && P ? P.stateAt(m.pov, t) : null;
+    const hideClient = povState ? povState.client : -1;
     for (const [client, node] of players) {
+      if (client === hideClient) { node.holder.visible = false; continue; }
       const death = round && round.deaths.find(d => d.client === client && d.tS <= t);
       if (death) {
         if (!showDeath(node, client, death, t, step)) node.holder.visible = false;
@@ -829,18 +848,23 @@ function materialColour(name){
          sample, when it is close, makes him move. */
       const tr = m.tracks[String(client)];
       const cur = tr[pos.sample], nxt = tr[pos.sample + 1];
-      let px = pos.x, py = pos.y, pz = pos.z;
+      let px = pos.x, py = pos.y, pz = pos.z, yaw = pos.yaw;
       if (nxt && (nxt[0] - cur[0]) / 100 < 0.35) {
         const f = Math.max(0, Math.min(1, (t * 100 - cur[0]) / (nxt[0] - cur[0])));
         px += (nxt[1] - cur[1]) * f; py += (nxt[2] - cur[2]) * f; pz += (nxt[3] - cur[3]) * f;
+        /* Turn the short way, or a player facing 179 who turns to -179
+           would spin all the way round between two snapshots. */
+        let dy = (nxt[4] - cur[4]) % 360;
+        if (dy > 180) dy -= 360;
+        if (dy < -180) dy += 360;
+        yaw += dy * f;
       }
       V(px, py, pz, node.holder.position);
 
       if (node.animator && PA) {
         const v = PA.velocityAt(tr, pos.sample);
-        const stance = PA.stanceOf(cur[6]);
         const dir = PA.directionOf(v.vx, v.vy, pos.yaw);
-        const pick = PA.chooseRole(stance, v.speed, dir);
+        const pick = PA.roleForSample(animCalib, cur, v.speed, dir);
         node.animator.update(pick.role, pick.rate, step);
       }
       /* CoD yaw 0 looks along world +X. A three.js object with rotation.y = 0
@@ -850,7 +874,7 @@ function materialColour(name){
          were actually looking. Verified against the kill feed: at the moment
          of a kill the killer's aim now sits a median two degrees off the
          victim. */
-      node.holder.rotation.y = ((pos.yaw - 90) * Math.PI) / 180;
+      node.holder.rotation.y = ((yaw - 90) * Math.PI) / 180;
 
       const fresh = pos.ageS <= FRESH_S;
       const bodyAlpha = fresh ? 1 : 0.28;
@@ -860,6 +884,14 @@ function materialColour(name){
       node.ring.visible = state.followClient === client;
       node.cone.visible = state.view.aimRays;
       node.label.visible = state.view.names;
+      /* See-through markers are for looking down on the map. Up close they
+         show enemies through walls, which the game never does and which reads
+         as clutter; there the names respect walls and the markers go. */
+      const mode = cameras.mode;
+      const overview = mode === "orbit" || mode === "tactical" || mode === "fly";
+      node.marker.visible = overview;
+      node.label.material.depthTest = !overview;
+      if (mode === "eyes" || mode === "eyesApprox") node.cone.visible = false;
       node.label.position.y = PLAYER_H + 24 + camPos.distanceTo(node.holder.position) * 0.018;
     }
   }
@@ -1217,7 +1249,7 @@ function materialColour(name){
           const rows = perModel.get(job.mi);
           if (!rows || !rows.length) { tick(); return next(); }
 
-          root.DM1_GLB.load(THREE, base + "props/" + job.model.file).then(built => {
+          root.DM1_GLB.load(THREE, base + "props/" + job.model.file, job.model.styles).then(built => {
             const mesh = new THREE.InstancedMesh(
               built.geometry, built.materials, rows.length);
             const mat = new THREE.Matrix4();

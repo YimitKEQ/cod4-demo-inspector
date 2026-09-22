@@ -128,4 +128,22 @@ describe("ffworld", () => {
     const w = FF.readWorld(spec, bin);
     assert.equal(w.ranges.map(r => r.material).join(), "wall,fence,glass");
   });
+
+  it("turns entity angles into CoD's forward, left and up axes", () => {
+    const a = FF.anglesToAxis(0, 90, 0).map(v => Math.round(v * 1000) / 1000);
+    assert.equal(a.join(), "0,1,0,-1,0,0,0,0,1");
+    const pitched = FF.anglesToAxis(90, 0, 0);
+    assert.ok(Math.abs(pitched[2] + 1) < 1e-6, "pitch 90 looks straight down");
+  });
+
+  it("keeps destructibles and S&D bomb sites, drops other gametypes' objects", () => {
+    const ents = FF.readEntities([
+      '{ "classname" "script_model" "model" "vehicle_car_destructible_mp" "targetname" "destructible" "origin" "1 2 3" "angles" "0 90 0" }',
+      '{ "classname" "script_model" "model" "com_bomb_objective" "script_gameobjectname" "bombzone" "origin" "4 5 6" }',
+      '{ "classname" "script_model" "model" "com_laptop_2_open" "script_gameobjectname" "hq" "origin" "7 8 9" }',
+      '{ "classname" "script_brushmodel" "model" "*3" "targetname" "destructible" }'
+    ].join("\n"));
+    const kept = FF.sceneryEntities(ents).map(e => e.model);
+    assert.equal(kept.join(), "vehicle_car_destructible_mp,com_bomb_objective");
+  });
 });

@@ -274,3 +274,39 @@ measured at 21.6% and 2.8% of samples on a real promod match), speed and
 direction relative to facing from the track, with the clip's rate scaled to
 ground speed so feet do not skate. Positions are interpolated between
 snapshots instead of held.
+
+## 2026-09-23: the POV and movement, from what the demo records
+
+**The recorder's view is recorded exactly.** Every client frame (about 125 a
+second, 8 ms apart) is an MSG_FRAME: origin, velocity, movementDir, bobCycle,
+and float pitch, yaw and roll. The parser used to keep one integer position per
+40 ms and throw the angles away. `js/core/pov.js` now replays the frames, with
+eye height (`viewHeightCurrent`: 60 standing, 40 crouched, 11 prone, animated
+between), the aim down sights fraction (`fWeaponPosFrac`) and the weapon from
+the player state. Field of view follows CoD4: `cg_fov` is horizontal at 4:3
+and blends to the weapon's `adsZoomFov` (AK-47 50, snipers 15) from the dumped
+WeaponDefs. The one assumed number is `cg_fov` 80, the promod norm; the demo
+does not carry it.
+
+**Other players carry the server's animation choice.** Entity state has
+`legsAnim` and `torsoAnim`. The index to name table is compiled into the game:
+it is not the order of `mp/playeranim.script` (promod ships its own copy), nor
+of `animtrees/multiplayer.atr`, forwards or reversed, and a reversed tree
+filtered to loaded animations fits only 91%. Rather than guess the rest, each
+index is fingerprinted from the demo itself (stance, median speed, direction
+relative to facing) and mapped to a clip once per match. The server's switches
+then drive the soldiers frame exactly. Measured split: combat walks run near
+110 u/s and strafing combat runs near 130, so walk ends at 125.
+
+**What made models look wrong.** The GLB export marks every material opaque
+and double sided. The loader compensated by alpha testing everything, which
+punched holes into solid props whose colour maps keep gloss in alpha (161 of
+206 materials on Crash are plain solid), and drew trees' shadow caster proxies
+(`mc_shadowcaster`, no lit technique at all) as solid olive blobs. Styles now
+come from the dumped Material's lit pass; shadow only proxies write no colour
+but still cast shadows. Foliage cards keep one normal for both faces so the
+shaded side is not black.
+
+**Missing scenery.** Destructible cars and the S&D bomb sites are
+`script_model` entities, not static models, so the world dump never had them.
+They come from the map's entity string now (Crash has 11 cars).

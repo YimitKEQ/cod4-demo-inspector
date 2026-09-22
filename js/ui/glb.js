@@ -94,7 +94,7 @@ function readAccessor(json, bin, index){
  * Every primitive in the file becomes a group on a single geometry, so an
  * instanced draw can render the whole prop with a material array.
  */
-function build(THREE, json, bin){
+function build(THREE, json, bin, styles){
   const positions = [], normals = [], uvs = [], indices = [];
   const groups = [];
   const materialOf = [];
@@ -217,6 +217,37 @@ function build(THREE, json, bin){
     const mi = materialOf[i];
     const src = json.materials && json.materials[mi];
     const map = mi >= 0 ? textureFor(mi) : null;
+    /* With the game's own material styles (props.json, from the dumped
+       Material) only real cutouts test alpha and only cull none surfaces draw
+       both sides. Many colour maps keep gloss in their alpha channel, and
+       alpha testing those punched holes into solid props. */
+    const style = styles ? (styles[mi] || {}) : null;
+    if (style) {
+      const m = new THREE.MeshStandardMaterial({
+        color: map ? 0xFFFFFF : 0x9AA08E, map, roughness: 0.9, metalness: 0,
+        alphaTest: style.alphaTest ? 0.5 : 0,
+        transparent: !!style.blend && !style.alphaTest,
+        depthWrite: !(style.blend && !style.alphaTest),
+        side: style.twoSided ? THREE.DoubleSide : THREE.FrontSide
+      });
+      m.userData.cutout = !!style.alphaTest && !!style.twoSided;
+      /* Leaves and grass are thin cards the light passes through. three.js
+         flips the normal for a double sided card's back face, which turns
+         every leaf seen from the shaded side black; foliage keeps one normal
+         for both faces instead, so a card is lit the same from either side. */
+      if (m.userData.cutout) {
+        m.onBeforeCompile = shader => {
+          shader.fragmentShader = shader.fragmentShader.replace("#include <normal_fragment_begin>",
+            THREE.ShaderChunk.normal_fragment_begin.replace("normal *= faceDirection;", ""));
+        };
+        m.customProgramCacheKey = () => "dm1-foliage";
+      }
+      /* Shadow only proxies: nothing on screen, but still in the shadow
+         pass, which ignores colour writes. */
+      if (style.shadowOnly) { m.colorWrite = false; m.depthWrite = false; }
+      materials.push(m);
+      return;
+    }
     materials.push(new THREE.MeshStandardMaterial({
       color: map ? 0xFFFFFF : 0x9AA08E,
       map,
@@ -235,14 +266,14 @@ function build(THREE, json, bin){
   return { geometry: geo, materials, triangles: indices.length / 3 };
 }
 
-/** Fetch and build one model. */
-function load(THREE, url){
+/** Fetch and build one model; styles are per material index, optional. */
+function load(THREE, url, styles){
   return fetch(url)
     .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error("missing " + url))))
     .then(buf => {
       const parsed = parseContainer(buf);
       if (!parsed || !parsed.bin) throw new Error("not a binary glTF: " + url);
-      const built = build(THREE, parsed.json, parsed.bin);
+      const built = build(THREE, parsed.json, parsed.bin, styles || null);
       if (!built) throw new Error("no geometry in " + url);
       return built;
     });
