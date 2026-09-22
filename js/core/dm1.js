@@ -956,10 +956,14 @@ function buildMap(d, t0){
     const pts = merged.get(client).slice().sort((a, b) => a[0] - b[0]);
     const out = [];
     let lastT = null;
-    for (const [t, x, y, z, yaw, weapon] of pts) {
+    for (const [t, x, y, z, yaw, weapon, flags, pitch] of pts) {
       const ts = Math.trunc((t - t0) / 10);        // hundredths of a second since the start
       if (ts === lastT) continue;
-      out.push([ts, x, y, z, yaw, weapon]);
+      // Flags and pitch only come with entity samples; the recorder's own
+      // frames do not carry them, and say so with null rather than a zero
+      // that would read as standing, level.
+      out.push([ts, x, y, z, yaw, weapon, flags === undefined ? null : flags,
+                pitch === undefined ? null : pitch]);
       lastT = ts;
     }
     if (out.length > 1) tracks[String(client)] = out;

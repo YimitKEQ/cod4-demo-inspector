@@ -83,6 +83,9 @@ const E_CLIENTNUM = ENT_IDX.get("ClientNum");
 const E_POS = [ENT_IDX.get("lerp.pos.trBase[0]"), ENT_IDX.get("lerp.pos.trBase[1]"),
                ENT_IDX.get("lerp.pos.trBase[2]")];
 const E_YAW = ENT_IDX.get("lerp.apos.trBase[1]");
+/* View pitch and the entity flags, which carry the stance (crouch, prone). */
+const E_PITCH = ENT_IDX.get("lerp.apos.trBase[0]");
+const E_FLAGS = ENT_IDX.get("lerp.eFlags");
 /** eType of a living player; corpses and objects have other values. */
 const ET_PLAYER = 1;
 /* Thrown grenades are missiles. launchTime identifies each throw uniquely -
@@ -475,7 +478,8 @@ SnapshotReader.prototype.deltaEntity = function(m, time, to, num, old, msgSeq){
     let tr = this.tracks.get(num);
     if (!tr) { tr = []; this.tracks.set(num, tr); }
     tr.push([time, u2f(st[E_POS[0]]) | 0, u2f(st[E_POS[1]]) | 0,
-             u2f(st[E_POS[2]]) | 0, u2f(st[E_YAW]) | 0, st[E_WEAPON]]);
+             u2f(st[E_POS[2]]) | 0, u2f(st[E_YAW]) | 0, st[E_WEAPON],
+             st[E_FLAGS] | 0, u2f(st[E_PITCH]) | 0]);
   }
 };
 
