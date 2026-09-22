@@ -230,7 +230,10 @@ function detectMultikills(model, out){
       if (allHeadshots) { score += CFG.bonus.allHeadshots; tags.push("All headshots"); }
       if (model.rounds[state.idx].winner === team) { score += CFG.bonus.roundDecider; }
 
-      const weapons = [...new Set(list.map(k => k.weaponLabel))];
+      /* A headshot kill carries the means of death in eventParm instead of
+         the weapon id, so for those the weapon is genuinely unknown. Listing
+         "Headshot" as if it were a gun would be inventing a fact. */
+      const weapons = [...new Set(list.filter(k => !k.headshot).map(k => k.weaponLabel))];
       const name = model.nameOf(client);
       const label = isAce ? "Ace" : (MULTIKILL_NAME[n] || (n + " kills"));
 
@@ -245,7 +248,7 @@ function detectMultikills(model, out){
         title: label + " by " + name,
         detail: n + " kills in round " + state.n +
                 (quick ? " inside " + spanS.toFixed(1) + " s" : "") +
-                " with " + weapons.join(", "),
+                (weapons.length ? " with " + weapons.join(", ") : ""),
         approx: list.some(k => k.distanceApprox)
       }));
     }

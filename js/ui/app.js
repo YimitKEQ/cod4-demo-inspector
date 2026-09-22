@@ -296,8 +296,34 @@ function applyUrl(){
   if (q.has("tab")) { const t = q.get("tab"); if (TAB_KEYS.includes(t)) state.setTab(t); }
   if (q.has("t")) { const t = Number(q.get("t")); if (isFinite(t)) state.seek(t); }
 }
-if (new URLSearchParams(location.search).has("sample")) {
+/**
+ * Load a demo the page can reach over HTTP. That is what makes a link to a
+ * moment work: same demo, same time, same panel. The file still never leaves
+ * the machine, it is just fetched from the local server rather than dropped.
+ */
+async function loadUrl(url){
+  setError("");
+  prog.hidden = false;
+  prog.value = 0;
+  progMsg.textContent = "Fetching " + url;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error("the server answered " + resp.status);
+    const blob = await resp.blob();
+    const name = url.split("/").pop() || "demo.dm_1";
+    await loadFile(new File([blob], name));
+  } catch (e) {
+    prog.hidden = true;
+    progMsg.textContent = "";
+    setError("Could not fetch " + url + ": " + (e && e.message ? e.message : String(e)));
+  }
+}
+
+const query = new URLSearchParams(location.search);
+if (query.has("sample")) {
   window.addEventListener("load", () => { loadSample(); applyUrl(); });
+} else if (query.has("demo")) {
+  window.addEventListener("load", () => { loadUrl(query.get("demo")).then(applyUrl); });
 }
 
 $("#drop-pick").addEventListener("click", () => $("#file").click());

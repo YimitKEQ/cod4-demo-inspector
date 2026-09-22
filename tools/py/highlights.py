@@ -233,7 +233,10 @@ def detect_multikills(m: Match, out: List[Dict[str, Any]]) -> None:
             if m.rounds[state["idx"]]["winner"] == team:
                 score += CFG["bonus"]["roundDecider"]
 
-            weapons = list(dict.fromkeys(k["weaponLabel"] for k in lst))
+            # A headshot kill carries the means of death instead of the weapon
+            # id, so for those the weapon is genuinely unknown.
+            weapons = list(dict.fromkeys(
+                k["weaponLabel"] for k in lst if not k["headshot"]))
             name = m.name_of(client)
             label = "Ace" if is_ace else MULTIKILL_NAME.get(n, "%d kills" % n)
 
@@ -247,10 +250,10 @@ def detect_multikills(m: Match, out: List[Dict[str, Any]]) -> None:
                 killIds=[k["id"] for k in lst],
                 tags=tags,
                 title="%s by %s" % (label, name),
-                detail="%d kills in round %d%s with %s" % (
+                detail="%d kills in round %d%s%s" % (
                     n, state["n"],
                     (" inside %.1f s" % span) if quick else "",
-                    ", ".join(weapons)),
+                    (" with %s" % ", ".join(weapons)) if weapons else ""),
                 approx=any(k["distanceApprox"] for k in lst),
             ))
 

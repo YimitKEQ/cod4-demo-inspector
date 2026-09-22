@@ -143,10 +143,17 @@ function createViewport(container, state){
     if (mapImageTried === name) return;
     mapImageTried = name;
     mapImage = null;
-    if (!name) return;
+    state.backdrop = "loading";
+    if (!name) { state.backdrop = "derived"; return; }
     const img = new Image();
     img.onload = () => { mapImage = img; draw(); };
-    img.onerror = () => { mapImage = null; draw(); };
+    img.onerror = () => {
+      mapImage = null;
+      /* No image for this map. The floor plan takes over, and the demo panel
+         says so rather than leaving the blocky shape unexplained. */
+      state.backdrop = "derived";
+      draw();
+    };
     img.src = MAP_IMAGE_DIR + name + ".png";
   }
 
@@ -164,17 +171,25 @@ function createViewport(container, state){
         g.globalAlpha = 0.62;
         g.drawImage(mapImage, x0, y0, x1 - x0, y1 - y0);
         g.globalAlpha = 1;
+        state.backdrop = "image";
         return;
       }
+      /* An image with no world rectangle cannot be placed, so it is not used. */
+      state.backdrop = "noBounds";
     }
 
     /* Derived floor plan. Cells nobody entered stay background. */
+    if (state.backdrop !== "noBounds" && state.backdrop !== "derived") {
+      state.backdrop = mapImage ? state.backdrop : "derived";
+    }
     if (!floor) return;
     if (!floorImage) {
       const off = document.createElement("canvas");
       off.width = W; off.height = H;
       const o = off.getContext("2d");
-      o.fillStyle = theme("--drab");
+      /* A step above the panel drab: this is the only thing standing in for
+         the map, so it has to read as ground rather than as background. */
+      o.fillStyle = "#49513F";
       const s = CELL * scale;
       for (let y = 0; y < floor.rows; y++) for (let x = 0; x < floor.cols; x++) {
         if (!floor.grown[y * floor.cols + x]) continue;

@@ -41,6 +41,12 @@ function createState(){
     /* Kills ticked for the render queue. */
     checked: new Set(),
 
+    /* What the viewport is currently drawing underneath the match: the map's
+       own compass image, or the floor plan derived from where players walked.
+       Set by the viewport, read by the demo panel so the difference is never
+       left unexplained. */
+    backdrop: null,
+
     /* Side panel. */
     tab: "kills",
 
@@ -76,6 +82,7 @@ function createState(){
     s.model = model;
     s.highlights = highlights;
     s.fileName = fileName || "";
+    s.backdrop = null;
     s.timeS = model.rounds.length ? model.rounds[0].startS : 0;
     s.playing = false;
     s.rate = 1;

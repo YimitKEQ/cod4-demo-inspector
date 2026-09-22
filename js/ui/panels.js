@@ -169,6 +169,13 @@ function demoPanel(state){
     ? m.caps.trackedClients + " players tracked"
     : "none: this demo was parsed without snapshot decoding");
   add2("Teams", i.taggedTeams ? "From client states" : "Guessed from name prefixes");
+  add2("Map backdrop", {
+    image: "The map's own compass image, placed on the world rectangle",
+    derived: "Built from every recorded position: this map has no image, so cells " +
+             "nobody walked through are drawn as wall",
+    noBounds: "None: the demo carries no compass rectangle, so an image cannot be placed",
+    loading: "Loading"
+  }[state.backdrop] || "Unknown");
   add2("End of file", i.cleanEof ? "Clean" : "Truncated, the demo stops mid stream");
   wrap.append(kv2);
 
