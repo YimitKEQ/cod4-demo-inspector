@@ -23,10 +23,15 @@ see LICENSE. No warranty of any kind.
 
 import argparse
 import json
+import os
 import sys
 from typing import Any, Dict, List
 
-import highlights as PY
+# Import the sibling engine whatever directory this is run from, so CI and a
+# shell in the repo root both work.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import highlights as PY  # noqa: E402
 
 # Fields compared on every highlight. Floats are compared with a tolerance
 # because the two languages round the last digit differently; anything larger

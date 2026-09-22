@@ -1,0 +1,47 @@
+# Publish the inspector to GitHub Pages.
+#
+# There is no build step: the app is plain HTML, CSS and JavaScript with three.js
+# vendored in js/vendor, so the repository is uploaded as it stands.
+name: Deploy to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      # The engine has to agree with itself before anything ships.
+      - run: node tests/run.js
+      - run: node tools/cli.js --sample --model bundle.json --quiet
+      - run: python3 tools/py/crosscheck.py bundle.json
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+      - id: deployment
+        uses: actions/deploy-pages@v4

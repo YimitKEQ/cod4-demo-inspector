@@ -30,6 +30,10 @@ function createState(){
     selectedLineup: null,
     selectedRoutes: null,
 
+    /* Restrict the heatmap to one player, which is the version that answers
+       "where does he always go". Null means everyone. */
+    heatClient: null,
+
     /* Playback. */
     timeS: 0,
     playing: false,
@@ -90,6 +94,7 @@ function createState(){
     s.analysis = analysis || null;
     s.selectedLineup = null;
     s.selectedRoutes = null;
+    s.heatClient = null;
     s.fileName = fileName || "";
     s.backdrop = null;
     s.timeS = model.rounds.length ? model.rounds[0].startS : 0;
@@ -200,6 +205,12 @@ function createState(){
     Object.assign(s.filter, patch);
     s.cursorIndex = 0;
     s.emit("filter");
+  };
+
+  s.setHeatClient = function (client){
+    if (s.heatClient === client) return;
+    s.heatClient = client;
+    s.emit("heat");
   };
 
   s.selectLineup = function (l){

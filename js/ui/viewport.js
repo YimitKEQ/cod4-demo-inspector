@@ -133,6 +133,9 @@ function createViewport(container, state){
 
     floor = buildFloor(m.tracks, minX, minY, maxX, maxY);
     floorImage = null;
+    heatImage = null;
+    state.heatMinX = minX; state.heatMinY = minY;
+    state.heatMaxX = maxX; state.heatMaxY = maxY;
     ready = true;
   }
 
@@ -199,6 +202,84 @@ function createViewport(container, state){
       floorImage = off;
     }
     g.drawImage(floorImage, 0, 0);
+  }
+
+  /* ---- heatmap ---- */
+
+  let heatImage = null, heatKey = "";
+
+  /**
+   * Where people actually spend their time.
+   *
+   * Accumulated per cell over every sample, then drawn on a log scale: a
+   * linear ramp makes one spawn camper drown out the whole map. Restricted to
+   * one player when one is picked, which is the version that answers "where
+   * does he always go".
+   */
+  function buildHeat(){
+    const m = state.model;
+    const only = state.heatClient;
+    const key = (only === null || only === undefined ? "all" : only) + "@" + W + "x" + H;
+    if (heatImage && heatKey === key) return heatImage;
+
+    const CELL_H = 64;
+    const cols = Math.max(1, Math.ceil((state.heatMaxX - state.heatMinX) / CELL_H));
+    const counts = new Map();
+    let peak = 1;
+    for (const id of Object.keys(m.tracks)) {
+      if (only !== null && only !== undefined && Number(id) !== only) continue;
+      for (const pt of m.tracks[id]) {
+        const cx = Math.floor((pt[1] - minX) / CELL_H);
+        const cy = Math.floor((pt[2] - minY) / CELL_H);
+        const k = cx + "," + cy;
+        const n = (counts.get(k) || 0) + 1;
+        counts.set(k, n);
+        if (n > peak) peak = n;
+      }
+    }
+
+    /* Normalising against the single busiest cell paints the whole map: over
+       twenty rounds ten players touch nearly every walkable cell, so the peak
+       is an outlier and everything else sits near it on a log scale. The
+       reference is the 98th percentile instead, and anything under a third of
+       that is dropped entirely, which leaves only the places people genuinely
+       live. */
+    const sorted = [...counts.values()].sort((a, b) => a - b);
+    const ref = sorted[Math.floor(sorted.length * 0.98)] || peak;
+    const FLOOR = 0.34;
+
+    const off = document.createElement("canvas");
+    off.width = W; off.height = H;
+    const o = off.getContext("2d");
+    const size = CELL_H * scale;
+    for (const [k, n] of counts) {
+      const [cx, cy] = k.split(",").map(Number);
+      const raw = Math.min(1, Math.log(1 + n) / Math.log(1 + ref));
+      if (raw <= FLOOR) continue;
+      const f = (raw - FLOOR) / (1 - FLOOR);
+      /* Grease yellow, from barely there to solid. The one accent, used here
+         for intensity rather than selection, which is why nothing else on the
+         map is yellow while this is on. */
+      o.fillStyle = "rgba(227, 181, 56, " + (0.05 + f * f * 0.72).toFixed(3) + ")";
+      const sx = px(minX + cx * CELL_H), sy = py(minY + (cy + 1) * CELL_H);
+      o.fillRect(Math.floor(sx), Math.floor(sy), Math.ceil(size) + 1, Math.ceil(size) + 1);
+    }
+    /* A blur turns cells into a field. Cheap and it reads far better. */
+    const blurred = document.createElement("canvas");
+    blurred.width = W; blurred.height = H;
+    const b = blurred.getContext("2d");
+    b.filter = "blur(" + Math.max(2, Math.round(size * 0.55)) + "px)";
+    b.drawImage(off, 0, 0);
+
+    heatImage = blurred;
+    heatKey = key;
+    return heatImage;
+  }
+
+  function drawHeat(){
+    if (!state.view.heatmap) return;
+    const img = buildHeat();
+    if (img) g.drawImage(img, 0, 0);
   }
 
   /* ---- match drawing ---- */
@@ -487,6 +568,7 @@ function createViewport(container, state){
     if (!ready) layout();
     const t = state.timeS;
     drawBackdrop();
+    drawHeat();
     if (state.view.trails) drawTrails(t);
     if (state.view.grenades) drawGrenades(t);
     if (state.view.killLines) drawKillLines(t);
@@ -510,6 +592,7 @@ function createViewport(container, state){
   state.on("selection", draw);
   state.on("view", draw);
   state.on("overlay", draw);
+  state.on("heat", () => { heatImage = null; draw(); });
 
   /* Clicking a player follows them. */
   cv.addEventListener("click", ev => {

@@ -174,7 +174,7 @@ state.on("transport", () => { if (state.playing) lastFrame = performance.now(); 
 
 const toggles = [
   ["#v-trails", "trails"], ["#v-aim", "aimRays"], ["#v-kills", "killLines"],
-  ["#v-nades", "grenades"], ["#v-names", "names"]
+  ["#v-nades", "grenades"], ["#v-names", "names"], ["#v-heat", "heatmap"]
 ];
 for (const [sel, key] of toggles) {
   const btn = $(sel);
@@ -303,6 +303,11 @@ function applyUrl(){
   if (q.has("t")) { const t = Number(q.get("t")); if (isFinite(t)) state.seek(t); }
   if (q.get("view") === "3d") viewSwitch.setMode("3d");
   if (q.has("cam")) viewSwitch.setCamera(q.get("cam"));
+  if (q.get("heat") === "1") state.toggleView("heatmap");
+  if (q.has("heatPlayer")) {
+    const p = state.model.players.find(x => x.name.replace(/\^./g, "") === q.get("heatPlayer"));
+    if (p) { state.setHeatClient(p.client); state.toggleView("heatmap"); }
+  }
   if (q.has("lineup") && state.analysis) {
     const i = Number(q.get("lineup"));
     if (state.analysis.lineups[i]) state.selectLineup(state.analysis.lineups[i]);
