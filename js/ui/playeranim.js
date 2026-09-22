@@ -23,9 +23,11 @@ const EF_PRONE = 0x8;
 /* Ground speeds in units per second the clips were authored for, so a clip
    plays faster when a player covers ground faster and feet do not skate. */
 const NATIVE_SPEED = { walk: 95, run: 190, sprint: 280, crouch: 115, prone: 38 };
-/* Where one gait hands over to the next, in units per second. */
+/* Where one gait hands over to the next, in units per second. 125 splits the
+   combat walks (about 110) from the strafing combat runs (about 130) as the
+   server itself classified them in a real match. */
 const IDLE_BELOW = 18;
-const WALK_BELOW = 135;
+const WALK_BELOW = 125;
 const RUN_BELOW = 235;
 
 const FADE_S = 0.2;
@@ -85,6 +87,83 @@ function chooseRole(stance, speed, dir){
   if (speed < WALK_BELOW) return { role: "walk_" + dir, rate: speed / NATIVE_SPEED.walk };
   if (speed >= RUN_BELOW && dir === "f") return { role: "sprint", rate: speed / NATIVE_SPEED.sprint };
   return { role: "run_" + dir, rate: speed / NATIVE_SPEED.run };
+}
+
+/* Bit 9 of legsAnim flips when the same animation restarts. */
+const ANIM_TOGGLE = 0x200;
+/* An index needs this many samples before its behaviour is trusted. */
+const MIN_SAMPLES = 12;
+/* Faster than a strafe jump; anything above is a teleport, not movement. */
+const MAX_FOOT_SPEED = 600;
+
+/**
+ * Which clip stands for each legs animation the server sent, learned from
+ * this demo.
+ *
+ * The demo records, per player and per snapshot, the index of the legs
+ * animation the server was playing. Those indices are the server's own
+ * decisions, switching at the exact moment the player's movement changed,
+ * but the table that names them is compiled into the game. So each index is
+ * characterised by what players demonstrably did while it played (stance,
+ * ground speed, direction relative to facing, summed over the whole match)
+ * and given the clip that matches that behaviour. Every player then follows
+ * the server's own switches instead of thresholds on a noisy speed.
+ *
+ * Tracks are [hundredths, x, y, z, yaw, weapon, flags, pitch, legs, torso, moveDir].
+ * Returns Map(index -> { role, speed }).
+ */
+function calibrate(tracks){
+  const acc = new Map();
+  for (const tr of Object.values(tracks || {})) {
+    for (let i = 1; i < tr.length; i++) {
+      const s = tr[i], legs = s[8];
+      if (legs === null || legs === undefined) continue;
+      const q = tr[i - 1];
+      const dt = (s[0] - q[0]) / 100;
+      if (dt <= 0 || dt > 0.2) continue;
+      const vx = (s[1] - q[1]) / dt, vy = (s[2] - q[2]) / dt;
+      const k = legs & ~ANIM_TOGGLE;
+      let a = acc.get(k);
+      if (!a) { a = { n: 0, crouch: 0, prone: 0, speeds: [], dir: { f: 0, b: 0, l: 0, r: 0 } }; acc.set(k, a); }
+      const sp = Math.hypot(vx, vy);
+      /* Nobody moves this fast on foot; it is a respawn or a cut. */
+      if (sp > MAX_FOOT_SPEED) continue;
+      a.n++;
+      const st = stanceOf(s[6]);
+      if (st === "crouch") a.crouch++;
+      if (st === "prone") a.prone++;
+      a.speeds.push(sp);
+      if (sp > 30) a.dir[directionOf(vx, vy, s[4])]++;
+    }
+  }
+  const out = new Map();
+  for (const [k, a] of acc) {
+    if (a.n < MIN_SAMPLES) continue;
+    const stance = a.prone / a.n > 0.5 ? "prone" : a.crouch / a.n > 0.5 ? "crouch" : "stand";
+    /* The median, so a handful of odd samples cannot move an index into
+       another gait. */
+    const sorted = a.speeds.sort((x, y) => x - y);
+    const speed = sorted[sorted.length >> 1];
+    const moving = a.dir.f + a.dir.b + a.dir.l + a.dir.r;
+    const dir = moving ? Object.entries(a.dir).sort((x, y) => y[1] - x[1])[0][0] : "f";
+    out.set(k, { role: chooseRole(stance, speed, dir).role, speed });
+  }
+  return out;
+}
+
+/**
+ * The role for one sample: the calibrated one when the server's index is
+ * known, the speed rule otherwise. The rate always follows real ground speed.
+ */
+function roleForSample(calib, sample, speed, dir){
+  const legs = sample[8];
+  const hit = calib && legs !== null && legs !== undefined ? calib.get(legs & ~ANIM_TOGGLE) : null;
+  const fallback = chooseRole(stanceOf(sample[6]), speed, dir);
+  if (!hit) return fallback;
+  const native = /^prone/.test(hit.role) ? NATIVE_SPEED.prone : /^crouch/.test(hit.role) ? NATIVE_SPEED.crouch
+    : /^walk/.test(hit.role) ? NATIVE_SPEED.walk : hit.role === "sprint" ? NATIVE_SPEED.sprint : NATIVE_SPEED.run;
+  const idle = hit.role === "stand" || hit.role === "crouch" || hit.role === "prone";
+  return { role: hit.role, rate: idle ? 1 : (speed > 5 ? speed : hit.speed) / native };
 }
 
 /**
@@ -154,7 +233,7 @@ Animator.prototype.update = function(role, rate, dt){
   this.mixer.update(Math.max(0, Math.min(0.25, dt)));
 };
 
-const API = { stanceOf, velocityAt, directionOf, chooseRole, buildClips, Animator,
+const API = { stanceOf, velocityAt, directionOf, chooseRole, calibrate, roleForSample, buildClips, Animator,
               EF_CROUCHING, EF_PRONE };
 if (typeof module === "object" && module.exports) module.exports = API;
 root.DM1_PLAYERANIM = API;

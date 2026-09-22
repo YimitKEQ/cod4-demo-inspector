@@ -291,6 +291,31 @@ function createCameraRig(THREE, dom, state){
       return;
     }
 
+    /* The recorder's own eyes, exactly: his client's frames at 125 a second
+       for position and angles, the player state for the real eye height and
+       how far into the sights he is, the weapon's own zoom for the field of
+       view. See js/core/pov.js. */
+    if (mode === "eyes" && state.model.pov && root.DM1_POV) {
+      const P = root.DM1_POV;
+      const view = P.viewAt(state.model.pov, t);
+      if (view) {
+        const ps = P.stateAt(state.model.pov, t);
+        const eye = ps ? ps.eyeHeight : P.STAND_EYE;
+        cam.position.copy(V(view.x, view.y, view.z + eye));
+        const wf = ps && state.model.weaponFiles[ps.weapon];
+        const wd = wf && weapons && weapons[String(wf).toLowerCase()];
+        setFov(P.verticalFov(P.DEFAULT_FOV, wd ? wd.adsZoomFov : null, ps ? ps.ads : 0));
+        /* CoD angles: pitch positive looks down, yaw counter clockwise from
+           +X, roll about the view axis. Built as yaw, then pitch, then roll,
+           in the scene's Y up frame. */
+        const D = Math.PI / 180;
+        cam.rotation.set(0, 0, 0);
+        cam.quaternion.setFromEuler(new THREE.Euler(
+          -view.pitch * D, (view.yaw - 90) * D, -view.roll * D, "YXZ"));
+        return;
+      }
+    }
+
     if (mode === "eyes" || mode === "eyesApprox") {
       const m = state.model;
       const client = mode === "eyes" ? m.info.povClient : state.followClient;
@@ -397,6 +422,10 @@ function createCameraRig(THREE, dom, state){
     return best;
   }
 
+  /* Weapon definitions (maps3d/_players/weapons.json), for ADS zoom. */
+  let weapons = null;
+  function setWeapons(w){ weapons = w || null; }
+
   /** A function (origin, unit direction, max distance) -> distance to the
       first wall, or null to switch collision off. */
   let collider = null;
@@ -405,7 +434,7 @@ function createCameraRig(THREE, dom, state){
   return {
     group,
     active: () => cam,
-    update, reset, setBounds, setAspect, setMode, setCollider,
+    update, reset, setBounds, setAspect, setMode, setCollider, setWeapons,
     startReplay, cancelReplay,
     get mode(){ return mode; },
     label: () => (mode === "replay" ? "Replay" : MODE_LABEL[mode] || mode),

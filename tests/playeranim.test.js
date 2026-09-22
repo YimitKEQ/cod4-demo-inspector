@@ -56,4 +56,22 @@ describe("playeranim", () => {
     const fast = PA.chooseRole("stand", 220, "f").rate;
     assert.ok(fast > slow, "rate should grow with speed");
   });
+
+  it("learns what each server animation index means from the demo", () => {
+    /* Index 7: crouched, moving left. Index 9: standing, sprinting forward. */
+    const tr = [];
+    for (let i = 0; i < 40; i++) tr.push([i * 5, 0, i * 6, 0, 0, 1, PA.EF_CROUCHING, 0, 7, 0, 0]);
+    const tr2 = [];
+    for (let i = 0; i < 40; i++) tr2.push([i * 5, i * 14, 0, 0, 0, 1, 0, 0, 9 | 0x200, 0, 0]);
+    const cal = PA.calibrate({ 1: tr, 2: tr2 });
+    assert.equal(cal.get(7).role, "crouch_l");
+    assert.equal(cal.get(9).role, "sprint");
+  });
+
+  it("follows the server's index over the speed rule when it knows it", () => {
+    const cal = new Map([[7, { role: "crouch_l", speed: 120 }]]);
+    const r = PA.roleForSample(cal, [0, 0, 0, 0, 0, 1, 0, 0, 7 | 0x200, 0, 0], 3, "f");
+    assert.equal(r.role, "crouch_l");
+    assert.equal(PA.roleForSample(cal, [0, 0, 0, 0, 0, 1, 0, 0, 99, 0, 0], 3, "f").role, "stand");
+  });
 });
