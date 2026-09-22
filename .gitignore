@@ -1,0 +1,21 @@
+# Game assets and demos never go in the repo
+demos/*
+!demos/README.md
+maps3d/*
+!maps3d/README.md
+renders/
+game/
+
+# Tooling
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+dist/
+*.log
+.DS_Store
+Thumbs.db
+
+# Local config with machine paths
+tools/config.local.json
+.claude/settings.local.json
