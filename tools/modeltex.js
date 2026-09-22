@@ -9,7 +9,7 @@
  *
  * The images are in the game's own archives under the same names, and iwd.js
  * already knows how to read them, so the fix is to resolve each name the
- * models ask for and write it out as a PNG once, into one shared folder that
+ * models ask for and write it out once (as WebP, via tools/py/webp.py), into one shared folder that
  * every model reads from.
  *
  *   node tools/modeltex.js maps3d/images maps3d/mp_crash/props maps3d/_players
@@ -32,6 +32,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { spawnSync } = require("child_process");
 const { buildIndex, findImage, readEntry, parseIwi, decodeIwi,
         writePNG } = require("./iwd.js");
 
@@ -178,7 +179,7 @@ function main(){
   let written = 0, bytes = 0;
   for (const name of [...wanted].sort()) {
     const dest = path.join(outDir, safeName(name) + ".png");
-    if (fs.existsSync(dest)) { written++; continue; }
+    if (fs.existsSync(dest) || fs.existsSync(dest.replace(/\.png$/, ".webp"))) { written++; continue; }
     const r = imageAsPng(index, name, max);
     if (!r) { missing.push(name); continue; }
     fs.writeFileSync(dest, r.png);
@@ -192,6 +193,12 @@ function main(){
   if (missing.length) {
     process.stdout.write("  not in the archives: " + missing.join(", ") + "\n");
   }
+
+  /* The viewer loads WebP; see tools/py/webp.py for why. */
+  const py = spawnSync(process.env.PYTHON || "python",
+    [path.join(__dirname, "py", "webp.py"), outDir], { encoding: "utf8" });
+  process.stdout.write(py.status === 0 ? "  webp: " + py.stdout.trim() + "\n"
+    : "  WebP conversion failed, and the viewer needs it: " + (py.stderr || "").trim() + "\n");
 }
 
 if (require.main === module) main();

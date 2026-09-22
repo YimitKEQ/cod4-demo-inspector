@@ -1,0 +1,386 @@
+diff --git a/src/ObjWriting/Game/IW3/GfxWorld/GfxWorldDumperIW3.cpp b/src/ObjWriting/Game/IW3/GfxWorld/GfxWorldDumperIW3.cpp
+new file mode 100644
+index 0000000..696133b
+--- /dev/null
++++ b/src/ObjWriting/Game/IW3/GfxWorld/GfxWorldDumperIW3.cpp
+@@ -0,0 +1,233 @@
++#include "GfxWorldDumperIW3.h"
++
++#include <iomanip>
++#include <ostream>
++#include <set>
++#include <sstream>
++#include <string>
++#include <unordered_map>
++#include <vector>
++
++using namespace IW3;
++
++namespace
++{
++    std::string Quote(const char* text)
++    {
++        std::string out = "\"";
++        if (text)
++        {
++            for (const char* c = text; *c; c++)
++            {
++                const auto ch = static_cast<unsigned char>(*c);
++                if (ch == '"' || ch == '\\')
++                {
++                    out += '\\';
++                    out += static_cast<char>(ch);
++                }
++                else if (ch < 0x20)
++                {
++                    std::ostringstream hex;
++                    hex << "\\u" << std::hex << std::setw(4) << std::setfill('0') << static_cast<int>(ch);
++                    out += hex.str();
++                }
++                else
++                    out += static_cast<char>(ch);
++            }
++        }
++        out += "\"";
++        return out;
++    }
++
++    std::string BaseName(const std::string& assetName)
++    {
++        // "maps/mp/mp_bog.d3dbsp" -> "maps/mp/mp_bog"
++        const auto dot = assetName.rfind('.');
++        return dot == std::string::npos ? assetName : assetName.substr(0, dot);
++    }
++
++    void WriteFloats(std::ostream& out, const float* values, const size_t count)
++    {
++        out << "[";
++        for (size_t i = 0; i < count; i++)
++            out << (i ? "," : "") << values[i];
++        out << "]";
++    }
++
++    // Raw pixel data of an image that lives inside the zone, if it does.
++    // Returns false when the image is streamed from an .iwd instead.
++    bool DumpLoadDef(const AssetDumpingContext& context, const GfxImage* image, const std::string& fileName, std::ostream& json)
++    {
++        if (!image || !image->texture.loadDef || image->texture.loadDef->resourceSize == 0)
++            return false;
++
++        const auto* def = image->texture.loadDef;
++        const auto file = context.OpenAssetFile(fileName);
++        if (!file)
++            return false;
++        file->write(def->data, def->resourceSize);
++
++        json << "{\"name\":" << Quote(image->name) << ",\"file\":" << Quote(fileName.c_str()) << ",\"width\":" << image->width
++             << ",\"height\":" << image->height << ",\"depth\":" << image->depth << ",\"format\":" << def->format
++             << ",\"levels\":" << static_cast<int>(def->levelCount) << ",\"bytes\":" << def->resourceSize << "}";
++        return true;
++    }
++
++    void WriteMaterial(std::ostream& json, const Material* material)
++    {
++        json << "{\"name\":" << Quote(material->info.name);
++        json << ",\"techset\":" << Quote(material->techniqueSet ? material->techniqueSet->name : "");
++        json << ",\"sortKey\":" << static_cast<int>(material->info.sortKey);
++        json << ",\"gameFlags\":" << static_cast<int>(material->info.gameFlags);
++        json << ",\"surfaceTypeBits\":" << material->info.surfaceTypeBits;
++        // Which state bits each technique uses; 0xFF means the technique is absent.
++        json << ",\"stateBitsEntry\":[";
++        for (size_t i = 0; i < std::extent_v<decltype(material->stateBitsEntry)>; i++)
++            json << (i ? "," : "") << static_cast<int>(static_cast<unsigned char>(material->stateBitsEntry[i]));
++        json << "]";
++        json << ",\"stateBits\":[";
++        for (unsigned i = 0; i < material->stateBitsCount && material->stateBitsTable; i++)
++        {
++            const auto& bits = material->stateBitsTable[i];
++            json << (i ? "," : "") << "[" << bits.loadBits.raw[0] << "," << bits.loadBits.raw[1] << "]";
++        }
++        json << "],\"textures\":[";
++        for (unsigned i = 0; i < material->textureCount && material->textureTable; i++)
++        {
++            const auto& def = material->textureTable[i];
++            const char* imageName = (def.semantic != TS_WATER_MAP && def.u.image) ? def.u.image->name : "";
++            json << (i ? "," : "") << "{\"nameHash\":" << def.nameHash << ",\"semantic\":" << static_cast<int>(def.semantic)
++                 << ",\"image\":" << Quote(imageName) << "}";
++        }
++        json << "]}";
++    }
++} // namespace
++
++namespace gfx_world
++{
++    void DumperIW3::DumpAsset(AssetDumpingContext& context, const XAssetInfo<GfxWorld>& asset)
++    {
++        const auto* world = asset.Asset();
++        const auto base = BaseName(asset.m_name);
++
++        // Geometry: vertices first, indices straight after.
++        const auto binName = base + ".world.bin";
++        {
++            const auto bin = context.OpenAssetFile(binName);
++            if (!bin)
++                return;
++            if (world->vd.vertices && world->vertexCount)
++                bin->write(reinterpret_cast<const char*>(world->vd.vertices), sizeof(GfxWorldVertex) * world->vertexCount);
++            if (world->indices && world->indexCount)
++                bin->write(reinterpret_cast<const char*>(world->indices), sizeof(uint16_t) * world->indexCount);
++        }
++
++        const auto jsonFile = context.OpenAssetFile(base + ".world.json");
++        if (!jsonFile)
++            return;
++        auto& json = *jsonFile;
++        json << std::setprecision(9);
++
++        json << "{\"format\":\"oat-iw3-gfxworld-1\",\"name\":" << Quote(world->name) << ",\"baseName\":" << Quote(world->baseName);
++        json << ",\"bin\":" << Quote(binName.c_str());
++        json << ",\"vertexStride\":" << sizeof(GfxWorldVertex) << ",\"vertexCount\":" << world->vertexCount;
++        json << ",\"indexOffset\":" << sizeof(GfxWorldVertex) * world->vertexCount << ",\"indexCount\":" << world->indexCount;
++        json << ",\"mins\":";
++        WriteFloats(json, world->mins, 3);
++        json << ",\"maxs\":";
++        WriteFloats(json, world->maxs, 3);
++
++        json << ",\"sun\":{\"name\":" << Quote(world->sunParse.name) << ",\"ambientScale\":" << world->sunParse.ambientScale
++             << ",\"ambientColor\":";
++        WriteFloats(json, world->sunParse.ambientColor, 3);
++        json << ",\"diffuseFraction\":" << world->sunParse.diffuseFraction << ",\"sunLight\":" << world->sunParse.sunLight << ",\"sunColor\":";
++        WriteFloats(json, world->sunParse.sunColor, 3);
++        json << ",\"diffuseColor\":";
++        WriteFloats(json, world->sunParse.diffuseColor, 3);
++        json << ",\"angles\":";
++        WriteFloats(json, world->sunParse.angles, 3);
++        json << ",\"colorFromBsp\":";
++        WriteFloats(json, world->sunColorFromBsp, 3);
++        json << "}";
++
++        // Sky surfaces are drawn by the sky pass, not the world pass.
++        json << ",\"skySurfaces\":[";
++        for (int i = 0; i < world->skySurfCount && world->skyStartSurfs; i++)
++            json << (i ? "," : "") << world->skyStartSurfs[i];
++        json << "],\"skyImage\":" << Quote(world->skyImage ? world->skyImage->name : "");
++
++        // Materials once each, surfaces refer to them by index.
++        std::vector<const Material*> materials;
++        std::unordered_map<const Material*, size_t> materialIndex;
++        const auto indexOf = [&](const Material* material) -> long long
++        {
++            if (!material)
++                return -1;
++            const auto found = materialIndex.find(material);
++            if (found != materialIndex.end())
++                return static_cast<long long>(found->second);
++            materialIndex.emplace(material, materials.size());
++            materials.push_back(material);
++            return static_cast<long long>(materials.size() - 1);
++        };
++
++        json << ",\"surfaceCount\":" << world->surfaceCount << ",\"staticSurfaceCount\":" << world->dpvs.staticSurfaceCount;
++        json << ",\"surfaces\":[";
++        for (int i = 0; i < world->surfaceCount && world->dpvs.surfaces; i++)
++        {
++            const auto& surface = world->dpvs.surfaces[i];
++            json << (i ? "," : "") << "[" << indexOf(surface.material) << "," << surface.tris.firstVertex << "," << surface.tris.vertexCount << ","
++                 << surface.tris.triCount << "," << surface.tris.baseIndex << "," << static_cast<int>(surface.lightmapIndex) << ","
++                 << static_cast<int>(static_cast<unsigned char>(surface.flags)) << "]";
++        }
++        json << "],\"surfaceFields\":[\"material\",\"firstVertex\",\"vertexCount\",\"triCount\",\"baseIndex\",\"lightmap\",\"flags\"]";
++
++        // Brush models: model 0 is the world, the rest are movers and script brushes.
++        json << ",\"models\":[";
++        for (int i = 0; i < world->modelCount && world->models; i++)
++        {
++            const auto& model = world->models[i];
++            json << (i ? "," : "") << "{\"start\":" << model.startSurfIndex << ",\"count\":" << model.surfaceCount << ",\"bounds\":";
++            WriteFloats(json, &model.bounds[0][0], 6);
++            json << "}";
++        }
++        json << "]";
++
++        // Static models: every placed prop the game draws, already resolved.
++        json << ",\"staticModels\":[";
++        for (unsigned i = 0; i < world->dpvs.smodelCount && world->dpvs.smodelDrawInsts; i++)
++        {
++            const auto& inst = world->dpvs.smodelDrawInsts[i];
++            json << (i ? "," : "") << "{\"model\":" << Quote(inst.model ? inst.model->name : "") << ",\"origin\":";
++            WriteFloats(json, inst.placement.origin, 3);
++            json << ",\"axis\":";
++            WriteFloats(json, &inst.placement.axis[0][0], 9);
++            json << ",\"scale\":" << inst.placement.scale << ",\"cullDist\":" << inst.cullDist << ",\"flags\":"
++                 << static_cast<int>(static_cast<unsigned char>(inst.flags)) << "}";
++        }
++        json << "]";
++
++        // Lightmaps: pixel data when the zone carries it.
++        json << ",\"lightmaps\":[";
++        for (int i = 0; i < world->lightmapCount && world->lightmaps; i++)
++        {
++            json << (i ? "," : "") << "{\"primary\":";
++            if (!DumpLoadDef(context, world->lightmaps[i].primary, base + ".lm" + std::to_string(i) + "_primary.bin", json))
++                json << Quote(world->lightmaps[i].primary ? world->lightmaps[i].primary->name : "");
++            json << ",\"secondary\":";
++            if (!DumpLoadDef(context, world->lightmaps[i].secondary, base + ".lm" + std::to_string(i) + "_secondary.bin", json))
++                json << Quote(world->lightmaps[i].secondary ? world->lightmaps[i].secondary->name : "");
++            json << "}";
++        }
++        json << "]";
++
++        // Material table last, it grew while the surfaces were written.
++        json << ",\"materials\":[";
++        for (size_t i = 0; i < materials.size(); i++)
++        {
++            json << (i ? "," : "");
++            WriteMaterial(json, materials[i]);
++        }
++        json << "]}";
++    }
++} // namespace gfx_world
+diff --git a/src/ObjWriting/Game/IW3/GfxWorld/GfxWorldDumperIW3.h b/src/ObjWriting/Game/IW3/GfxWorld/GfxWorldDumperIW3.h
+new file mode 100644
+index 0000000..edd1581
+--- /dev/null
++++ b/src/ObjWriting/Game/IW3/GfxWorld/GfxWorldDumperIW3.h
+@@ -0,0 +1,17 @@
++#pragma once
++
++#include "Dumping/AbstractAssetDumper.h"
++#include "Game/IW3/IW3.h"
++
++namespace gfx_world
++{
++    // Writes the compiled render world as two files beside each other:
++    //   <map>.world.bin   raw GfxWorldVertex array, then the uint16 index array
++    //   <map>.world.json  surfaces, materials, static models, lightmaps, sun
++    // The JSON describes the byte layout so a consumer never has to guess.
++    class DumperIW3 final : public AbstractAssetDumper<IW3::AssetGfxWorld>
++    {
++    protected:
++        void DumpAsset(AssetDumpingContext& context, const XAssetInfo<IW3::GfxWorld>& asset) override;
++    };
++} // namespace gfx_world
+diff --git a/src/ObjWriting/Game/IW3/ObjWriterIW3.cpp b/src/ObjWriting/Game/IW3/ObjWriterIW3.cpp
+index 2fd0cf6..adae7ea 100644
+--- a/src/ObjWriting/Game/IW3/ObjWriterIW3.cpp
++++ b/src/ObjWriting/Game/IW3/ObjWriterIW3.cpp
+@@ -1,6 +1,7 @@
+ #include "ObjWriterIW3.h"
+ 
+ #include "Game/IW3/Font/FontDumperIW3.h"
++#include "Game/IW3/GfxWorld/GfxWorldDumperIW3.h"
+ #include "Game/IW3/Image/ImageDumperIW3.h"
+ #include "Game/IW3/Maps/MapEntsDumperIW3.h"
+ #include "Game/IW3/Material/MaterialJsonDumperIW3.h"
+@@ -42,7 +43,7 @@ void ObjWriter::RegisterAssetDumpers(AssetDumpingContext& context)
+     // REGISTER_DUMPER(AssetDumperGameWorldSp)
+     // REGISTER_DUMPER(AssetDumperGameWorldMp)
+     RegisterAssetDumper(std::make_unique<map_ents::DumperIW3>());
+-    // REGISTER_DUMPER(AssetDumperGfxWorld)
++    RegisterAssetDumper(std::make_unique<gfx_world::DumperIW3>());
+     RegisterAssetDumper(std::make_unique<light_def::DumperIW3>());
+     RegisterAssetDumper(std::make_unique<font::JsonDumperIW3>());
+     RegisterAssetDumper(std::make_unique<menu::MenuListDumperIW3>());
+diff --git a/src/ObjWriting/XAnim/XAnimDumper.cpp.template b/src/ObjWriting/XAnim/XAnimDumper.cpp.template
+index b9aaf92..058e0e1 100644
+--- a/src/ObjWriting/XAnim/XAnimDumper.cpp.template
++++ b/src/ObjWriting/XAnim/XAnimDumper.cpp.template
+@@ -46,6 +46,8 @@
+ #include <cstdint>
+ #include <expected>
+ #include <format>
++#include <iomanip>
++#include <ostream>
+ #include <limits>
+ #include <optional>
+ #include <string>
+@@ -234,6 +236,79 @@ namespace
+         return result;
+     }
+ 
++    // A plain JSON copy of the reconstructed tracks, for tools that want the
++    // animation without parsing the compiled xanim format. Values stay in their
++    // quantised form; the consumer decodes them.
++    void WriteJsonXAnim(std::ostream& out, const std::string& name, const CommonXAnimParts& parts)
++    {
++        const auto ints = [&out](const auto& values, const auto& get, const size_t width)
++        {
++            out << "[";
++            bool first = true;
++            for (const auto& v : values)
++                for (size_t k = 0; k < width; k++)
++                {
++                    out << (first ? "" : ",") << static_cast<int>(get(v, k));
++                    first = false;
++                }
++            out << "]";
++        };
++        const auto floats3 = [&out](const std::array<float, 3>& v)
++        {
++            out << "[" << v[0] << "," << v[1] << "," << v[2] << "]";
++        };
++
++        out << std::setprecision(9);
++        out << "{\"format\":\"oat-xanim-json-1\",\"name\":\"" << name << "\",\"frames\":" << parts.m_num_frames
++            << ",\"fps\":" << parts.m_frame_rate << ",\"looped\":" << (parts.m_looped ? "true" : "false") << ",\"bones\":[";
++        for (size_t b = 0; b < parts.m_bone_tracks.size(); b++)
++        {
++            const auto& track = parts.m_bone_tracks[b];
++            out << (b ? "," : "") << "{\"name\":\"" << track.m_name << "\",\"q\":{\"type\":" << static_cast<int>(track.m_quat.m_type)
++                << ",\"idx\":";
++            ints(track.m_quat.m_indices, [](const uint16_t v, size_t) { return v; }, 1);
++            out << ",\"v4\":";
++            ints(track.m_quat.m_frames, [](const CommonXQuat& v, const size_t k) { return v.value[k]; }, 4);
++            out << ",\"v2\":";
++            ints(track.m_quat.m_frames2, [](const CommonXQuat2& v, const size_t k) { return v.value[k]; }, 2);
++            out << "},\"t\":{\"type\":" << static_cast<int>(track.m_trans.m_type) << ",\"idx\":";
++            ints(track.m_trans.m_indices, [](const uint16_t v, size_t) { return v; }, 1);
++            out << ",\"mins\":";
++            floats3(track.m_trans.m_mins);
++            out << ",\"size\":";
++            floats3(track.m_trans.m_size);
++            out << ",\"c\":";
++            floats3(track.m_trans.m_constant);
++            out << ",\"u8\":";
++            ints(track.m_trans.m_frames_u8, [](const CommonVec3U8& v, const size_t k) { return v.value[k]; }, 3);
++            out << ",\"u16\":";
++            ints(track.m_trans.m_frames_u16, [](const CommonVec3U16& v, const size_t k) { return v.value[k]; }, 3);
++            out << "}}";
++        }
++        out << "]";
++        if (parts.m_delta_track && parts.m_delta_track->m_trans)
++        {
++            const auto& d = *parts.m_delta_track->m_trans;
++            out << ",\"delta\":{\"small\":" << (d.m_small_trans ? "true" : "false") << ",\"idx\":";
++            ints(d.m_indices, [](const uint16_t v, size_t) { return v; }, 1);
++            out << ",\"mins\":";
++            floats3(d.m_mins);
++            out << ",\"size\":";
++            floats3(d.m_size);
++            if (d.m_constant)
++            {
++                out << ",\"c\":";
++                floats3(*d.m_constant);
++            }
++            out << ",\"u8\":";
++            ints(d.m_frames_u8, [](const CommonVec3U8& v, const size_t k) { return v.value[k]; }, 3);
++            out << ",\"u16\":";
++            ints(d.m_frames_u16, [](const CommonVec3U16& v, const size_t k) { return v.value[k]; }, 3);
++            out << "}";
++        }
++        out << "}";
++    }
++
+     std::unique_ptr<CommonXAnimDeltaTrack> ConvertDeltaTrack(const XAnimParts& parts, const bool useByteIndices, const uint16_t numLoopFrames)
+     {
+         if (!parts.deltaPart)
+@@ -357,5 +432,9 @@ namespace xanim
+             CompiledXAnimVersion::VERSION_19
+ #endif
+         );
++
++        const auto jsonFile = context.OpenAssetFile(std::string("xanim_json/") + parts.name + ".json");
++        if (jsonFile)
++            WriteJsonXAnim(*jsonFile, parts.name, commonParts);
+     }
+ } // namespace xanim
