@@ -8,15 +8,13 @@ reconstruction.
 
 | What | Source | Tool |
 |---|---|---|
-| `geometry.bin`, `geometry.json` | The map's Radiant `.map` source. mp_backlot's was released by Infinity Ward in the CoD4 mod tools; the others circulate in the mapping community. | `tools/mapsrc.js` |
-| `textures/*.png` | `.iwi` images inside the game's own `main/*.iwd` archives, decoded from DXT. | `tools/iwd.js` |
-| `props/*.glb` | XModels from the game's fastfiles, dumped by OpenAssetTools. | `tools/props.js` |
+| `geometry.bin`, `geometry.json` | The compiled render world inside the map's fastfile, `zone/english/<map>.ff`. | patched OpenAssetTools + `tools/ffworld.js` |
+| `textures/*.webp` | Colour maps, lightmaps and the skybox: `.iwi` images in `main/*.iwd` and images carried in the fastfile, decoded from DXT. | `tools/ffworld.js`, `tools/py/webp.py` |
+| `props/*.glb`, `images/*.webp` | XModels from the fastfiles and their colour maps. | OpenAssetTools, `tools/modeltex.js` |
+| `_players/*.glb`, `_players/anims.json` | Multiplayer bodies and heads, and the player animations from `common_mp.ff`. | `tools/players.js`, `tools/xanim.js` |
 
-Rebuild any of it yourself from your own install:
-
-```
-node tools/extract.js <map.map> <map name>
-```
+Rebuild any of it yourself from your own install: see "Getting the real map
+into 3D" in the README.
 
 ## Terms
 
@@ -25,7 +23,7 @@ ordinary practice. Redistributing them is a different thing, and that is what
 this folder does, so it is worth being plain about it.
 
 The CoD4 Mod Tools EULA treats map sources and anything derived from them as
-works owned by Activision: non-commercial use is permitted, commercial
+works owned by Activision, and the same plainly goes for the compiled maps: non-commercial use is permitted, commercial
 distribution is not. Nothing here is sold, and nothing here is offered as
 original work. OpenAssetTools puts it well in its own README: extracting the
 contents of game files grants no rights to them, and all rights remain with

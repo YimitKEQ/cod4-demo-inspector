@@ -1,329 +1,881 @@
 {
-  "textures": {
-    "me_floor_concrete": {
-      "file": "me_floor_concrete.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_cinderblock_wall2": {
-      "file": "me_cinderblock_wall2.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "ch_concretewall02": {
-      "file": "ch_concretewall02.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "ch_plaster01": {
-      "file": "ch_plaster01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_ground_dirt02_decal": {
-      "file": "me_ground_dirt02_decal.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_decal_adobe_top_01": {
-      "file": "me_decal_adobe_top_01.png",
-      "width": 1024,
-      "height": 128,
-      "format": "DXT5"
-    },
-    "me_decal_adobe_bottom_01": {
-      "file": "me_decal_adobe_bottom_01.png",
-      "width": 1024,
-      "height": 256,
-      "format": "DXT5"
-    },
-    "me_woodbeam_01": {
-      "file": "me_woodbeam_01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "ch_trim_stone01": {
-      "file": "ch_trim_stone01.png",
-      "width": 512,
-      "height": 64,
-      "format": "DXT1"
-    },
-    "me_brick_01": {
-      "file": "me_brick_01.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "ch_concretewall01": {
-      "file": "ch_concretewall01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_stonewall_01": {
-      "file": "me_stonewall_01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_cinderblock_wall2_top": {
-      "file": "me_cinderblock_wall2_top.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "me_brickwall_01": {
-      "file": "me_brickwall_01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "ch_plaster_corner_01": {
-      "file": "ch_plaster_corner_01.png",
-      "width": 512,
-      "height": 128,
-      "format": "DXT1"
-    },
-    "me_decal_darkstain_01": {
-      "file": "me_decal_darkstain_01.png",
-      "width": 512,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "me_trash01": {
-      "file": "me_trash01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_sidewalk_dogbone": {
-      "file": "me_sidewalk_dogbone.png",
-      "width": 1024,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "ch_tile_floor03": {
-      "file": "ch_tile_floor03.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "ch_grass_02": {
-      "file": "ch_grass_02.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_ground_dirt02": {
-      "file": "me_ground_dirt02.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_sidewalk_curb_whiteorange": {
-      "file": "me_sidewalk_curb_whiteorange.png",
-      "width": 512,
-      "height": 64,
-      "format": "DXT1"
-    },
-    "me_stone_road01": {
-      "file": "me_stone_road01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_curtains_1": {
-      "file": "me_curtains_1.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT5"
-    },
-    "ch_concrete_02": {
-      "file": "ch_concrete_02.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "ch_concrete_ceiling_01": {
-      "file": "ch_concrete_ceiling_01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_ground_dirt04_decal": {
-      "file": "me_ground_dirt04_decal.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_pinewood": {
-      "file": "me_pinewood.png",
-      "width": 256,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_roof_01": {
-      "file": "me_roof_01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "ch_woodplank02": {
-      "file": "ch_woodplank02.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_sidewalk_01": {
-      "file": "me_sidewalk_01.png",
-      "width": 1024,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "ch_dec_darkstain_01": {
-      "file": "ch_dec_darkstain_01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_woodplanks01": {
-      "file": "me_woodplanks01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "ch_ground_mud03": {
-      "file": "ch_ground_mud03.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "ch_plasterwall_long": {
-      "file": "ch_plasterwall_long.png",
-      "width": 512,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "me_door_01": {
-      "file": "me_door_01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_archtrim01": {
-      "file": "me_archtrim01.png",
-      "width": 128,
-      "height": 16,
-      "format": "DXT1"
-    },
-    "me_plaster_stripes": {
-      "file": "me_plaster_stripes.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "me_signs_02": {
-      "file": "me_signs_02.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT5"
-    },
-    "me_signs_01": {
-      "file": "me_signs_01.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT5"
-    },
-    "me_poster_flag2": {
-      "file": "me_poster_flag2.png",
-      "width": 128,
-      "height": 256,
-      "format": "DXT5"
-    },
-    "me_metal_garage_door_red": {
-      "file": "me_metal_garage_door_red.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "me_fence_chainlink": {
-      "file": "me_fence_chainlink.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT5"
-    },
-    "me_plaster_03": {
-      "file": "me_plaster_03.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "com_black": {
-      "file": "com_black.png",
-      "width": 4,
-      "height": 4,
-      "format": "DXT1"
-    },
-    "me_graphitti_1": {
-      "file": "me_graphitti_1.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "me_decal_kleenexad": {
-      "file": "me_decal_kleenexad.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "ch_concretewall03": {
-      "file": "ch_concretewall03.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_metal_garage_door_blue": {
-      "file": "me_metal_garage_door_blue.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT1"
-    },
-    "me_windowfence": {
-      "file": "me_windowfence.png",
-      "width": 256,
-      "height": 512,
-      "format": "DXT3"
-    },
-    "me_door_06": {
-      "file": "me_door_06.png",
-      "width": 256,
-      "height": 512,
-      "format": "DXT1"
-    },
-    "me_floor_02": {
-      "file": "me_floor_02.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT5"
-    },
-    "me_poster_deathblow3": {
-      "file": "me_poster_deathblow3.png",
-      "width": 128,
-      "height": 256,
-      "format": "DXT5"
-    },
-    "me_ground_drygrass": {
-      "file": "me_ground_drygrass.png",
-      "width": 512,
-      "height": 512,
-      "format": "DXT1"
-    }
+ "textures": {
+  "wc/me_corrugated_metal01": {
+   "file": "me_corrugated_metal01_col.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
   },
-  "missing": []
+  "wc/me_woodboard_01": {
+   "file": "me_woodboard_01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_trim_metal_01": {
+   "file": "me_trim_metal01_col.webp",
+   "width": 64,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_woodplanks01": {
+   "file": "me_wood_01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_plaster_03": {
+   "file": "me_plaster_03.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cinderblock_wall2": {
+   "file": "me_cinderblock_wall02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_metal_rust_03": {
+   "file": "me_metal_rusty03_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_woodbeam_01": {
+   "file": "me_wood_beam.webp",
+   "width": 512,
+   "height": 32,
+   "format": "iwd"
+  },
+  "wc/me_wire_black": {
+   "file": "me_wire_black.webp",
+   "width": 256,
+   "height": 32,
+   "format": "iwd"
+  },
+  "wc/me_window_shutters_01": {
+   "file": "me_window_shutters_01_col.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_plaster_white": {
+   "file": "me_white_plaster.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_plaster01": {
+   "file": "plaster01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_brickwall_01": {
+   "file": "me_brickwall_01.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_concretewall01": {
+   "file": "ch_concretewall01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_brick_01": {
+   "file": "_me_brick_01.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_plaster_02": {
+   "file": "me_plaster_02.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_concretewall02": {
+   "file": "ch_concretewall02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_woodplank02": {
+   "file": "ch_dec_wood01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_trim_stone01": {
+   "file": "ch_trim_stone01_col.webp",
+   "width": 512,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/me_door_11": {
+   "file": "me_door_11_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_roof_01": {
+   "file": "me_roof.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_floor_concrete": {
+   "file": "me_floor_concrete_c.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_pinewood": {
+   "file": "me_pinewood_col.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_woodwall01": {
+   "file": "ch_woodwall01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_concretewall06": {
+   "file": "ch_concretewall06_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_sidewalk_dogbone": {
+   "file": "me_dogbone_walk.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_marketstall_canopy2_v02": {
+   "file": "me_marketstall_canopy2_v02_col.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_asphalt_01": {
+   "file": "me_asphalt_01.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_stonewall_01": {
+   "file": "me_stonewall_01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_plaster_brown": {
+   "file": "me_brown_plaster.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_stone_road01": {
+   "file": "me_stone_road01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_ground_dirt02": {
+   "file": "me_ground_sand02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_woodboard_02": {
+   "file": "me_woodboard_02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_window_greendirty": {
+   "file": "me_window_greendirty.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_woodbeam_end_01": {
+   "file": "me_wood_beam_end.webp",
+   "width": 64,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/ch_concretewall_trim": {
+   "file": "ch_concretewall_trim_col.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_door_rollup1": {
+   "file": "me_garagedoor1.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_marketstall_canopy5_v02": {
+   "file": "me_marketstall_canopy5_v02_col.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_asphalt_road1": {
+   "file": "me_asphalt_road1_color.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_wallpaper_7": {
+   "file": "me_wallpaper_7_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_plasterwall_long": {
+   "file": "ch_plasterwall_long_col.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerwhite_roof": {
+   "file": "me_cargocontainerwhite_ext_roof_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_sidewalk_curb_whiteorange": {
+   "file": "me_sidewalk_curb_whiteorange_color.webp",
+   "width": 512,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/me_window_06": {
+   "file": "me_window_06_col.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_plaster_04": {
+   "file": "me_plaster_04.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_ground_drygrass": {
+   "file": "me_grass_dry_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_floor_02": {
+   "file": "me_floor_tile3.webp",
+   "width": 128,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_plaster_01": {
+   "file": "me_plaster_01.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_tile2": {
+   "file": "me_tilefloor2_col.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_window_shutters_02": {
+   "file": "me_window_shutters_02_col.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_metal_rust_02": {
+   "file": "me_metal_rusty02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_marketstall_canopy5": {
+   "file": "me_marketstall_canopy5_col.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_wallpaper1": {
+   "file": "me_wallpaper1_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cinderblock_wall2_top": {
+   "file": "me_cinderblock_wall02_t_col.webp",
+   "width": 128,
+   "height": 32,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_top": {
+   "file": "me_cargocontainertop_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_metal_garage_door_red": {
+   "file": "me_metal_garage_door_red.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_window_03": {
+   "file": "me_window6.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_plaster_stripes": {
+   "file": "me_plaster_05_stripes_col.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/ch_woodpaint_white01": {
+   "file": "ch_woodpaint_white_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_window_05": {
+   "file": "me_window5.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_windowfence_02": {
+   "file": "me_window_fence_col.webp",
+   "width": 256,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_marketstall_canopy3": {
+   "file": "me_marketstall_canopy3_col.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/ch_brick_wall_07": {
+   "file": "ch_brickwall07_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_sidewalk_01": {
+   "file": "me_sidewalk1.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_metal_grey_01": {
+   "file": "me_metal_grey01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_concrete_ceiling_01": {
+   "file": "ch_concrete_ceiling01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_wallpaper2": {
+   "file": "me_wallpaper2_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_grass_02": {
+   "file": "ch_grass_02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_concrete_05": {
+   "file": "ch_concrete_05_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_archtrim01": {
+   "file": "me_archtrim01_col.webp",
+   "width": 128,
+   "height": 16,
+   "format": "iwd"
+  },
+  "wc/ch_plaster_corner_01": {
+   "file": "ch_plastercorner01_col.webp",
+   "width": 512,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/ch_trim_stainlessteel_1": {
+   "file": "ch_trim_stainlessteel_1_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_door_10": {
+   "file": "me_door_10_col.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_concretewall03": {
+   "file": "ch_concretewall03_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_door_01": {
+   "file": "me_door_01.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_exttrimwide": {
+   "file": "me_cargocontainer_exttrimwide01_col.webp",
+   "width": 512,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerblue_trimwide": {
+   "file": "me_cargocontainerblue_trimwide_col.webp",
+   "width": 512,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/me_door_06": {
+   "file": "me_door_06_col.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_concrete_02": {
+   "file": "ch_concrete02_col.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/ch_tile_floor03": {
+   "file": "ch_tile_floor03_col.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_metal_garage_door_blue": {
+   "file": "me_metal_garage_door_blue.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_marketstall_canopy2": {
+   "file": "me_marketstall_canopy2_col.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_concret_wave_stripes": {
+   "file": "me_concret_stripes_col.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_door_04": {
+   "file": "me_door_narrow05.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_woodboard_03": {
+   "file": "me_woodboard_03_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_door_02": {
+   "file": "me_door_mosque.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_marketstall_canopy3_v02": {
+   "file": "me_marketstall_canopy3_v02_col.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_door_03": {
+   "file": "me_door_narrow03.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_ground_mud03": {
+   "file": "ch_ground_mud03_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_door_09": {
+   "file": "me_door_09_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_ground_concrete01": {
+   "file": "me_ground_concrete_01_color.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerblue_roof": {
+   "file": "me_cargocontainerblue_ext_roof_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/com_black": {
+   "file": "com_black.webp",
+   "width": 4,
+   "height": 4,
+   "format": "iwd"
+  },
+  "wc/ch_ceiling01": {
+   "file": "ch_ceiling01_col.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_window_04": {
+   "file": "me_window4.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_clothes1": {
+   "file": "me_clothes1_col.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_railing_plaster": {
+   "file": "me_railing_plaster.webp",
+   "width": 256,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_decal_papers": {
+   "file": "me_paper_debris_c.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_fence_chainlink": {
+   "file": "me_chainlink_fence_color_0.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_sign_martyrsquare": {
+   "file": "me_martyr_square.webp",
+   "width": 256,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/me_sign_hairsalon": {
+   "file": "me_hair_salon.webp",
+   "width": 256,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_windowfence": {
+   "file": "me_windowfence.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_curtains_1": {
+   "file": "me_curtains_1_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_sign_roseshop": {
+   "file": "me_roseshop.webp",
+   "width": 256,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_windowlettering": {
+   "file": "me_windowlettering.webp",
+   "width": 512,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_decal_adobe_top_01": {
+   "file": "me_adobe_top.webp",
+   "width": 512,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/ch_dec_darkstain_01": {
+   "file": "ch_dec_darkstain_01.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_ground_dirt02_decal": {
+   "file": "me_ground_sand02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_decal_darkstain_01": {
+   "file": "me_decal_darkstain_01.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_adobe_bottom_01": {
+   "file": "me_adobe_bottom.webp",
+   "width": 512,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_trash01": {
+   "file": "trash01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_window_02": {
+   "file": "me_window2_col.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_wallcorner_01": {
+   "file": "me_decal_wallcorner_col.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_poster_flag1": {
+   "file": "me_poster_flag1.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_stone_road02": {
+   "file": "me_stone_road02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_stone_road01_blend": {
+   "file": "me_stone_road01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_glassdirt": {
+   "file": "me_dirty_glass.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_bullet_holes01": {
+   "file": "me_decal_bullet_holes_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_window_01": {
+   "file": "me_window1_col.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_ground_dirt03_decal": {
+   "file": "me_ground_sand03_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_ground_dirt04_decal": {
+   "file": "me_ground_sand04_col_decal.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_decal_ground_02": {
+   "file": "me_decal_ground_02.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/ch_ground_mud03_decal": {
+   "file": "ch_ground_mud03_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_toptrim": {
+   "file": "me_toptrim.webp",
+   "width": 256,
+   "height": 32,
+   "format": "iwd"
+  },
+  "wc/me_signs_02": {
+   "file": "me_signs2.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_asphaltcracks01_dec": {
+   "file": "ch_asphaltcracks01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_poster_flag2": {
+   "file": "me_poster_flag2.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_plaster_03_dec": {
+   "file": "me_plaster_broken.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_graphitti_1": {
+   "file": "me_graphitti_1.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_ground_dirt1_decal": {
+   "file": "me_ground_dirt1_color.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_signs_03": {
+   "file": "me_signs3.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_poster_deathblow3": {
+   "file": "me_poster_deathblow3.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_plasterwall_06": {
+   "file": "me_decal_plasterwall06.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_signs_01": {
+   "file": "me_signs1.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_poster_deathblow1": {
+   "file": "me_poster_deathblow1.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_plasterwall_05": {
+   "file": "me_decal_plasterwall05.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_poster_unity": {
+   "file": "me_poster_unity.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/ship_wall_stain5": {
+   "file": "wall_stain5_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_concrete_riverwall_paint2": {
+   "file": "me_concrete_riverwall_paint2_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_decal_darkstain_04": {
+   "file": "me_decal_darkstain_06.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_kleenexad": {
+   "file": "me_kleenex_ad.webp",
+   "width": 512,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_decal_brick": {
+   "file": "me_decal_brick.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_plasterwall_01": {
+   "file": "me_decal_plasterwall01.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_manhole": {
+   "file": "me_manhole.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_graffiti24": {
+   "file": "me_graffiti24.webp",
+   "width": 256,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_poster_missile_multiply": {
+   "file": "me_poster_missile.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  }
+ },
+ "missing": []
 }

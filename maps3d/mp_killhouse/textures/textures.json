@@ -1,0 +1,785 @@
+{
+ "textures": {
+  "wc/me_wire_black": {
+   "file": "me_wire_black.webp",
+   "width": 256,
+   "height": 32,
+   "format": "iwd"
+  },
+  "wc/ch_factory_rustybeam2": {
+   "file": "ch_factory_rustybeam2.webp",
+   "width": 128,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/icbm_greymetal": {
+   "file": "icbm_greymetal.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_woodboard_03": {
+   "file": "me_woodboard_03_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_woodboard_02": {
+   "file": "me_woodboard_02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_woodplank01": {
+   "file": "ch_woodplank01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_usmc_trimwide": {
+   "file": "me_cargocontainer_usmc_trimwide_col.webp",
+   "width": 512,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/me_ground_mud1": {
+   "file": "me_ground_mud1_color.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_two_x_four": {
+   "file": "me_two_x_four_col.webp",
+   "width": 512,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_usmc_trimtall": {
+   "file": "me_cargocontainer_usmc_trimtall_col.webp",
+   "width": 64,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/com_plastic_wall": {
+   "file": "com_plasticwall_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_window_01b": {
+   "file": "me_window1b_col.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_metal_grey_01": {
+   "file": "me_metal_grey01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_metal_rust_03": {
+   "file": "me_metal_rusty03_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cinderblock_wall2": {
+   "file": "me_cinderblock_wall02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/kh_concrete_01": {
+   "file": "ch_concrete_05_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_factory_rustybeam3": {
+   "file": "ch_factory_rusty_iron.webp",
+   "width": 256,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/ch_grass_01": {
+   "file": "ch_grass_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_trim_metal_01": {
+   "file": "me_trim_metal01_col.webp",
+   "width": 64,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_exttrimtall": {
+   "file": "me_cargocontainer_exttrimtall01_col.webp",
+   "width": 64,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_warehouse_corrogated": {
+   "file": "me_warehouse_corrogated_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerblue_ext_wall": {
+   "file": "me_cargocontainerblue_ext_wall_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/kh_tarmac_wet1": {
+   "file": "ch_asphalt01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_exteriorwall": {
+   "file": "me_cargocontainerexteriorwall_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_ground_mud03": {
+   "file": "ch_ground_mud03_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_plywood01": {
+   "file": "ch_plywood01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_particleboard": {
+   "file": "me_partlicleboard_col.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/ch_countertop_1": {
+   "file": "ch_countertop_1_col.webp",
+   "width": 512,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_exttrimcorner01": {
+   "file": "me_cargocontainer_exttrimcorner01_col.webp",
+   "width": 64,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/ch_concretewall08": {
+   "file": "ch_concretewall08_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_exteriordoor": {
+   "file": "me_cargocontainerexteriordoor_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_corrugated_metal01": {
+   "file": "me_corrugated_metal01_col.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/mtl_ch_crates": {
+   "file": "ch_crates_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerwhite_trimtall": {
+   "file": "me_cargocontainerwhite_trimtall_col.webp",
+   "width": 64,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_factory_corrugatedsiding2": {
+   "file": "ch_factory_corrugatedsiding2.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_usmc_ext_wall": {
+   "file": "me_cargocontainer_usmc_ext_wall_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_usmc_roof": {
+   "file": "me_cargocontainer_usmc_ext_roof_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_plaster01": {
+   "file": "plaster01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerblue_roof": {
+   "file": "me_cargocontainerblue_ext_roof_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_top": {
+   "file": "me_cargocontainertop_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_exttrimcorner02": {
+   "file": "me_cargocontainer_exttrimcorner02_col.webp",
+   "width": 64,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_interiorfloor": {
+   "file": "me_cargocontainerinteriorfloor_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_floor_concrete": {
+   "file": "me_floor_concrete_c.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_metal_rust_02": {
+   "file": "me_metal_rusty02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ct_wall_brick_big01_red": {
+   "file": "ct_brick_big01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_brick_wall_04": {
+   "file": "ch_brickwall04_col.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerblue_trimwide": {
+   "file": "me_cargocontainerblue_trimwide_col.webp",
+   "width": 512,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/ch_concretewall04": {
+   "file": "ch_concretewall04_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cinderblock_wall2_top": {
+   "file": "me_cinderblock_wall02_t_col.webp",
+   "width": 128,
+   "height": 32,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerwhite_ext_wall": {
+   "file": "me_cargocontainerwhite_ext_wall_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_usmc_trimcorner1": {
+   "file": "me_cargocontainer_usmc_trim01_col.webp",
+   "width": 64,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/icbm_conc_stripedwall": {
+   "file": "icbm_stripedwall.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_usmc_ext_door": {
+   "file": "me_cargocontainer_usmc_ext_door_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/icbm_doortrack": {
+   "file": "icbm_doortrack.webp",
+   "width": 32,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/ch_concrete_04": {
+   "file": "ch_concrete04_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_factory_diamondplate_step": {
+   "file": "ch_factory_rustydiamondplate.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/ch_concretewall02": {
+   "file": "ch_concretewall02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_usmc_trimcorner2": {
+   "file": "me_cargocontainer_usmc_trim02_col.webp",
+   "width": 64,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/ch_factory_diamondplate2": {
+   "file": "ch_factory_diamondplate2.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainer_exttrimwide": {
+   "file": "me_cargocontainer_exttrimwide01_col.webp",
+   "width": 512,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/me_asphalt_road1": {
+   "file": "me_asphalt_road1_color.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerwhite_trimcorner1": {
+   "file": "me_cargocontainerwhite_trim01_col.webp",
+   "width": 64,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/me_concrete_riverwall": {
+   "file": "me_concrete_riverwall_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainergreen_ext_wall": {
+   "file": "me_cargocontainergreen_ext_wall_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_asphalt_chunky": {
+   "file": "me_asphalt_chunky.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_woodbeam_01": {
+   "file": "me_wood_beam.webp",
+   "width": 512,
+   "height": 32,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerwhite_ext_door": {
+   "file": "me_cargocontainerwhite_ext_door_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_woodbeam_end_01": {
+   "file": "me_wood_beam_end.webp",
+   "width": 64,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/me_woodplanks01": {
+   "file": "me_wood_01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerwhite_trimcorner2": {
+   "file": "me_cargocontainerwhite_trim02_col.webp",
+   "width": 64,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/ch_door_13": {
+   "file": "ch_door_13_col_0.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerblue_ext_door": {
+   "file": "me_cargocontainerblue_ext_door_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_woodwall01": {
+   "file": "ch_woodwall01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerwhite_roof": {
+   "file": "me_cargocontainerwhite_ext_roof_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_woodboard_01": {
+   "file": "me_woodboard_01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_woodplank02": {
+   "file": "ch_dec_wood01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_brick_wall_08": {
+   "file": "ch_brickwall08_col_0.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_roof_tiles_4": {
+   "file": "ch_tar_roof_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_door_14": {
+   "file": "ch_door_14_col.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_office_white_door_1": {
+   "file": "me_office_white_door_1_col.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_door_rollup1": {
+   "file": "me_garagedoor1.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_cargocontainerwhite_trimwide": {
+   "file": "me_cargocontainerwhite_trimwide_col.webp",
+   "width": 512,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/icbm_tunnelfloor": {
+   "file": "icbm_tunnelfloor.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_factory_window3": {
+   "file": "window03.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/ch_corrugated_01": {
+   "file": "ch_corrugated_01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/killhouse_target1": {
+   "file": "killhouse_target1.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/killhouse_target2": {
+   "file": "killhouse_target2.webp",
+   "width": 256,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_fence_chainlink": {
+   "file": "me_chainlink_fence_color_0.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/com_streetlines2": {
+   "file": "com_crosswalklinewhitelong02_col.webp",
+   "width": 32,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_floor_metalgratingparallel": {
+   "file": "me_floor_metalgratingparallel_col_0.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_glassdirt": {
+   "file": "me_dirty_glass.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/ch_grass_01_decal": {
+   "file": "ch_grass_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/com_stain_01": {
+   "file": "com_stain_01.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_decal_adobe_top_01": {
+   "file": "me_adobe_top.webp",
+   "width": 512,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/me_trash01": {
+   "file": "trash01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_ground_mud03_decal": {
+   "file": "ch_ground_mud03_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/kh_wall_damp01": {
+   "file": "kh_wall_damp_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/kh_tarmac_puddle1": {
+   "file": "kh_tarmac_puddle02_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/kh_tarmac_trim1": {
+   "file": "ch_ground_roadasphalt02_trim_col.webp",
+   "width": 128,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_dec_darkstain_02": {
+   "file": "ch_dec_darkstain_02.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_rubble_conc01_decal": {
+   "file": "ch_rubble_conc01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/kh_wall_damp02": {
+   "file": "kh_wall_damp2_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/killhouse_marks": {
+   "file": "killhouse_marks.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/com_crater_blacktop": {
+   "file": "_crater_blacktop.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/kh_tarmac1": {
+   "file": "ch_asphalt01_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_hotspot02": {
+   "file": "ch_hotspot01.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_cargocontainersignage01": {
+   "file": "me_cargocontainer_decalsignage01_col.webp",
+   "width": 64,
+   "height": 64,
+   "format": "iwd"
+  },
+  "wc/killhouse_txt": {
+   "file": "killhouse_txt.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_ground_dirt04_decal": {
+   "file": "me_ground_sand04_col_decal.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_decal_cargocontainernumbers_03": {
+   "file": "me_cargocontainer_decalnumbers03_col.webp",
+   "width": 32,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_cargocontainertext_01": {
+   "file": "me_cargocontainer_decal_text01_col.webp",
+   "width": 64,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/ch_factory_ruststain1": {
+   "file": "ch_factory_ruststain1.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/killhouse_numbers": {
+   "file": "killhouse_numbers.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/decal_porterhaus": {
+   "file": "decal_porterhaus.webp",
+   "width": 512,
+   "height": 128,
+   "format": "iwd"
+  },
+  "wc/me_decal_cargocontainernumbers_02": {
+   "file": "me_cargocontainer_decalnumbers02_col.webp",
+   "width": 32,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_cargocontainernumbers_05": {
+   "file": "me_cargocontainer_decalnumbers05_col.webp",
+   "width": 32,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/me_decal_darkstain_04": {
+   "file": "me_decal_darkstain_06.webp",
+   "width": 256,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_cargocontainernumbers_04": {
+   "file": "me_cargocontainer_decalnumbers04_col.webp",
+   "width": 32,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/me_decal_cargocontainertext_03": {
+   "file": "me_cargocontainer_decal_text03_col.webp",
+   "width": 64,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/mil_decal_number1": {
+   "file": "decal_number1_col.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/mil_decal_number2": {
+   "file": "decal_number2_col.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/mil_decal_number3": {
+   "file": "decal_number3_col.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/mil_decal_number4": {
+   "file": "decal_number4_col.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/mil_decal_number5": {
+   "file": "decal_number5_col.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/mil_decal_number6": {
+   "file": "decal_number6_col.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/mil_decal_numberblack4": {
+   "file": "decal_number4_col.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/ch_bulletinboardpaperdecals_2": {
+   "file": "ch_bulletinboardpaperdecals_2_col.webp",
+   "width": 512,
+   "height": 512,
+   "format": "iwd"
+  },
+  "wc/icbm_decal_ak47poster": {
+   "file": "icbm_decal_ak47poster.webp",
+   "width": 512,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/mil_decal_numberblack1": {
+   "file": "decal_number1_col.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  },
+  "wc/mil_decal_numberblack3": {
+   "file": "decal_number3_col.webp",
+   "width": 128,
+   "height": 256,
+   "format": "iwd"
+  }
+ },
+ "missing": []
+}

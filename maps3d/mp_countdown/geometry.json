@@ -1,0 +1,1432 @@
+{
+ "format": "dm1-geometry-1",
+ "source": "mp_countdown.ff",
+ "note": "The compiled render world from the game's fastfile. Activision's geometry.",
+ "uvSpace": "normalized",
+ "counts": {
+  "vertices": 250968,
+  "indices": 559029
+ },
+ "layout": [
+  {
+   "name": "position",
+   "type": "Float32",
+   "components": 3,
+   "byteOffset": 0,
+   "byteLength": 3011616
+  },
+  {
+   "name": "normal",
+   "type": "Int8",
+   "components": 3,
+   "byteOffset": 3011616,
+   "byteLength": 752904,
+   "normalized": true
+  },
+  {
+   "name": "uv",
+   "type": "Float32",
+   "components": 2,
+   "byteOffset": 3764520,
+   "byteLength": 2007744
+  },
+  {
+   "name": "uv1",
+   "type": "Float32",
+   "components": 2,
+   "byteOffset": 5772264,
+   "byteLength": 2007744
+  },
+  {
+   "name": "index",
+   "type": "Uint32",
+   "components": 1,
+   "byteOffset": 7780008,
+   "byteLength": 2236116
+  }
+ ],
+ "bounds": {
+  "minX": -15465.6171875,
+  "minY": -11569.951171875,
+  "minZ": -1630,
+  "maxX": 14688.564453125,
+  "maxY": 30440.626953125,
+  "maxZ": 4133
+ },
+ "ranges": [
+  {
+   "material": "wc/me_cargocontainer_interiorfloor",
+   "start": 0,
+   "count": 63255,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_trim_metal_01",
+   "start": 63255,
+   "count": 42135,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_metal_rust_02",
+   "start": 105390,
+   "count": 35523,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_interiorwall_flat",
+   "start": 140913,
+   "count": 33252,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_metal_rust_03",
+   "start": 174165,
+   "count": 25698,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_concretewall02",
+   "start": 199863,
+   "count": 23169,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_concretewall06",
+   "start": 223032,
+   "count": 15831,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_i_beam",
+   "start": 238863,
+   "count": 13947,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_trim_stainlessteel_1",
+   "start": 252810,
+   "count": 13080,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_cliff02",
+   "start": 265890,
+   "count": 12390,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_trimwide",
+   "start": 278280,
+   "count": 11079,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_trim_metal_conduit",
+   "start": 289359,
+   "count": 10836,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_woodboard_03",
+   "start": 300195,
+   "count": 10656,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_wire_black",
+   "start": 310851,
+   "count": 9690,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_trimwide",
+   "start": 320541,
+   "count": 8403,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/mtl_ch_crates",
+   "start": 328944,
+   "count": 8028,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_ground_drygrass",
+   "start": 336972,
+   "count": 7557,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_woodboard_02",
+   "start": 344529,
+   "count": 6372,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ship_inside_wall",
+   "start": 350901,
+   "count": 6249,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_sidewalk_curb_whiteorange",
+   "start": 357150,
+   "count": 5925,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_corrugated_02",
+   "start": 363075,
+   "count": 5748,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_concrete_04",
+   "start": 368823,
+   "count": 4794,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_mud_01",
+   "start": 373617,
+   "count": 4374,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_factory_rustybeam2",
+   "start": 377991,
+   "count": 4317,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_brick_wall_05",
+   "start": 382308,
+   "count": 3366,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_trimtall",
+   "start": 385674,
+   "count": 2934,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_ext_wall",
+   "start": 388608,
+   "count": 2742,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainer_top",
+   "start": 391350,
+   "count": 2646,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_woodwall01",
+   "start": 393996,
+   "count": 2529,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_concrete_05",
+   "start": 396525,
+   "count": 2262,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_ground_gravel02",
+   "start": 398787,
+   "count": 2160,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_asphalt_chunky",
+   "start": 400947,
+   "count": 2136,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_wallwhiteblue01",
+   "start": 403083,
+   "count": 2136,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_concrete_strips01",
+   "start": 405219,
+   "count": 2127,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_plasterwall_long",
+   "start": 407346,
+   "count": 1983,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exttrimtall",
+   "start": 409329,
+   "count": 1980,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_trim_metal_conduit",
+   "start": 411309,
+   "count": 1800,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainer_exttrimtall_snow",
+   "start": 413109,
+   "count": 1704,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/rangetarget",
+   "start": 414813,
+   "count": 1536,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_metal_rust_02",
+   "start": 416349,
+   "count": 1506,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_trimcorner1",
+   "start": 417855,
+   "count": 1458,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_trimwide_snow",
+   "start": 419313,
+   "count": 1380,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_concretewall07",
+   "start": 420693,
+   "count": 1335,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_concretewall04",
+   "start": 422028,
+   "count": 1290,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_trimtall",
+   "start": 423318,
+   "count": 1200,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_trimtall",
+   "start": 424518,
+   "count": 1182,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exttrimcorner01",
+   "start": 425700,
+   "count": 1179,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_door_rollup1",
+   "start": 426879,
+   "count": 1176,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_sidewalk_curb",
+   "start": 428055,
+   "count": 1164,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_window_01b",
+   "start": 429219,
+   "count": 1152,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_ext_door",
+   "start": 430371,
+   "count": 1086,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_roof",
+   "start": 431457,
+   "count": 1026,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainergreen_trimwide",
+   "start": 432483,
+   "count": 1008,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_ground_mud03",
+   "start": 433491,
+   "count": 978,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/jeepride_rockwall_01",
+   "start": 434469,
+   "count": 969,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_concretewall08",
+   "start": 435438,
+   "count": 918,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_ground_gravel01",
+   "start": 436356,
+   "count": 915,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exteriorwall_snow",
+   "start": 437271,
+   "count": 900,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_trimcorner2",
+   "start": 438171,
+   "count": 822,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainergreen_extwall_snow",
+   "start": 438993,
+   "count": 774,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_brick_wall_04",
+   "start": 439767,
+   "count": 714,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_trim_stone01",
+   "start": 440481,
+   "count": 672,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_trim_metal_01",
+   "start": 441153,
+   "count": 600,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ship_outside_wall",
+   "start": 441753,
+   "count": 576,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_factory_diamondplate2",
+   "start": 442329,
+   "count": 540,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ship_body_wall",
+   "start": 442869,
+   "count": 540,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exteriorwall",
+   "start": 443409,
+   "count": 477,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainerblue_trimtall",
+   "start": 443886,
+   "count": 468,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ship_body_wall",
+   "start": 444354,
+   "count": 468,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_trim_stainlessteel_1",
+   "start": 444822,
+   "count": 468,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainerblue_ext_wall",
+   "start": 445290,
+   "count": 426,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_window_greendirty",
+   "start": 445716,
+   "count": 414,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainer_exttrimcorner1_snow",
+   "start": 446130,
+   "count": 408,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_rubble01",
+   "start": 446538,
+   "count": 378,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_ext_wall",
+   "start": 446916,
+   "count": 372,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_metal_grey_01",
+   "start": 447288,
+   "count": 336,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/icbm_rollupdoor",
+   "start": 447624,
+   "count": 330,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainergreen_ext_wall",
+   "start": 447954,
+   "count": 312,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_roof",
+   "start": 448266,
+   "count": 303,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_ext_door_snow",
+   "start": 448569,
+   "count": 300,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exttrimwide",
+   "start": 448869,
+   "count": 294,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_trimtall_snow",
+   "start": 449163,
+   "count": 288,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_ext_wall",
+   "start": 449451,
+   "count": 285,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_concretewall13",
+   "start": 449736,
+   "count": 279,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exttrimcorner2_snow",
+   "start": 450015,
+   "count": 264,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainer_exteriordoor",
+   "start": 450279,
+   "count": 201,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_concrete_01",
+   "start": 450480,
+   "count": 195,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerblue_trimcorner1",
+   "start": 450675,
+   "count": 195,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_trimcorner2",
+   "start": 450870,
+   "count": 192,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainerblue_ext_door",
+   "start": 451062,
+   "count": 189,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_concretewall09",
+   "start": 451251,
+   "count": 186,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerblue_trimcorner2",
+   "start": 451437,
+   "count": 180,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_concretewall13",
+   "start": 451617,
+   "count": 174,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_kitchenstainlessteelpanels",
+   "start": 451791,
+   "count": 174,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_brick_wall_03",
+   "start": 451965,
+   "count": 153,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_trimcorner1",
+   "start": 452118,
+   "count": 144,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_ext_door",
+   "start": 452262,
+   "count": 138,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exttrimcorner2_snow",
+   "start": 452400,
+   "count": 120,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_plaster01",
+   "start": 452520,
+   "count": 108,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainerblue_roof",
+   "start": 452628,
+   "count": 108,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_door_13",
+   "start": 452736,
+   "count": 102,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/icbm_metal_vent",
+   "start": 452838,
+   "count": 102,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_ext_door",
+   "start": 452940,
+   "count": 99,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainergreen_roof",
+   "start": 453039,
+   "count": 96,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainer_ext_door_snow",
+   "start": 453135,
+   "count": 96,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainer_exttrimwide_snow",
+   "start": 453231,
+   "count": 72,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_ext_wall",
+   "start": 453303,
+   "count": 66,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_trimcorner1",
+   "start": 453369,
+   "count": 57,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_wallwhiteblue01",
+   "start": 453426,
+   "count": 48,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_concrete_floor01",
+   "start": 453474,
+   "count": 42,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_ext_door",
+   "start": 453516,
+   "count": 42,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_countertop_1",
+   "start": 453558,
+   "count": 36,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_door_rollup1",
+   "start": 453594,
+   "count": 36,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerblue_trimwide",
+   "start": 453630,
+   "count": 36,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_factory_corrugatedsiding2",
+   "start": 453666,
+   "count": 24,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainergreen_ext_door",
+   "start": 453690,
+   "count": 12,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_cargocontainergreen_extdoor_snow",
+   "start": 453702,
+   "count": 6,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_window3x4stone_a",
+   "start": 453708,
+   "count": 6
+  },
+  {
+   "material": "wc/com_streetlines2",
+   "start": 453714,
+   "count": 3420,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_floor_metalgratingparallel",
+   "start": 457134,
+   "count": 774,
+   "alphaTest": true,
+   "twoSided": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_fence_chainlink",
+   "start": 457908,
+   "count": 726,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_fence_chainlink_wire",
+   "start": 458634,
+   "count": 567,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_streetlines1",
+   "start": 459201,
+   "count": 180,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_fence_chainlink",
+   "start": 459381,
+   "count": 66,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_dec_brick_wall_09",
+   "start": 459447,
+   "count": 48,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_papers",
+   "start": 459495,
+   "count": 24,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wall_stain2",
+   "start": 459519,
+   "count": 11337,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_metal_peelingpaint_01",
+   "start": 470856,
+   "count": 10926,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_ground_drygrass_dec",
+   "start": 481782,
+   "count": 6885,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_trim_stainlessteel_1_decal",
+   "start": 488667,
+   "count": 5820,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_burned",
+   "start": 494487,
+   "count": 5370,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_ground_gravel01_decal",
+   "start": 499857,
+   "count": 5136,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_darkstain_01",
+   "start": 504993,
+   "count": 5064,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wall_stain5",
+   "start": 510057,
+   "count": 4320,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_concrete_05_decal",
+   "start": 514377,
+   "count": 4299,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_concrete_riverfloor_seam",
+   "start": 518676,
+   "count": 3393,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_factory_ruststain1",
+   "start": 522069,
+   "count": 2979,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_ground_snow_decal_3",
+   "start": 525048,
+   "count": 2907,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_ground_mud03_decal",
+   "start": 527955,
+   "count": 2853,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_mud_track_01",
+   "start": 530808,
+   "count": 2532,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_ground_snow_decal_1",
+   "start": 533340,
+   "count": 2499,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_dec_darkstain_02",
+   "start": 535839,
+   "count": 2217,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_adobe_top_01",
+   "start": 538056,
+   "count": 2178,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wall_stain3",
+   "start": 540234,
+   "count": 1926,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_craterburn",
+   "start": 542160,
+   "count": 1743,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cracks_01",
+   "start": 543903,
+   "count": 1407,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wall_stain4",
+   "start": 545310,
+   "count": 1398,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_adobe_bottom_01",
+   "start": 546708,
+   "count": 1296,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_dec_darkstain_01",
+   "start": 548004,
+   "count": 1260,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wall_stain3",
+   "start": 549264,
+   "count": 1164,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_decal_wallcorner_01",
+   "start": 550428,
+   "count": 876,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wall_stain2",
+   "start": 551304,
+   "count": 816,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/com_stain_01",
+   "start": 552120,
+   "count": 738,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_ground_gravel02_decal",
+   "start": 552858,
+   "count": 702,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_dec_deadleavespath",
+   "start": 553560,
+   "count": 696,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_window_08",
+   "start": 554256,
+   "count": 684,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_decal_plasterwall_06",
+   "start": 554940,
+   "count": 639,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_bullet_holes02",
+   "start": 555579,
+   "count": 447,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_dec_darkstain_03",
+   "start": 556026,
+   "count": 420,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_oil_leak",
+   "start": 556446,
+   "count": 375,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cargocontainersignage01",
+   "start": 556821,
+   "count": 264,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_dec_concrete02",
+   "start": 557085,
+   "count": 231,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_plasterwall_05",
+   "start": 557316,
+   "count": 159,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/mil_decal_tan_arrow",
+   "start": 557475,
+   "count": 150,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_darkstain_04",
+   "start": 557625,
+   "count": 114,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_oilstain",
+   "start": 557739,
+   "count": 102,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cargocontainertext_02",
+   "start": 557841,
+   "count": 99,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/mil_decal_tan_number1",
+   "start": 557940,
+   "count": 96,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cargocontainernumbers_04",
+   "start": 558036,
+   "count": 87,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_dec_concrete01",
+   "start": 558123,
+   "count": 78,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cargocontainernumbers_04",
+   "start": 558201,
+   "count": 72,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_dec_boldtext01",
+   "start": 558273,
+   "count": 66,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_adobe_top_01",
+   "start": 558339,
+   "count": 60,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_dec_concretewall02",
+   "start": 558399,
+   "count": 57,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cargocontainertext_03",
+   "start": 558456,
+   "count": 54,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_decal_cargocontainersignage01",
+   "start": 558510,
+   "count": 48,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/icbm_decal_peelingpaint",
+   "start": 558558,
+   "count": 39,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_oilspill",
+   "start": 558597,
+   "count": 36,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/icbm_decal_wearprotection",
+   "start": 558633,
+   "count": 36,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/mil_decal_number5",
+   "start": 558669,
+   "count": 30,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/mil_decal_number6",
+   "start": 558699,
+   "count": 30,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/mil_decal_tan_number4",
+   "start": 558729,
+   "count": 30,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/mil_decal_tan_number2",
+   "start": 558759,
+   "count": 24,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/mil_decal_tan_number3",
+   "start": 558783,
+   "count": 24,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cargocontainernumbers_02",
+   "start": 558807,
+   "count": 24,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_decal_cargocontainernumbers_03",
+   "start": 558831,
+   "count": 24,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cargocontainertext_01",
+   "start": 558855,
+   "count": 24,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/mil_decal_number3",
+   "start": 558879,
+   "count": 24,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/mil_decal_number4",
+   "start": 558903,
+   "count": 24,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_wallcorner_01",
+   "start": 558927,
+   "count": 18,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/mil_decal_number2",
+   "start": 558945,
+   "count": 12,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_darkstain_04",
+   "start": 558957,
+   "count": 12,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_decal_cargocontainernumbers_05",
+   "start": 558969,
+   "count": 12,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_decal_cargocontainertext_05",
+   "start": 558981,
+   "count": 12,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/mil_decal_tan_number2",
+   "start": 558993,
+   "count": 12,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_manhole",
+   "start": 559005,
+   "count": 6,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/icbm_decal_instructions",
+   "start": 559011,
+   "count": 6,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/mil_decal_tan_number6",
+   "start": 559017,
+   "count": 6,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/icbm_decal_slogan2",
+   "start": 559023,
+   "count": 6,
+   "blend": true,
+   "lightmap": 0
+  }
+ ],
+ "sky": {
+  "source": "sp_launchfacility_a_ft",
+  "faces": [
+   "textures/sky_0.webp",
+   "textures/sky_1.webp",
+   "textures/sky_2.webp",
+   "textures/sky_3.webp",
+   "textures/sky_4.webp",
+   "textures/sky_5.webp"
+  ],
+  "horizon": "#574647",
+  "size": 1024
+ },
+ "lightmaps": [
+  "textures/lightmap0.webp",
+  "textures/lightmap1.webp"
+ ],
+ "sun": {
+  "name": "",
+  "ambientScale": 0.200000003,
+  "ambientColor": [
+   0.0199999996,
+   0.0199999996,
+   0.0500000007
+  ],
+  "diffuseFraction": 0.200000003,
+  "sunLight": 1.5,
+  "sunColor": [
+   1,
+   0.800000012,
+   0.600000024
+  ],
+  "diffuseColor": [
+   0.717647016,
+   0.776471019,
+   1
+  ],
+  "angles": [
+   -30,
+   0,
+   0
+  ],
+  "colorFromBsp": [
+   0,
+   0,
+   0
+  ]
+ },
+ "stats": {
+  "surfaces": 6457,
+  "materials": 199,
+  "triangles": 186343,
+  "staticModels": 1569
+ }
+}

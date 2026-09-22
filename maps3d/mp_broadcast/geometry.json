@@ -1,0 +1,1347 @@
+{
+ "format": "dm1-geometry-1",
+ "source": "mp_broadcast.ff",
+ "note": "The compiled render world from the game's fastfile. Activision's geometry.",
+ "uvSpace": "normalized",
+ "counts": {
+  "vertices": 174319,
+  "indices": 362220
+ },
+ "layout": [
+  {
+   "name": "position",
+   "type": "Float32",
+   "components": 3,
+   "byteOffset": 0,
+   "byteLength": 2091828
+  },
+  {
+   "name": "normal",
+   "type": "Int8",
+   "components": 3,
+   "byteOffset": 2091828,
+   "byteLength": 522957,
+   "normalized": true
+  },
+  {
+   "name": "uv",
+   "type": "Float32",
+   "components": 2,
+   "byteOffset": 2614788,
+   "byteLength": 1394552
+  },
+  {
+   "name": "uv1",
+   "type": "Float32",
+   "components": 2,
+   "byteOffset": 4009340,
+   "byteLength": 1394552
+  },
+  {
+   "name": "index",
+   "type": "Uint32",
+   "components": 1,
+   "byteOffset": 5403892,
+   "byteLength": 1448880
+  }
+ ],
+ "bounds": {
+  "minX": -11392,
+  "minY": -7936,
+  "minZ": -783,
+  "maxX": 18803.234375,
+  "maxY": 18314.39453125,
+  "maxZ": 2036.5
+ },
+ "ranges": [
+  {
+   "material": "wc/me_wall_metalpanels_1",
+   "start": 0,
+   "count": 46740,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_trim_stainlessteel_1",
+   "start": 46740,
+   "count": 46260,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/office_whitewall_01",
+   "start": 93000,
+   "count": 33573,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/office_floortrim_black",
+   "start": 126573,
+   "count": 17259,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_woodbeam_01",
+   "start": 143832,
+   "count": 17007,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_ceiling_tiles",
+   "start": 160839,
+   "count": 13512,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_woodplanks01",
+   "start": 174351,
+   "count": 11592,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_floor_concrete",
+   "start": 185943,
+   "count": 11097,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_plaster_02",
+   "start": 197040,
+   "count": 8823,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cinderblock_wall2",
+   "start": 205863,
+   "count": 8457,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_metal_rust_02",
+   "start": 214320,
+   "count": 7866,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_wall_floor_destroyed",
+   "start": 222186,
+   "count": 6006,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_ground_dirt02",
+   "start": 228192,
+   "count": 5583,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_corrugated_metal01",
+   "start": 233775,
+   "count": 4884,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ap_wood_tile_brown",
+   "start": 238659,
+   "count": 4623,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/office_tanwall_01",
+   "start": 243282,
+   "count": 3837,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ap_chrome",
+   "start": 247119,
+   "count": 3810,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_asphalt_road1",
+   "start": 250929,
+   "count": 3780,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_factory_rustybeam3",
+   "start": 254709,
+   "count": 3774,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_plaster_03",
+   "start": 258483,
+   "count": 3597,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_brickwall_01",
+   "start": 262080,
+   "count": 2967,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_asphalt_01",
+   "start": 265047,
+   "count": 2571,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_plaster_01",
+   "start": 267618,
+   "count": 2280,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_black",
+   "start": 269898,
+   "count": 2106,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_woodbeam_end_01",
+   "start": 272004,
+   "count": 1953,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_stone_road01",
+   "start": 273957,
+   "count": 1911,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_brick_01",
+   "start": 275868,
+   "count": 1896,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_factory_diamondplate_step",
+   "start": 277764,
+   "count": 1713,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_office_ceiling_tiles_black",
+   "start": 279477,
+   "count": 1629,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_carpet01",
+   "start": 281106,
+   "count": 1314,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/office_carpet_02",
+   "start": 282420,
+   "count": 1203,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_tile_floor02",
+   "start": 283623,
+   "count": 993,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_plasterwall_long",
+   "start": 284616,
+   "count": 981,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_plaster_white",
+   "start": 285597,
+   "count": 942,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_floorsmoothconcrete",
+   "start": 286539,
+   "count": 909,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cinderblock_wall2_top",
+   "start": 287448,
+   "count": 768,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/office_redwall_01",
+   "start": 288216,
+   "count": 696,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_desktop_granite",
+   "start": 288912,
+   "count": 585,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_tile_floor05",
+   "start": 289497,
+   "count": 579,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_wall_burntwood_03",
+   "start": 290076,
+   "count": 570,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_ground_gravel02",
+   "start": 290646,
+   "count": 537,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_floor_02",
+   "start": 291183,
+   "count": 483,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_wallpaper_6",
+   "start": 291666,
+   "count": 483,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/kitchen_cabinet_counter",
+   "start": 292149,
+   "count": 441,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_pinewood",
+   "start": 292590,
+   "count": 417,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_roof_01",
+   "start": 293007,
+   "count": 402,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_wallpaper_5",
+   "start": 293409,
+   "count": 351,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_white_door_1",
+   "start": 293760,
+   "count": 342,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/office_tilefloor",
+   "start": 294102,
+   "count": 339,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_window_04",
+   "start": 294441,
+   "count": 336,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ap_chrome",
+   "start": 294777,
+   "count": 330,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_sidewalk_curb_yellow",
+   "start": 295107,
+   "count": 312,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_plaster_stripes",
+   "start": 295419,
+   "count": 267,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_woodboard_01",
+   "start": 295686,
+   "count": 264,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_sidewalk_dogbone",
+   "start": 295950,
+   "count": 261,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/kitchen_cabinet_01",
+   "start": 296211,
+   "count": 255,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_soundprooffoamwall",
+   "start": 296466,
+   "count": 228,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/office_carpet_01_pea",
+   "start": 296694,
+   "count": 225,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/office_greenwall_01",
+   "start": 296919,
+   "count": 213,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_grass_02",
+   "start": 297132,
+   "count": 210,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_concrete_dest1",
+   "start": 297342,
+   "count": 189,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_door_14",
+   "start": 297531,
+   "count": 162,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ap_interior_standard_door",
+   "start": 297693,
+   "count": 162,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_trim_metalplate_1",
+   "start": 297855,
+   "count": 153,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_door_rollup1",
+   "start": 298008,
+   "count": 141,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_trim_stone01",
+   "start": 298149,
+   "count": 129,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_stonewall_01",
+   "start": 298278,
+   "count": 81,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ap_glass_sanded_opaque",
+   "start": 298359,
+   "count": 72,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_window_03",
+   "start": 298431,
+   "count": 72,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_window_06",
+   "start": 298503,
+   "count": 66,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_door_02",
+   "start": 298569,
+   "count": 60,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_window_shutters_01",
+   "start": 298629,
+   "count": 60,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_window_shutters_01",
+   "start": 298689,
+   "count": 54,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/com_black",
+   "start": 298743,
+   "count": 54,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_door_06",
+   "start": 298797,
+   "count": 48,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_window_04",
+   "start": 298845,
+   "count": 48,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/kitchen_cabinet_01",
+   "start": 298893,
+   "count": 42,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_soundprooffoamwall",
+   "start": 298935,
+   "count": 42,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_door_rollup1",
+   "start": 298977,
+   "count": 36,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_factory_diamondplate_step",
+   "start": 299013,
+   "count": 27,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cubewall",
+   "start": 299040,
+   "count": 24,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_window_05",
+   "start": 299064,
+   "count": 24,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_floor_shinyblack",
+   "start": 299088,
+   "count": 24,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_desktop_granite",
+   "start": 299112,
+   "count": 24,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ap_interior_standard_door",
+   "start": 299136,
+   "count": 18,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_aljazeera_worldmap",
+   "start": 299154,
+   "count": 12,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_window_05",
+   "start": 299166,
+   "count": 12,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/kitchen_cabinet_02",
+   "start": 299178,
+   "count": 12,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_screenprojectionmap",
+   "start": 299190,
+   "count": 9
+  },
+  {
+   "material": "wc/me_bluescreen",
+   "start": 299199,
+   "count": 6,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_ceiling_light_1_off",
+   "start": 299205,
+   "count": 2025,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_papers",
+   "start": 301230,
+   "count": 1770,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_fence_chainlink",
+   "start": 303000,
+   "count": 855,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_office_ceiling_light_1_on",
+   "start": 303855,
+   "count": 570,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_light_switch_socket_01",
+   "start": 304425,
+   "count": 492,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_papers",
+   "start": 304917,
+   "count": 372,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_fence_chainlink_wire",
+   "start": 305289,
+   "count": 360,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_office_ceiling_vent_1",
+   "start": 305649,
+   "count": 312,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_streetlines2",
+   "start": 305961,
+   "count": 300,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_ceiling_light_1_off",
+   "start": 306261,
+   "count": 198,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_tile_floor05b",
+   "start": 306459,
+   "count": 183,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_curtains_1",
+   "start": 306642,
+   "count": 162,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_office_ceiling_light_1_dark_off",
+   "start": 306804,
+   "count": 150,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_fence_chainlink",
+   "start": 306954,
+   "count": 144,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_ceiling_speaker",
+   "start": 307098,
+   "count": 132,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_ceiling_light_1_on",
+   "start": 307230,
+   "count": 132,
+   "alphaTest": true
+  },
+  {
+   "material": "wc/me_office_ceiling_light_2_off",
+   "start": 307362,
+   "count": 87,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_light_switch_home_02",
+   "start": 307449,
+   "count": 72,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_ceiling_vent_dark_1",
+   "start": 307521,
+   "count": 72,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_factory_floorgrate",
+   "start": 307593,
+   "count": 60,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/com_light_switch_home_01",
+   "start": 307653,
+   "count": 42,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_ceiling_speaker",
+   "start": 307695,
+   "count": 42,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_office_ceiling_vent_2",
+   "start": 307737,
+   "count": 42,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_ceiling_vent_1",
+   "start": 307779,
+   "count": 24,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_curtains_1",
+   "start": 307803,
+   "count": 18,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_ceiling_vent_dark_2",
+   "start": 307821,
+   "count": 18,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/com_light_switch_home_01",
+   "start": 307839,
+   "count": 6,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_office_ceiling_light_2_on",
+   "start": 307845,
+   "count": 6,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_office_ceiling_vent_2",
+   "start": 307851,
+   "count": 6,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_dec_darkstain_01",
+   "start": 307857,
+   "count": 8775,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_adobe_top_01",
+   "start": 316632,
+   "count": 7224,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_stain_01",
+   "start": 323856,
+   "count": 5247,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_ground_dirt02_decal",
+   "start": 329103,
+   "count": 4185,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_darkstain_01",
+   "start": 333288,
+   "count": 3621,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_plaster_01_blend",
+   "start": 336909,
+   "count": 2859,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_adobe_bottom_01",
+   "start": 339768,
+   "count": 2562,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_dec_wall_stain_1",
+   "start": 342330,
+   "count": 2364,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_ground_gravel02_decal",
+   "start": 344694,
+   "count": 2193,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_dec_darkstain_01",
+   "start": 346887,
+   "count": 1416,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_dec_burnt_middle01",
+   "start": 348303,
+   "count": 1356,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ap_glass_sanded",
+   "start": 349659,
+   "count": 1113,
+   "blend": true,
+   "alphaTest": true,
+   "twoSided": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_railingpanelsblueglass",
+   "start": 350772,
+   "count": 1083,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ship_wall_stain5",
+   "start": 351855,
+   "count": 1059,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wall_stain3",
+   "start": 352914,
+   "count": 933,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_trash01",
+   "start": 353847,
+   "count": 810,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_stain_01_tvstation",
+   "start": 354657,
+   "count": 663,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_grass_02_decal",
+   "start": 355320,
+   "count": 645,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_bullet_holes02",
+   "start": 355965,
+   "count": 633,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cracks_01",
+   "start": 356598,
+   "count": 405,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_dec_darkstain_02",
+   "start": 357003,
+   "count": 387,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_darkstain_04",
+   "start": 357390,
+   "count": 387,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_wall_chipped_2",
+   "start": 357777,
+   "count": 369,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_grass_01_decal",
+   "start": 358146,
+   "count": 351,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_stone_road01_blend",
+   "start": 358497,
+   "count": 324,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ap_glass_sanded",
+   "start": 358821,
+   "count": 297,
+   "blend": true,
+   "alphaTest": true,
+   "twoSided": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/crops_1",
+   "start": 359118,
+   "count": 252,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_glass_clear",
+   "start": 359370,
+   "count": 252,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_godray01",
+   "start": 359622,
+   "count": 237,
+   "blend": true,
+   "twoSided": true
+  },
+  {
+   "material": "wc/me_window_08",
+   "start": 359859,
+   "count": 222,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_asphalt_road1_blend",
+   "start": 360081,
+   "count": 204,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wall_stain2",
+   "start": 360285,
+   "count": 195,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_burned",
+   "start": 360480,
+   "count": 189,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_dec_bulletinboardpapers",
+   "start": 360669,
+   "count": 168,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ship_wall_stain3_glass",
+   "start": 360837,
+   "count": 144,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/ch_dec_burnt_top01",
+   "start": 360981,
+   "count": 138,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_plaster_03_dec",
+   "start": 361119,
+   "count": 126,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_wall_chipped_3",
+   "start": 361245,
+   "count": 114,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_ground_02",
+   "start": 361359,
+   "count": 93,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_darkstain_02",
+   "start": 361452,
+   "count": 84,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_oilstain",
+   "start": 361536,
+   "count": 84,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_godray01",
+   "start": 361620,
+   "count": 72,
+   "blend": true,
+   "twoSided": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_dec_darkstain_02",
+   "start": 361692,
+   "count": 60,
+   "blend": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_dec_islamic_calender_1",
+   "start": 361752,
+   "count": 54,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_tile_floor05_blend",
+   "start": 361806,
+   "count": 48,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_wallcorner_01",
+   "start": 361854,
+   "count": 42,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_dec_bulletinboardpapers",
+   "start": 361896,
+   "count": 42,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/temp_muddy_water",
+   "start": 361938,
+   "count": 42,
+   "blend": true,
+   "alphaTest": true,
+   "water": true
+  },
+  {
+   "material": "wc/me_asphalt_patch2",
+   "start": 361980,
+   "count": 30,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_darkstain_03",
+   "start": 362010,
+   "count": 30,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_toptrim",
+   "start": 362040,
+   "count": 24,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_plasterwall_01",
+   "start": 362064,
+   "count": 24,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_window_02",
+   "start": 362088,
+   "count": 24,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_wall_chipped_1",
+   "start": 362112,
+   "count": 18,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_plasterwall_05",
+   "start": 362130,
+   "count": 12,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_window_07",
+   "start": 362142,
+   "count": 12,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_poster_deathblow3",
+   "start": 362154,
+   "count": 12,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_poster_unity",
+   "start": 362166,
+   "count": 12,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_glass_clear",
+   "start": 362178,
+   "count": 12,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_wall_chipped_2",
+   "start": 362190,
+   "count": 6,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/me_sign_misc_store",
+   "start": 362196,
+   "count": 6,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_window_01",
+   "start": 362202,
+   "count": 6,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_dec_islamic_calender_1",
+   "start": 362208,
+   "count": 6,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 1
+  },
+  {
+   "material": "wc/com_stain_01_tvstation",
+   "start": 362214,
+   "count": 6,
+   "blend": true,
+   "lightmap": 1
+  }
+ ],
+ "sky": {
+  "source": "mp_broadcast_ft",
+  "faces": [
+   "textures/sky_0.webp",
+   "textures/sky_1.webp",
+   "textures/sky_2.webp",
+   "textures/sky_3.webp",
+   "textures/sky_4.webp",
+   "textures/sky_5.webp"
+  ],
+  "horizon": "#6e5849",
+  "size": 1024
+ },
+ "lightmaps": [
+  "textures/lightmap0.webp",
+  "textures/lightmap1.webp"
+ ],
+ "sun": {
+  "name": "",
+  "ambientScale": 0.0700000003,
+  "ambientColor": [
+   1,
+   0.800000012,
+   0.800000012
+  ],
+  "diffuseFraction": 0.200000003,
+  "sunLight": 1.39999998,
+  "sunColor": [
+   1,
+   0.850000024,
+   0.670000017
+  ],
+  "diffuseColor": [
+   1,
+   0.885057449,
+   0.7471264
+  ],
+  "angles": [
+   -20,
+   -280,
+   0
+  ],
+  "colorFromBsp": [
+   0,
+   0,
+   0
+  ]
+ },
+ "stats": {
+  "surfaces": 4702,
+  "materials": 183,
+  "triangles": 120740,
+  "staticModels": 3473
+ }
+}

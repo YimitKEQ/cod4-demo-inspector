@@ -1,0 +1,699 @@
+{
+ "format": "dm1-geometry-1",
+ "source": "mp_cargoship.ff",
+ "note": "The compiled render world from the game's fastfile. Activision's geometry.",
+ "uvSpace": "normalized",
+ "counts": {
+  "vertices": 194063,
+  "indices": 390261
+ },
+ "layout": [
+  {
+   "name": "position",
+   "type": "Float32",
+   "components": 3,
+   "byteOffset": 0,
+   "byteLength": 2328756
+  },
+  {
+   "name": "normal",
+   "type": "Int8",
+   "components": 3,
+   "byteOffset": 2328756,
+   "byteLength": 582189,
+   "normalized": true
+  },
+  {
+   "name": "uv",
+   "type": "Float32",
+   "components": 2,
+   "byteOffset": 2910948,
+   "byteLength": 1552504
+  },
+  {
+   "name": "uv1",
+   "type": "Float32",
+   "components": 2,
+   "byteOffset": 4463452,
+   "byteLength": 1552504
+  },
+  {
+   "name": "index",
+   "type": "Uint32",
+   "components": 1,
+   "byteOffset": 6015956,
+   "byteLength": 1561044
+  }
+ ],
+ "bounds": {
+  "minX": -9344.001953125,
+  "minY": -7360,
+  "minZ": -704,
+  "maxX": 10240,
+  "maxY": 7360.0009765625,
+  "maxZ": 1800
+ },
+ "ranges": [
+  {
+   "material": "wc/me_cargocontainer_exttrimwide_wet",
+   "start": 0,
+   "count": 41244,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_trim_stainlessteel_1_wet",
+   "start": 41244,
+   "count": 38967,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_i_beam",
+   "start": 80211,
+   "count": 37113,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_trim_metal_01_wet",
+   "start": 117324,
+   "count": 24039,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_trim_metal_conduit_wet",
+   "start": 141363,
+   "count": 21783,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_interiorfloor_wet",
+   "start": 163146,
+   "count": 20622,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainergreen_trimwide_wet",
+   "start": 183768,
+   "count": 19722,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerblue_trimtall_wet",
+   "start": 203490,
+   "count": 13647,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerblue_trimwide_wet",
+   "start": 217137,
+   "count": 9942,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wallmetal_painted_wet01",
+   "start": 227079,
+   "count": 7632,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainergreen_roof_wet",
+   "start": 234711,
+   "count": 7299,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_trim_metal_black1",
+   "start": 242010,
+   "count": 6513,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_outside_wall",
+   "start": 248523,
+   "count": 5808,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_body_wall",
+   "start": 254331,
+   "count": 5427,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_metal_grey_01",
+   "start": 259758,
+   "count": 5373,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_plaster01",
+   "start": 265131,
+   "count": 5169,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_interiorfloor",
+   "start": 270300,
+   "count": 4701,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerblue_roof_wet",
+   "start": 275001,
+   "count": 4671,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainergreen_ext_wall_wet",
+   "start": 279672,
+   "count": 4359,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerblue_ext_wall_wet",
+   "start": 284031,
+   "count": 4134,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_metal_diamondplating",
+   "start": 288165,
+   "count": 4098,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_stairsmetal01",
+   "start": 292263,
+   "count": 4041,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerblue_trimcorner1_wet",
+   "start": 296304,
+   "count": 3432,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_inside_wall",
+   "start": 299736,
+   "count": 2928,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerblue_trimcorner2_wet",
+   "start": 302664,
+   "count": 2913,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exttrimtall_wet",
+   "start": 305577,
+   "count": 2901,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exttrimcorner01_wet",
+   "start": 308478,
+   "count": 2802,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wallmetal_painted01",
+   "start": 311280,
+   "count": 2751,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exteriorwall_wet",
+   "start": 314031,
+   "count": 2436,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_trimcorner1_wet",
+   "start": 316467,
+   "count": 2406,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exttrimcorner02_wet",
+   "start": 318873,
+   "count": 2322,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_top_wet",
+   "start": 321195,
+   "count": 2310,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainergreen_trimcorner1_wet",
+   "start": 323505,
+   "count": 2208,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainergreen_trimcorner2_wet",
+   "start": 325713,
+   "count": 2133,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_blue_tarp",
+   "start": 327846,
+   "count": 2121,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_boxes01",
+   "start": 329967,
+   "count": 1992,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_trimcorner2_wet",
+   "start": 331959,
+   "count": 1989,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_kitchenstainlessteelpanels",
+   "start": 333948,
+   "count": 1770,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_ext_wall_wet",
+   "start": 335718,
+   "count": 1608,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_roof_wet",
+   "start": 337326,
+   "count": 1389,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerblue_ext_door_wet",
+   "start": 338715,
+   "count": 1293,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainergreen_trimtall_wet",
+   "start": 340008,
+   "count": 1197,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_rubbermat01",
+   "start": 341205,
+   "count": 1098,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_exteriordoor_wet",
+   "start": 342303,
+   "count": 1071,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_ext_door_wet",
+   "start": 343374,
+   "count": 1008,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_trimtall_wet",
+   "start": 344382,
+   "count": 984,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_ceiling01",
+   "start": 345366,
+   "count": 711,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainergreen_ext_door_wet",
+   "start": 346077,
+   "count": 690,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_metal_rust_03",
+   "start": 346767,
+   "count": 618,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_ext_door_wet",
+   "start": 347385,
+   "count": 552,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_trimwide_wet",
+   "start": 347937,
+   "count": 519,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ap_tile_kitchen",
+   "start": 348456,
+   "count": 198,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_controlpanel01",
+   "start": 348654,
+   "count": 186,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_roof_flat",
+   "start": 348840,
+   "count": 135,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_interiorwall",
+   "start": 348975,
+   "count": 90,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/water_cargoship_mp",
+   "start": 349065,
+   "count": 60,
+   "water": true
+  },
+  {
+   "material": "wc/me_cargocontainer_usmc_roof_wet",
+   "start": 349125,
+   "count": 48,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainerwhite_ext_door",
+   "start": 349173,
+   "count": 42,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_map01",
+   "start": 349215,
+   "count": 36,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_transceiver01",
+   "start": 349251,
+   "count": 36,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_cargocontainer_interiordoor",
+   "start": 349287,
+   "count": 12,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_fence_chainlink",
+   "start": 349299,
+   "count": 2394,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_windowfence",
+   "start": 351693,
+   "count": 1752,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_cables01",
+   "start": 353445,
+   "count": 99,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_vent01",
+   "start": 353544,
+   "count": 66,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_floor_metalgratingparallel",
+   "start": 353610,
+   "count": 60,
+   "alphaTest": true,
+   "twoSided": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_light_switch_socket_01",
+   "start": 353670,
+   "count": 60,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ap_signage_interior_set_2",
+   "start": 353730,
+   "count": 6,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_adobe_top_01",
+   "start": 353736,
+   "count": 12759,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wall_stain5",
+   "start": 366495,
+   "count": 7116,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_darkstain_05",
+   "start": 373611,
+   "count": 3984,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wall_stain3",
+   "start": 377595,
+   "count": 3417,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_stain_01",
+   "start": 381012,
+   "count": 2967,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_darkstain_04",
+   "start": 383979,
+   "count": 2235,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_cables02",
+   "start": 386214,
+   "count": 957,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_factory_ruststain1",
+   "start": 387171,
+   "count": 927,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ch_godray01",
+   "start": 388098,
+   "count": 450,
+   "blend": true,
+   "twoSided": true
+  },
+  {
+   "material": "wc/ship_wall_stain2",
+   "start": 388548,
+   "count": 396,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cargocontainersignage01",
+   "start": 388944,
+   "count": 324,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_darkstain_02",
+   "start": 389268,
+   "count": 234,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_darkstain_03",
+   "start": 389502,
+   "count": 210,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_cables03",
+   "start": 389712,
+   "count": 183,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/water_cargoship",
+   "start": 389895,
+   "count": 84,
+   "blend": true,
+   "alphaTest": true,
+   "water": true
+  },
+  {
+   "material": "wc/ch_hotspot02",
+   "start": 389979,
+   "count": 78,
+   "blend": true,
+   "twoSided": true
+  },
+  {
+   "material": "wc/me_glassdirt",
+   "start": 390057,
+   "count": 48,
+   "blend": true,
+   "alphaTest": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/ship_wall_stain5",
+   "start": 390105,
+   "count": 42,
+   "blend": true
+  },
+  {
+   "material": "wc/me_decal_cargocontainernumbers_01",
+   "start": 390147,
+   "count": 24,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cargocontainernumbers_04",
+   "start": 390171,
+   "count": 24,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cargocontainertext_03",
+   "start": 390195,
+   "count": 24,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/me_decal_cargocontainertext_05",
+   "start": 390219,
+   "count": 24,
+   "blend": true,
+   "lightmap": 0
+  },
+  {
+   "material": "wc/com_stain_01",
+   "start": 390243,
+   "count": 12,
+   "blend": true
+  },
+  {
+   "material": "wc/ship_wall_stain4",
+   "start": 390255,
+   "count": 6,
+   "blend": true,
+   "lightmap": 0
+  }
+ ],
+ "sky": {
+  "source": "sp_cargo_ft",
+  "faces": [
+   "textures/sky_0.webp",
+   "textures/sky_1.webp",
+   "textures/sky_2.webp",
+   "textures/sky_3.webp",
+   "textures/sky_4.webp",
+   "textures/sky_5.webp"
+  ],
+  "horizon": "#060c16",
+  "size": 1024
+ },
+ "lightmaps": [
+  "textures/lightmap0.webp"
+ ],
+ "sun": {
+  "name": "",
+  "ambientScale": 0.100000001,
+  "ambientColor": [
+   0.5,
+   0.5,
+   0.699999988
+  ],
+  "diffuseFraction": 0.150000006,
+  "sunLight": 1.29999995,
+  "sunColor": [
+   0.5,
+   0.600000024,
+   1
+  ],
+  "diffuseColor": [
+   0.714285731,
+   0.714285731,
+   1
+  ],
+  "angles": [
+   -25,
+   315,
+   0
+  ],
+  "colorFromBsp": [
+   0,
+   0,
+   0
+  ]
+ },
+ "stats": {
+  "surfaces": 5284,
+  "materials": 92,
+  "triangles": 130087,
+  "staticModels": 1669
+ }
+}
