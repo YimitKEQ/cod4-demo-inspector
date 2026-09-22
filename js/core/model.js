@@ -55,7 +55,13 @@ function protocolLabel(protocol){
 
 /** Binary search: index of the last sample at or before t (seconds). */
 function sampleIndexAt(track, t){
-  const ts = t * 100;
+  /* Track timestamps are whole hundredths of a second, and t is seconds, so
+     t * 100 lands just under an exact sample: 130.2 * 100 is
+     13019.999999999998 in binary floating point, which makes a query at a
+     sample's own time miss that sample and return the one before it. An
+     epsilon far smaller than a hundredth of a second closes the gap without
+     reaching any neighbouring sample. */
+  const ts = t * 100 + 1e-6;
   let lo = 0, hi = track.length - 1, best = -1;
   while (lo <= hi) {
     const mid = (lo + hi) >> 1;

@@ -467,3 +467,16 @@ describe("model: round rosters trust evidence over connect messages", () => {
     assert.equal(h2.tags.indexOf("Ace"), -1, "a teammate took the third, so not an ace");
   });
 });
+
+describe("model: sampling on exact sample times", () => {
+  it("finds a sample when asked for its own timestamp", () => {
+    /* 130.2 * 100 is 13019.999999999998 in binary floating point, so a naive
+       query at a sample's own time returned the sample before it. That made a
+       grenade thrown at exactly that instant look like nobody was near it. */
+    const track = [[13000, 1, 1, 1, 0, 1], [13020, 2, 2, 2, 0, 1], [13100, 3, 3, 3, 0, 1]];
+    assert.equal(MODEL.sampleIndexAt(track, 130.2), 1, "130.20 s is the second sample");
+    assert.equal(MODEL.sampleIndexAt(track, 130.0), 0);
+    assert.equal(MODEL.sampleIndexAt(track, 131.0), 2);
+    assert.equal(MODEL.sampleIndexAt(track, 130.19), 0, "just before it is still the first");
+  });
+});

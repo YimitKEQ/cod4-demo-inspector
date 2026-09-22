@@ -398,6 +398,85 @@ function createViewport(container, state){
     }
   }
 
+  /**
+   * The pattern picked in the coach panel, drawn over the map.
+   *
+   * A lineup shows every one of its throws at once, so a repeated smoke reads
+   * as a bundle of arcs converging on one spot. A route cluster shows the
+   * lines a player actually took. This is the difference between being told a
+   * number and seeing the habit.
+   */
+  function drawOverlay(){
+    const lineup = state.selectedLineup;
+    const routes = state.selectedRoutes;
+    if (!lineup && !routes) return;
+    g.lineCap = "round";
+    g.lineJoin = "round";
+
+    if (lineup) {
+      const uses = state.analysis.throws.filter(t =>
+        t.kind === lineup.kind && t.thrower !== null &&
+        lineup.throwers.some(x => x.client === t.thrower) &&
+        Math.hypot(t.impact[0] - lineup.impact[0], t.impact[1] - lineup.impact[1])
+          <= state.analysis.cfg.lineupImpactTol);
+
+      for (const u of uses) {
+        g.strokeStyle = theme("--grease");
+        g.globalAlpha = 0.30;
+        g.lineWidth = 2 * dpr;
+        g.beginPath();
+        let first = true;
+        for (const pt of u.path) {
+          const x = px(pt[1]), y = py(pt[2]);
+          if (first) { g.moveTo(x, y); first = false; } else g.lineTo(x, y);
+        }
+        g.stroke();
+        g.globalAlpha = 0.55;
+        g.beginPath();
+        g.arc(px(u.impact[0]), py(u.impact[1]), 3.5 * dpr, 0, Math.PI * 2);
+        g.fillStyle = theme("--grease");
+        g.fill();
+      }
+
+      /* The cluster centre, drawn heavier than its members. */
+      g.globalAlpha = 1;
+      g.strokeStyle = theme("--grease");
+      g.lineWidth = 2.6 * dpr;
+      g.setLineDash([6 * dpr, 5 * dpr]);
+      g.beginPath();
+      g.moveTo(px(lineup.origin[0]), py(lineup.origin[1]));
+      g.lineTo(px(lineup.impact[0]), py(lineup.impact[1]));
+      g.stroke();
+      g.setLineDash([]);
+      for (const [pt, r] of [[lineup.origin, 7], [lineup.impact, 11]]) {
+        g.beginPath();
+        g.arc(px(pt[0]), py(pt[1]), r * dpr, 0, Math.PI * 2);
+        g.stroke();
+      }
+      g.globalAlpha = 1;
+      return;
+    }
+
+    for (let i = 0; i < routes.clusters.length; i++) {
+      const c = routes.clusters[i];
+      g.strokeStyle = i === 0 ? theme("--grease") : theme("--bone-mute");
+      g.globalAlpha = i === 0 ? 0.9 : 0.45;
+      g.lineWidth = (i === 0 ? 3.2 : 2) * dpr;
+      g.beginPath();
+      c.path.forEach((pt, j) => {
+        const x = px(pt[0]), y = py(pt[1]);
+        if (j === 0) g.moveTo(x, y); else g.lineTo(x, y);
+      });
+      g.stroke();
+      const end = c.path[c.path.length - 1];
+      g.beginPath();
+      g.arc(px(end[0]), py(end[1]), 5 * dpr, 0, Math.PI * 2);
+      g.fillStyle = g.strokeStyle;
+      g.fill();
+      g.globalAlpha = 1;
+    }
+  }
+
   /* ---- public draw ---- */
 
   function draw(){
@@ -412,6 +491,7 @@ function createViewport(container, state){
     if (state.view.grenades) drawGrenades(t);
     if (state.view.killLines) drawKillLines(t);
     drawPlayers(t);
+    drawOverlay();
   }
 
   /* ---- events ---- */
@@ -429,6 +509,7 @@ function createViewport(container, state){
   state.on("time", draw);
   state.on("selection", draw);
   state.on("view", draw);
+  state.on("overlay", draw);
 
   /* Clicking a player follows them. */
   cv.addEventListener("click", ev => {

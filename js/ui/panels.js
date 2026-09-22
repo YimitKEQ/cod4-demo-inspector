@@ -191,6 +191,7 @@ function demoPanel(state){
 }
 
 const PANELS = {
+  coach: state => root.DM1_COACH.coachPanel(state),
   players: playersPanel,
   rounds: roundsPanel,
   chat: chatPanel,

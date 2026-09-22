@@ -75,6 +75,7 @@ function buildMatch(spec){
   const ROUND_LEN = 105;     // a full S&D round
 
   const kills = [];
+  const grenades = [];
   const rounds = [];
   const tracks = {};
   const wins = {}; for (const t of teamNames) wins[t] = 0;
@@ -139,6 +140,36 @@ function buildMatch(spec){
       };
       kills.push(rec);
       timeline.push(Object.assign({ tS, kind: "kill" }, rec));
+    }
+
+    /* Grenades. A throw is { t, by, kind, from, to } where from and to are
+       [x, y, z] in world units. The thrower is placed at the origin at the
+       throw instant so the attribution in analysis.js has something to find,
+       which is exactly how a real demo behaves. */
+    for (const nade of (rspec.nades || [])) {
+      const tS = +(startS + nade.t).toFixed(2);
+      const cl = clientOf.get(nade.by);
+      if (cl === undefined) throw new Error("unknown thrower " + nade.by);
+      const from = nade.from, to = nade.to;
+      pushSample(cl, tS, from[0], from[1], from[2], 0, 1);
+      const path = [];
+      const STEPS = 8;
+      for (let i = 0; i <= STEPS; i++) {
+        const f = i / STEPS;
+        path.push([Math.round((tS + f * 1.2) * 100),
+                   Math.round(from[0] + (to[0] - from[0]) * f),
+                   Math.round(from[1] + (to[1] - from[1]) * f),
+                   Math.round(from[2] + (to[2] - from[2]) * f + Math.sin(f * Math.PI) * 120)]);
+      }
+      grenades.push({
+        kind: nade.kind || "frag",
+        weapon: (nade.kind || "frag") === "smoke" ? "Smoke Grenade"
+              : (nade.kind || "frag") === "flash" ? "Flashbang" : "Frag Grenade",
+        path,
+        impact: [Math.round(to[0]), Math.round(to[1]), Math.round(to[2])],
+        impactS: Math.round((tS + 1.2) * 100),
+        predicted: !!nade.predicted
+      });
     }
 
     for (const b of (rspec.bomb || [])) {
@@ -209,7 +240,7 @@ function buildMatch(spec){
     map: {
       compass: "compass_map_" + (spec.map || "mp_crash"),
       bounds: [-2000, -2000, 4000, 4000],
-      center: "", tracks, weapons: WEAPONS.map(prettyWeapon), grenades: []
+      center: "", tracks, weapons: WEAPONS.map(prettyWeapon), grenades
     }
   };
 }
@@ -235,9 +266,12 @@ function referenceMatch(){
         { t: 12.0, killer: "Levitate", victim: "Rikko", weapon: "ak47", dist: 9 },
         { t: 12.9, killer: "Levitate", victim: "Sander", weapon: "ak47", dist: 16 },
         { t: 40.0, killer: "Kees", victim: "Joop", weapon: "m4", dist: 20 }
+      ], nades: [
+        { t: 3.0, by: "Lodie", kind: "smoke", from: [200, 200, 100], to: [1400, 900, 100] },
+        { t: 20.0, by: "Vex", kind: "frag", from: [600, 100, 100], to: [900, 500, 100] }
       ] },
       // Round 2: Yimmy trades two early, then loses four, and Kees takes the
-      // 1v3 and wins it.
+      // 1v3 and wins it. Lodie throws the team's standard smoke.
       { winner: "Yimmy", reason: "Rivals eliminated", kills: [
         { t: 3.0, killer: "Levitate", victim: "Sander", weapon: "ak47", dist: 17 },
         { t: 4.0, killer: "Vex", victim: "Joop", weapon: "m4", dist: 21 },
@@ -248,6 +282,9 @@ function referenceMatch(){
         { t: 30.0, killer: "Kees", victim: "Tamas", weapon: "m4", dist: 15 },
         { t: 34.0, killer: "Kees", victim: "Bruno", weapon: "m4", dist: 19 },
         { t: 41.0, killer: "Kees", victim: "Rikko", weapon: "m4", dist: 24 }
+      ], nades: [
+        { t: 3.2, by: "Lodie", kind: "smoke", from: [210, 190, 100], to: [1410, 880, 100] },
+        { t: 25.0, by: "Vex", kind: "frag", from: [-800, -900, 100], to: [-400, -500, 100] }
       ] },
       // Round 3: a trade, a long range M40A3 kill and a headshot run start.
       { winner: "Rivals", reason: "Yimmy eliminated", kills: [
@@ -257,6 +294,8 @@ function referenceMatch(){
         { t: 30.0, killer: "Rikko", victim: "Levitate", headshot: true, dist: 17 },
         { t: 35.0, killer: "Rikko", victim: "Vex", headshot: true, dist: 21 },
         { t: 44.0, killer: "Rikko", victim: "Nord", headshot: true, dist: 12 }
+      ], nades: [
+        { t: 2.8, by: "Lodie", kind: "smoke", from: [195, 205, 100], to: [1395, 915, 100] }
       ] },
       // Round 4: a collateral, then a ninja defuse with enemies still alive.
       { winner: "Yimmy", reason: "Bomb defused", kills: [
@@ -267,6 +306,8 @@ function referenceMatch(){
       ], bomb: [
         { t: 35.0, action: "Bomb planted", player: "Rikko" },
         { t: 70.0, action: "Bomb defused", player: "Lodie" }
+      ], nades: [
+        { t: 3.1, by: "Lodie", kind: "smoke", from: [205, 195, 100], to: [1405, 890, 100] }
       ] },
       // Round 5: the bomb actually goes off, which is the only thing that
       // makes its timer measurable. Two defenders stay alive so the round

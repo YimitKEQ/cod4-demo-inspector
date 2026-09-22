@@ -471,6 +471,68 @@ function createViewport3D(container, state){
     gHeat.add(inst);
   }
 
+  /* ---- the pattern picked in the coach panel ---- */
+
+  const gOverlay = new THREE.Group();
+  scene.add(gOverlay);
+
+  function buildOverlay(){
+    clearGroup(gOverlay);
+    const lineup = state.selectedLineup;
+    const routes = state.selectedRoutes;
+    if (!state.analysis) return;
+
+    if (lineup) {
+      /* Every throw in the cluster at once: a practised smoke reads as a
+         bundle of arcs landing on the same spot. */
+      const tol = state.analysis.cfg.lineupImpactTol;
+      const uses = state.analysis.throws.filter(t =>
+        t.kind === lineup.kind && t.thrower !== null &&
+        lineup.throwers.some(x => x.client === t.thrower) &&
+        Math.hypot(t.impact[0] - lineup.impact[0], t.impact[1] - lineup.impact[1]) <= tol);
+      for (const u of uses) {
+        const pts = u.path.map(pt => V(pt[1], pt[2], pt[3]));
+        if (pts.length < 2) continue;
+        gOverlay.add(new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints(pts),
+          new THREE.LineBasicMaterial({ color: COL.grease, transparent: true,
+                                        opacity: 0.45 })));
+        const dot = new THREE.Mesh(
+          new THREE.SphereGeometry(9, 8, 6),
+          new THREE.MeshBasicMaterial({ color: COL.grease, transparent: true,
+                                        opacity: 0.8, depthWrite: false }));
+        dot.position.copy(V(u.impact[0], u.impact[1], u.impact[2]));
+        gOverlay.add(dot);
+      }
+      /* The landing zone as a ring on the ground. */
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(tol * 0.6, 4, 8, 32),
+        new THREE.MeshBasicMaterial({ color: COL.grease, transparent: true,
+                                      opacity: 0.55, depthWrite: false }));
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.copy(V(lineup.impact[0], lineup.impact[1], lineup.impact[2] + 4));
+      gOverlay.add(ring);
+      return;
+    }
+
+    if (routes) {
+      routes.clusters.forEach((c, i) => {
+        const pts = c.path.map(pt => {
+          const z = occupancy ? MAPMESH.floorAt(occupancy, pt[0], pt[1]) : null;
+          return V(pt[0], pt[1], (z === null ? 0 : z) + 30);
+        });
+        if (pts.length < 2) return;
+        gOverlay.add(new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints(pts),
+          new THREE.LineBasicMaterial({
+            color: i === 0 ? COL.grease : 0x9AA79A,
+            transparent: true, opacity: i === 0 ? 0.95 : 0.5 })));
+      });
+    }
+  }
+
+  state.on("overlay", buildOverlay);
+
   /* ---- loop ---- */
 
   let running = false, raf = null;
@@ -515,6 +577,7 @@ function createViewport3D(container, state){
       buildPlayers();
       heatBuilt = false;
       cameras.reset(state.model);
+      buildOverlay();
       ready = true;
     });
   }

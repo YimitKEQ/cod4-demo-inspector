@@ -19,6 +19,7 @@ const VIEWPORT = root.DM1_VIEWPORT;
 const KILLBROWSER = root.DM1_KILLBROWSER;
 const TIMELINE = root.DM1_TIMELINE;
 const PANELS = root.DM1_PANELS;
+const ANALYSIS = root.DM1_ANALYSIS;
 
 const $ = s => document.querySelector(s);
 const el = (tag, cls, txt) => {
@@ -216,7 +217,8 @@ $("#v-record").addEventListener("click", () => {
   $("#v-record").classList.add("on");
 });
 
-const TAB_KEYS = ["highlights", "kills", "players", "rounds", "chat", "events", "demo"];
+const TAB_KEYS = ["highlights", "kills", "coach", "players", "rounds", "chat",
+                  "events", "demo"];
 
 /* ---- loading a demo ---- */
 
@@ -242,8 +244,10 @@ async function loadFile(file){
     const res = analyze(parsed);
     const model = MODEL.buildModel(res);
     const found = HIGHLIGHTS.detect(model);
+    progMsg.textContent = "Analysing " + file.name;
+    const coached = ANALYSIS.analyseMatch(model);
 
-    state.load(model, found, file.name);
+    state.load(model, found, coached, file.name);
     renderHeader();
     renderKillfeed();
     showTab(found.merged.length ? "highlights" : "kills");
@@ -277,7 +281,7 @@ function loadSample(){
   if (!synth) { setError("The sample match is not available in this build."); return; }
   const model = MODEL.buildModel(synth.referenceMatch());
   const found = HIGHLIGHTS.detect(model);
-  state.load(model, found, "sample match");
+  state.load(model, found, ANALYSIS.analyseMatch(model), "sample match");
   renderHeader();
   renderKillfeed();
   state.tab = "highlights";
@@ -299,6 +303,14 @@ function applyUrl(){
   if (q.has("t")) { const t = Number(q.get("t")); if (isFinite(t)) state.seek(t); }
   if (q.get("view") === "3d") viewSwitch.setMode("3d");
   if (q.has("cam")) viewSwitch.setCamera(q.get("cam"));
+  if (q.has("lineup") && state.analysis) {
+    const i = Number(q.get("lineup"));
+    if (state.analysis.lineups[i]) state.selectLineup(state.analysis.lineups[i]);
+  }
+  if (q.has("routes") && state.analysis) {
+    const r = state.analysis.routes.find(x => x.name === q.get("routes"));
+    if (r) { state.setFollow(r.client); state.selectRoutes(r); }
+  }
   if (q.has("kill")) {
     const k = state.model.kills.find(x => x.id === q.get("kill"));
     if (k) state.selectKill(k.id, { play: false });

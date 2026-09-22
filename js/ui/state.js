@@ -22,7 +22,13 @@ function createState(){
     /* Loaded match. */
     model: null,
     highlights: null,
+    analysis: null,
     fileName: "",
+
+    /* A lineup or a route cluster picked in the coach panel, drawn over the
+       map so the pattern is visible in space rather than only as a number. */
+    selectedLineup: null,
+    selectedRoutes: null,
 
     /* Playback. */
     timeS: 0,
@@ -78,9 +84,12 @@ function createState(){
 
   /* ---- mutations, each one emitting exactly what changed ---- */
 
-  s.load = function (model, highlights, fileName){
+  s.load = function (model, highlights, analysis, fileName){
     s.model = model;
     s.highlights = highlights;
+    s.analysis = analysis || null;
+    s.selectedLineup = null;
+    s.selectedRoutes = null;
     s.fileName = fileName || "";
     s.backdrop = null;
     s.timeS = model.rounds.length ? model.rounds[0].startS : 0;
@@ -191,6 +200,18 @@ function createState(){
     Object.assign(s.filter, patch);
     s.cursorIndex = 0;
     s.emit("filter");
+  };
+
+  s.selectLineup = function (l){
+    s.selectedLineup = s.selectedLineup === l ? null : l;
+    s.selectedRoutes = null;
+    s.emit("overlay");
+  };
+
+  s.selectRoutes = function (r){
+    s.selectedRoutes = s.selectedRoutes === r ? null : r;
+    s.selectedLineup = null;
+    s.emit("overlay");
   };
 
   s.toggleView = function (key){
