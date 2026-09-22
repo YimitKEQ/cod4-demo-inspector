@@ -174,7 +174,8 @@ state.on("transport", () => { if (state.playing) lastFrame = performance.now(); 
 
 const toggles = [
   ["#v-trails", "trails"], ["#v-aim", "aimRays"], ["#v-kills", "killLines"],
-  ["#v-nades", "grenades"], ["#v-names", "names"], ["#v-heat", "heatmap"]
+  ["#v-nades", "grenades"], ["#v-names", "names"], ["#v-heat", "heatmap"],
+  ["#v-xray", "xray"]
 ];
 for (const [sel, key] of toggles) {
   const btn = $(sel);
@@ -318,7 +319,12 @@ function applyUrl(){
   }
   if (q.has("kill")) {
     const k = state.model.kills.find(x => x.id === q.get("kill"));
-    if (k) state.selectKill(k.id, { play: false });
+    if (k) {
+      /* Select it, then run the same replay the R key runs, so a link to a
+         kill opens on that kill rather than merely highlighting its row. */
+      state.selectKill(k.id, { play: false });
+      viewSwitch.replaySelected();
+    }
   }
 }
 /**
@@ -434,6 +440,9 @@ window.addEventListener("keydown", e => {
       break;
     }
     case "h": case "H": state.toggleView("heatmap"); break;
+    case "x": case "X":
+      /* X only reaches here when no list consumed it for ticking a kill. */
+      state.toggleView("xray"); break;
   }
 });
 

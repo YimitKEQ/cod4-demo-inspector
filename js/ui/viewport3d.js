@@ -152,20 +152,35 @@ function createViewport3D(container, state){
     scene.fog.far = span * 4.2;
   }
 
-  /** The compass image, draped over the reconstruction. */
-  function loadTexture(then){
+  /**
+   * The compass image, draped over the reconstruction once it arrives.
+   *
+   * The map is built and shown first and the texture is applied to the
+   * existing material afterwards. Waiting for the image before building
+   * anything made the whole 3D setup asynchronous, which meant a camera or a
+   * kill replay chosen from a link was applied first and then silently reset
+   * when the build finally ran.
+   */
+  function loadTexture(){
     const name = root.DM1_VIEWPORT.mapImageName(state.model.info.map);
-    if (!name) { mapTexture = null; then(); return; }
+    state.backdrop = name ? "loading" : "derived";
+    if (!name) return;
     new THREE.TextureLoader().load(
       "maps/" + name + ".png",
       tex => {
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.anisotropy = 4;
         mapTexture = tex;
-        then();
+        const mesh = gMap.children.find(c => c.isMesh);
+        if (mesh) {
+          mesh.material.map = tex;
+          mesh.material.color.setHex(0xFFFFFF);
+          mesh.material.needsUpdate = true;
+        }
+        state.backdrop = "image";
       },
       undefined,
-      () => { mapTexture = null; then(); }
+      () => { mapTexture = null; state.backdrop = "derived"; }
     );
   }
 
@@ -544,10 +559,32 @@ function createViewport3D(container, state){
     cameras.setAspect(rect.width / rect.height);
   }
 
+  /**
+   * X-ray.
+   *
+   * Framing a kill inside a reconstructed map regularly puts a wall between
+   * the camera and the players. Rather than fight it with camera placement,
+   * the map goes translucent while a replay is running, or whenever the
+   * X-ray toggle is on. Players and shot lines already draw without depth
+   * writing, so they come through.
+   */
+  function applyXray(){
+    const want = state.view.xray || cameras.mode === "replay";
+    const mesh = gMap.children.find(c => c.isMesh);
+    if (!mesh || mesh.material.transparent === want) return;
+    mesh.material.transparent = want;
+    mesh.material.opacity = want ? 0.42 : 1;
+    mesh.material.depthWrite = !want;
+    mesh.material.needsUpdate = true;
+    const edges = gMap.children.find(c => c.isLineSegments);
+    if (edges) edges.material.opacity = want ? 0.5 : 0.3;
+  }
+
   function frame(){
     if (!running) return;
     raf = requestAnimationFrame(frame);
     if (!ready) return;
+    applyXray();
     const t = state.timeS;
     cameras.update(players, t);
     updatePlayers(t);
@@ -572,14 +609,15 @@ function createViewport3D(container, state){
 
   function rebuild(){
     ready = false;
-    loadTexture(() => {
-      buildMap();
-      buildPlayers();
-      heatBuilt = false;
-      cameras.reset(state.model);
-      buildOverlay();
-      ready = true;
-    });
+    /* Everything here is synchronous, so by the time this returns the view is
+       usable and a camera chosen from a link will not be undone. */
+    buildMap();
+    buildPlayers();
+    heatBuilt = false;
+    cameras.reset(state.model);
+    buildOverlay();
+    ready = true;
+    loadTexture();
   }
 
   state.on("load", () => { if (state.model) rebuild(); });
