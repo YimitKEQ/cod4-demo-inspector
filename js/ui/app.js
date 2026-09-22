@@ -37,6 +37,45 @@ const mmss = s => {
 const state = STATE.createState();
 root.APP_STATE = state;   /* one handle for the console, and later for the worker */
 
+/**
+ * Never fail silently.
+ *
+ * A thrown error used to leave a blank page, which is the least useful thing a
+ * program can do: there is nothing to read, nothing to report and nothing to
+ * act on. Anything uncaught now puts a panel on screen saying what broke and
+ * where, so a screenshot is a bug report.
+ */
+(function installErrorSurface(){
+  let panel = null;
+  const show = (title, detail) => {
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.className = "fatal";
+      document.body.append(panel);
+    }
+    const row = document.createElement("div");
+    row.className = "fatal-row";
+    const h = document.createElement("div");
+    h.className = "fatal-title";
+    h.textContent = title;
+    const d = document.createElement("div");
+    d.className = "fatal-detail";
+    d.textContent = detail;
+    row.append(h, d);
+    panel.append(row);
+    panel.hidden = false;
+  };
+  window.addEventListener("error", e => {
+    show("Something broke", (e.message || "unknown error") + "  ·  " +
+      (e.filename || "").split("/").pop() + ":" + (e.lineno || "?"));
+  });
+  window.addEventListener("unhandledrejection", e => {
+    const r = e.reason;
+    show("A background step failed", String(r && r.message ? r.message : r));
+  });
+  root.APP_REPORT = show;
+})();
+
 /* ---- side panel ---- */
 
 const sideBody = $("#side-body");

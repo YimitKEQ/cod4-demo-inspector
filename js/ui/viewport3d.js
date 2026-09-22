@@ -56,10 +56,33 @@ const COL = {
 
 function createViewport3D(container, state){
   const THREE = root.THREE;
-  if (!THREE) return null;
+  if (!THREE) {
+    if (root.APP_REPORT) root.APP_REPORT("3D is unavailable",
+      "three.js did not load, so the 3D view cannot start. The flat map still works.");
+    return null;
+  }
 
-  const renderer = new THREE.WebGLRenderer({
-    antialias: true, alpha: false, powerPreference: "high-performance"
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({
+      antialias: true, alpha: false, powerPreference: "high-performance"
+    });
+  } catch (e) {
+    /* No WebGL at all: a blocked context, a driver refusing, software
+       rendering disabled. Whatever the cause, saying so beats a black box. */
+    if (root.APP_REPORT) root.APP_REPORT("This browser would not give a 3D canvas",
+      (e && e.message ? e.message : String(e)) +
+      "  ·  check that hardware acceleration is on, or try another browser.");
+    return null;
+  }
+
+  /* A lost context looks exactly like a bug in this code, so it has to
+     announce itself. */
+  renderer.domElement.addEventListener("webglcontextlost", ev => {
+    ev.preventDefault();
+    if (root.APP_REPORT) root.APP_REPORT("The 3D context was lost",
+      "The browser dropped the WebGL context, usually a driver or memory " +
+      "problem. Reload to get it back.");
   });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   renderer.domElement.style.display = "block";
@@ -97,6 +120,22 @@ function createViewport3D(container, state){
   let killSlots = [];
   let nadeSlots = [];
   let ready = false;
+
+  /* What is still downloading. The 3D view pulls tens of megabytes of map,
+     textures, props and bodies, and without a word about it an empty looking
+     canvas is indistinguishable from a broken one. */
+  const loading = { total: 0, done: 0, what: "" };
+  function track(what, n){
+    loading.total += n;
+    loading.what = what;
+    state.loading = { ...loading };
+    state.emit("loading");
+  }
+  function tick(){
+    loading.done++;
+    state.loading = { ...loading };
+    state.emit("loading");
+  }
 
   /* Scratch objects, so the frame loop never allocates. */
   const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3();
@@ -171,6 +210,7 @@ function materialColour(name){
   function tryRealGeometry(then){
     const map = state.model.info.map;
     const base = "maps3d/" + map + "/";
+    track("map", 1);
     fetch(base + "geometry.json")
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("no manifest"))))
       .then(manifest => fetch(base + "geometry.bin")
@@ -194,9 +234,10 @@ function materialColour(name){
         geo.setIndex(new THREE.BufferAttribute(
           new Uint32Array(buf, idx.byteOffset, idx.byteLength / 4), 1));
         geo.computeBoundingSphere();
+        tick();
         then({ geo, manifest, tex, base });
       })
-      .catch(() => then(null));
+      .catch(() => { tick(); then(null); });
   }
 
   function buildMap(){
@@ -357,6 +398,79 @@ function materialColour(name){
     return { group, parts };
   }
 
+  /**
+   * The game's own multiplayer bodies, when they have been extracted.
+   *
+   * tools/players.js writes one per side into maps3d/_players. They are
+   * skinned with no animation baked in, which means the vertex data is the
+   * rest pose and can be read straight: joint matrices times inverse bind
+   * matrices are identity when nothing has moved the skeleton.
+   *
+   * Loading is asynchronous, so every player starts as the built in figure and
+   * is upgraded in place when the real model arrives. Nothing is ever waiting
+   * on a download to show something.
+   */
+  let playerModels = null;
+  function loadPlayerModels(){
+    if (playerModels) { applyPlayerModels(); return; }
+    fetch("maps3d/_players/players.json")
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("none"))))
+      .then(spec => {
+        const jobs = [];
+        playerModels = {};
+        for (const side of ["allies", "opfor"]) {
+          const entry = spec.sides && spec.sides[side];
+          if (!entry) continue;
+          track("bodies", 1);
+          jobs.push(root.DM1_GLB.load(THREE, "maps3d/_players/" + entry.body)
+            .then(built => { playerModels[side] = built; tick(); })
+            .catch(() => { tick(); }));
+        }
+        return Promise.all(jobs);
+      })
+      .then(() => applyPlayerModels())
+      .catch(() => { playerModels = null; });
+  }
+
+  /** Swap each player's placeholder figure for the real body. */
+  function applyPlayerModels(){
+    if (!playerModels) return;
+    const m = state.model;
+    for (const [client, node] of players) {
+      const side = m.teamOf(client) === m.teamNames[0] ? "allies" : "opfor";
+      const built = playerModels[side];
+      if (!built || node.real) continue;
+
+      /* Shared geometry, per player materials so ghosting can fade one player
+         without fading the whole team. */
+      const mats = built.materials.map(src => {
+        const c = src.clone();
+        c.transparent = true;
+        return c;
+      });
+      const mesh = new THREE.Mesh(built.geometry, mats);
+
+      node.holder.remove(node.body);
+      node.holder.add(mesh);
+      node.body = mesh;
+      node.parts = [mesh];
+      node.real = true;
+
+      /* A team stripe so sides stay readable at a glance, because two brown
+         soldiers at two hundred units apart are not obviously enemies. */
+      const band = new THREE.Mesh(
+        new THREE.CylinderGeometry(13, 13, 5, 12, 1, true),
+        new THREE.MeshBasicMaterial({ color: node.colour, transparent: true,
+                                      opacity: 0.85, side: THREE.DoubleSide })
+      );
+      band.position.y = 50;
+      node.holder.add(band);
+      node.parts.push(band);
+    }
+    state.playerModels = true;
+    state.emit("geometry");
+  }
+
   function buildPlayers(){
     clearGroup(gPlayers);
     clearGroup(gTrails);
@@ -414,7 +528,7 @@ function materialColour(name){
       holder.visible = false;
       gPlayers.add(holder);
       players.set(client, { holder, body, cone, label, ring, marker, colour,
-                            parts: figure.parts });
+                            parts: figure.parts, real: false });
 
       /* One trail line per player, buffer allocated once. */
       const geo = new THREE.BufferGeometry();
@@ -793,9 +907,10 @@ function materialColour(name){
         const D = Math.PI / 180;
 
         let placed = 0;
+        track("props", spec.models.length);
         spec.models.forEach((model, mi) => {
           const rows = perModel.get(mi);
-          if (!rows || !rows.length) return;
+          if (!rows || !rows.length) { tick(); return; }
           root.DM1_GLB.load(THREE, base + "props/" + model.file).then(built => {
             const mesh = new THREE.InstancedMesh(
               built.geometry, built.materials, rows.length);
@@ -820,8 +935,9 @@ function materialColour(name){
             gProps.add(mesh);
             placed += rows.length;
             state.propCount = placed;
+            tick();
             state.emit("geometry");
-          }).catch(() => { /* one model missing is not a failure */ });
+          }).catch(() => { tick(); });
         });
       })
       .catch(() => { state.propCount = 0; });
@@ -922,6 +1038,7 @@ function materialColour(name){
         /* The mesh carries texture coordinates in texels, because the image
            size was not known when it was built. Dividing by the real size
            here is what turns them into the coordinates the game used. */
+        track("textures", 1);
         loader.load(real.base + "textures/" + info.file, tex => {
           tex.colorSpace = THREE.SRGBColorSpace;
           tex.wrapS = THREE.RepeatWrapping;
@@ -931,7 +1048,8 @@ function materialColour(name){
             ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 4;
           mat.map = tex;
           mat.needsUpdate = true;
-        }, undefined, () => { /* leave it flat */ });
+          tick();
+        }, undefined, () => { tick(); });
       }
       mats.push(mat);
     });
@@ -991,6 +1109,7 @@ function materialColour(name){
     cameras.reset(state.model);
     buildOverlay();
     loadProps();
+    loadPlayerModels();
     ready = true;
     loadTexture();
   }

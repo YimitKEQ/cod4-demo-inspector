@@ -1,0 +1,17 @@
+{
+  "format": "dm1-players-1",
+  "sides": {
+    "allies": {
+      "body": "allies_body.glb",
+      "bodyName": "body_mp_usmc_assault",
+      "head": "allies_head.glb",
+      "headName": "head_mp_usmc_nomex"
+    },
+    "opfor": {
+      "body": "opfor_body.glb",
+      "bodyName": "body_mp_arab_regular_assault",
+      "head": "opfor_head.glb",
+      "headName": "head_mp_arab_regular_headwrap"
+    }
+  }
+}

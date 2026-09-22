@@ -66,6 +66,12 @@ function createViewSwitch(host, bar, viewport2d, state){
   stats.style.fontSize = "11px";
   stats.style.marginLeft = "auto";
 
+  /* Shown over the middle of the view while the map streams in, because the
+     alternative is a dark rectangle that looks broken. */
+  const loading = el("div", "loading3d");
+  loading.hidden = true;
+  host.append(loading);
+
   bar.append(btn3d, camBar, replayBtn, stats);
 
   /* ---- switching ---- */
@@ -82,7 +88,12 @@ function createViewSwitch(host, bar, viewport2d, state){
     if (next === mode) return;
     if (next === "3d") {
       const v = ensure3d();
-      if (!v) return;
+      if (!v) {
+        /* ensure3d has already said why. Stay on the flat map rather than
+           switching to an empty panel. */
+        btn3d.classList.remove("on");
+        return;
+      }
       host3d.style.display = "block";
       viewport2d.canvas.style.visibility = "hidden";
       v.resize();
@@ -204,6 +215,13 @@ function createViewSwitch(host, bar, viewport2d, state){
   state.on("camera", refresh);
   state.on("fps", refresh);
   state.on("geometry", refresh);
+  state.on("loading", () => {
+    const l = state.loading;
+    if (!l || mode !== "3d" || l.done >= l.total) { loading.hidden = true; return; }
+    loading.hidden = false;
+    loading.textContent = "Loading the map: " + l.done + " of " + l.total +
+      " files (" + l.what + ")";
+  });
   state.on("load", () => {
     if (vp3d) vp3d.rebuild();
     refresh();

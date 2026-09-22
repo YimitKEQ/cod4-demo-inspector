@@ -79,6 +79,11 @@ function main(){
   const models = process.env.OAT_MODELS;
   if (models && fs.existsSync(models)) {
     run("props.js", [mapFile, models, outDir]);
+    /* The character models are shared by every map, so they are written once
+       into maps3d/_players rather than per map. */
+    if (!fs.existsSync(path.join("maps3d", "_players", "players.json"))) {
+      run("players.js", [models, path.join("maps3d", "_players")]);
+    }
   } else {
     process.stdout.write("  no prop models: set OAT_MODELS to an " +
       "OpenAssetTools model_export folder to add the map's clutter\n\n");

@@ -541,3 +541,30 @@ kbd {
 }
 .readable-b { min-width: 0; font-size: var(--t-13); }
 .readable-b .mute { font-family: var(--prose); font-size: 11px; }
+
+/* ---- fatal errors ---- */
+
+/* Loud on purpose. A silent failure is a blank screen and a wasted hour. */
+.fatal {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+  background: #3A2420;
+  border-top: 2px solid var(--opfor);
+  max-height: 40vh; overflow-y: auto;
+  font-family: var(--prose);
+}
+.fatal-row { padding: var(--s2) var(--s3); border-bottom: var(--hair); }
+.fatal-title { font-family: var(--ui); font-size: var(--t-15); color: #F0C3BC; }
+.fatal-detail {
+  font-size: var(--t-13); color: #C9A9A3; margin-top: 2px; overflow-wrap: anywhere;
+}
+
+/* Streaming the 3D map takes a moment; silence looks like failure. */
+.loading3d {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  z-index: 3; pointer-events: none;
+  background: rgba(47, 53, 44, 0.92);
+  border: var(--line);
+  padding: var(--s2) var(--s3);
+  font-size: var(--t-13);
+  color: var(--bone);
+}
