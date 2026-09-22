@@ -1,0 +1,228 @@
+{
+  "format": "dm1-geometry-1",
+  "source": "mp_strike.map",
+  "note": "Extracted from a Radiant .map source. Activision's geometry: keep it local.",
+  "counts": {
+    "vertices": 19014,
+    "indices": 19014
+  },
+  "layout": [
+    {
+      "name": "position",
+      "type": "Float32",
+      "components": 3,
+      "byteOffset": 0,
+      "byteLength": 228168
+    },
+    {
+      "name": "normal",
+      "type": "Float32",
+      "components": 3,
+      "byteOffset": 228168,
+      "byteLength": 228168
+    },
+    {
+      "name": "uv",
+      "type": "Float32",
+      "components": 2,
+      "byteOffset": 456336,
+      "byteLength": 152112
+    },
+    {
+      "name": "index",
+      "type": "Uint32",
+      "components": 1,
+      "byteOffset": 608448,
+      "byteLength": 76056
+    }
+  ],
+  "bounds": {
+    "minX": -5215,
+    "minY": -4914,
+    "minZ": -192,
+    "maxX": 6654,
+    "maxY": 5466,
+    "maxZ": 392
+  },
+  "ranges": {
+    "floor": {
+      "start": 0,
+      "count": 6048
+    },
+    "wall": {
+      "start": 6048,
+      "count": 12966
+    }
+  },
+  "stats": {
+    "patches": 564,
+    "brushes": 1103,
+    "patchTriangles": 1258,
+    "brushTriangles": 5080,
+    "triangles": 6338,
+    "vertices": 19014,
+    "materials": 40
+  },
+  "materials": [
+    {
+      "material": "me_cinderblock_wall2",
+      "count": 5154
+    },
+    {
+      "material": "me_plaster_03",
+      "count": 1914
+    },
+    {
+      "material": "ch_concretewall02",
+      "count": 1626
+    },
+    {
+      "material": "me_ground_dirt03_decal",
+      "count": 1236
+    },
+    {
+      "material": "ch_plaster04",
+      "count": 1164
+    },
+    {
+      "material": "me_decal_adobe_top_01",
+      "count": 936
+    },
+    {
+      "material": "me_sidewalk_curb_whiteorange",
+      "count": 840
+    },
+    {
+      "material": "me_cinderblock_wall2_top",
+      "count": 672
+    },
+    {
+      "material": "me_plaster_brown",
+      "count": 600
+    },
+    {
+      "material": "me_brick_01",
+      "count": 558
+    },
+    {
+      "material": "me_ground_dirt03",
+      "count": 519
+    },
+    {
+      "material": "me_decal_darkstain_01",
+      "count": 462
+    },
+    {
+      "material": "me_brick_02",
+      "count": 420
+    },
+    {
+      "material": "me_roof_01",
+      "count": 411
+    },
+    {
+      "material": "me_decal_adobe_bottom_01",
+      "count": 378
+    },
+    {
+      "material": "me_sidewalk_dogbone",
+      "count": 309
+    },
+    {
+      "material": "ch_dec_fallendeadleaves",
+      "count": 246
+    },
+    {
+      "material": "me_sidewalk_01",
+      "count": 222
+    },
+    {
+      "material": "me_woodplanks01",
+      "count": 222
+    },
+    {
+      "material": "me_trash01",
+      "count": 186
+    },
+    {
+      "material": "me_asphalt_road1",
+      "count": 180
+    },
+    {
+      "material": "ch_concretewall03",
+      "count": 126
+    },
+    {
+      "material": "me_sidewalk_curb",
+      "count": 114
+    },
+    {
+      "material": "ship_wall_stain5",
+      "count": 96
+    },
+    {
+      "material": "me_decal_papers",
+      "count": 72
+    },
+    {
+      "material": "me_fence_chainlink",
+      "count": 48
+    },
+    {
+      "material": "me_brickwall_01",
+      "count": 48
+    },
+    {
+      "material": "me_archtrim01",
+      "count": 36
+    },
+    {
+      "material": "ch_grass_02_decal",
+      "count": 30
+    },
+    {
+      "material": "me_stonefloor01",
+      "count": 30
+    },
+    {
+      "material": "me_plaster_stripes",
+      "count": 30
+    },
+    {
+      "material": "ch_plasterwall_long",
+      "count": 24
+    },
+    {
+      "material": "ch_concrete_strips01",
+      "count": 24
+    },
+    {
+      "material": "me_windowfence_02",
+      "count": 24
+    },
+    {
+      "material": "me_plaster_02",
+      "count": 18
+    },
+    {
+      "material": "ch_asphalt01",
+      "count": 12
+    },
+    {
+      "material": "ch_concretewall01",
+      "count": 9
+    },
+    {
+      "material": "me_concrete_riverwall_paint",
+      "count": 6
+    },
+    {
+      "material": "me_decal_bullet_holes01",
+      "count": 6
+    },
+    {
+      "material": "me_floor_02",
+      "count": 6
+    }
+  ]
+}

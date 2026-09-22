@@ -1,8 +1,11 @@
 # Game assets and demos never go in the repo
 demos/*
 !demos/README.md
-maps3d/*
-!maps3d/README.md
+# Extracted map assets are published deliberately, so the live site shows the
+# real map rather than the reconstruction. See maps3d/NOTICE.md.
+# The intermediate dumps they are built from stay out.
+maps3d/**/*.dds
+maps3d/**/*.iwi
 renders/
 game/
 

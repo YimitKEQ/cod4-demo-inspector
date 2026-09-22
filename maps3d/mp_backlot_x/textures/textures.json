@@ -1,0 +1,238 @@
+{
+  "textures": {
+    "me_ground_dirt03": {
+      "file": "me_ground_dirt03.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_ground_dirt04_decal": {
+      "file": "me_ground_dirt04_decal.png",
+      "width": 256,
+      "height": 256,
+      "format": "DXT5"
+    },
+    "me_decal_papers": {
+      "file": "me_decal_papers.png",
+      "width": 256,
+      "height": 256,
+      "format": "DXT1"
+    },
+    "me_cinderblock_wall2": {
+      "file": "me_cinderblock_wall2.png",
+      "width": 256,
+      "height": 256,
+      "format": "DXT1"
+    },
+    "ch_grass_01_decal": {
+      "file": "ch_grass_01_decal.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "ch_rubble01_decal": {
+      "file": "ch_rubble01_decal.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_asphalt_01": {
+      "file": "me_asphalt_01.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_decal_adobe_bottom_01": {
+      "file": "me_decal_adobe_bottom_01.png",
+      "width": 1024,
+      "height": 256,
+      "format": "DXT5"
+    },
+    "me_ground_drygrass_dec": {
+      "file": "me_ground_drygrass_dec.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_brick_01": {
+      "file": "me_brick_01.png",
+      "width": 256,
+      "height": 256,
+      "format": "DXT1"
+    },
+    "me_pinewood": {
+      "file": "me_pinewood.png",
+      "width": 256,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "ch_concretewall02": {
+      "file": "ch_concretewall02.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "day_water_mud": {
+      "file": "day_water_mud.png",
+      "width": 256,
+      "height": 256,
+      "format": "DXT3"
+    },
+    "me_stonewall_03": {
+      "file": "me_stonewall_03.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_cinderblock_wall2_top": {
+      "file": "me_cinderblock_wall2_top.png",
+      "width": 128,
+      "height": 128,
+      "format": "DXT1"
+    },
+    "me_ground_dirt03_decal": {
+      "file": "me_ground_dirt03_decal.png",
+      "width": 256,
+      "height": 256,
+      "format": "DXT5"
+    },
+    "me_ground_drygrass": {
+      "file": "me_ground_drygrass.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_trash01": {
+      "file": "me_trash01.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_trim_metal_conduit": {
+      "file": "me_trim_metal_conduit.png",
+      "width": 128,
+      "height": 1024,
+      "format": "DXT1"
+    },
+    "me_decal_adobe_top_01": {
+      "file": "me_decal_adobe_top_01.png",
+      "width": 1024,
+      "height": 128,
+      "format": "DXT5"
+    },
+    "me_stonewall_01": {
+      "file": "me_stonewall_01.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "ch_dec_darkstain_01": {
+      "file": "ch_dec_darkstain_01.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "ch_tile_floor03": {
+      "file": "ch_tile_floor03.png",
+      "width": 256,
+      "height": 256,
+      "format": "DXT1"
+    },
+    "me_sidewalk_dogbone": {
+      "file": "me_sidewalk_dogbone.png",
+      "width": 1024,
+      "height": 256,
+      "format": "DXT1"
+    },
+    "ch_rubble_conc01_decal": {
+      "file": "ch_rubble_conc01_decal.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "ch_ground_gravel02_decal": {
+      "file": "ch_ground_gravel02_decal.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "ch_plaster04": {
+      "file": "ch_plaster04.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_fence_chainlink": {
+      "file": "me_fence_chainlink.png",
+      "width": 256,
+      "height": 256,
+      "format": "DXT5"
+    },
+    "me_sidewalk_01": {
+      "file": "me_sidewalk_01.png",
+      "width": 1024,
+      "height": 256,
+      "format": "DXT1"
+    },
+    "me_metal_rust_02": {
+      "file": "me_metal_rust_02.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_clothes1": {
+      "file": "me_clothes1.png",
+      "width": 256,
+      "height": 256,
+      "format": "DXT3"
+    },
+    "me_brickwall_01": {
+      "file": "me_brickwall_01.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_decal_bullet_holes01": {
+      "file": "me_decal_bullet_holes01.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT5"
+    },
+    "me_door_rollup1": {
+      "file": "me_door_rollup1.png",
+      "width": 32,
+      "height": 64,
+      "format": "DXT1"
+    },
+    "me_graffiti13": {
+      "file": "me_graffiti13.png",
+      "width": 512,
+      "height": 128,
+      "format": "DXT1"
+    },
+    "me_graphitti_4": {
+      "file": "me_graphitti_4.png",
+      "width": 256,
+      "height": 256,
+      "format": "DXT1"
+    },
+    "me_graffiti06": {
+      "file": "me_graffiti06.png",
+      "width": 128,
+      "height": 256,
+      "format": "DXT1"
+    },
+    "ch_grass_01": {
+      "file": "ch_grass_01.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    }
+  },
+  "missing": [
+    "ch_woodplank02",
+    "me_woodbeam_end_01",
+    "me_woodplanks01",
+    "me_graffiti02"
+  ]
+}

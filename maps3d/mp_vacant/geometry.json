@@ -1,0 +1,204 @@
+{
+  "format": "dm1-geometry-1",
+  "source": "mp_vacant.map",
+  "note": "Extracted from a Radiant .map source. Activision's geometry: keep it local.",
+  "counts": {
+    "vertices": 14577,
+    "indices": 14577
+  },
+  "layout": [
+    {
+      "name": "position",
+      "type": "Float32",
+      "components": 3,
+      "byteOffset": 0,
+      "byteLength": 174924
+    },
+    {
+      "name": "normal",
+      "type": "Float32",
+      "components": 3,
+      "byteOffset": 174924,
+      "byteLength": 174924
+    },
+    {
+      "name": "uv",
+      "type": "Float32",
+      "components": 2,
+      "byteOffset": 349848,
+      "byteLength": 116616
+    },
+    {
+      "name": "index",
+      "type": "Uint32",
+      "components": 1,
+      "byteOffset": 466464,
+      "byteLength": 58308
+    }
+  ],
+  "bounds": {
+    "minX": -5036,
+    "minY": -4096,
+    "minZ": -8192,
+    "maxX": 5871,
+    "maxY": 3787,
+    "maxZ": 8192
+  },
+  "ranges": {
+    "floor": {
+      "start": 0,
+      "count": 11508
+    },
+    "wall": {
+      "start": 11508,
+      "count": 3069
+    }
+  },
+  "stats": {
+    "patches": 205,
+    "brushes": 304,
+    "patchTriangles": 3730,
+    "brushTriangles": 1129,
+    "triangles": 4859,
+    "vertices": 14577,
+    "materials": 34
+  },
+  "materials": [
+    {
+      "material": "me_ground_dirt03_decal",
+      "count": 3186
+    },
+    {
+      "material": "ch_ground_dirt03",
+      "count": 2460
+    },
+    {
+      "material": "ch_grass_02_decal",
+      "count": 1650
+    },
+    {
+      "material": "ch_ground_dirt3_decal",
+      "count": 1206
+    },
+    {
+      "material": "ch_concretewall02",
+      "count": 1062
+    },
+    {
+      "material": "ch_ground_gravel01_decal",
+      "count": 1014
+    },
+    {
+      "material": "ch_concrete_02",
+      "count": 840
+    },
+    {
+      "material": "me_cinderblock_wall2",
+      "count": 708
+    },
+    {
+      "material": "ch_ground_gravel01",
+      "count": 684
+    },
+    {
+      "material": "ch_asphaltcracks01",
+      "count": 504
+    },
+    {
+      "material": "me_sidewalk_01",
+      "count": 231
+    },
+    {
+      "material": "ch_concrete_05",
+      "count": 180
+    },
+    {
+      "material": "me_sidewalk_curb",
+      "count": 150
+    },
+    {
+      "material": "me_trash01",
+      "count": 144
+    },
+    {
+      "material": "me_decal_adobe_top_01",
+      "count": 108
+    },
+    {
+      "material": "me_decal_oil_leak",
+      "count": 72
+    },
+    {
+      "material": "me_decal_papers",
+      "count": 72
+    },
+    {
+      "material": "me_cinderblock_wall2_top",
+      "count": 66
+    },
+    {
+      "material": "ch_grass_02",
+      "count": 48
+    },
+    {
+      "material": "ch_tile_floor03",
+      "count": 36
+    },
+    {
+      "material": "me_fence_chainlink",
+      "count": 24
+    },
+    {
+      "material": "ch_asphalt01",
+      "count": 24
+    },
+    {
+      "material": "me_decal_adobe_bottom_01",
+      "count": 18
+    },
+    {
+      "material": "icbm_bunkermural1",
+      "count": 12
+    },
+    {
+      "material": "ch_graffiti_15",
+      "count": 12
+    },
+    {
+      "material": "me_cargocontainer_exttrimtall",
+      "count": 12
+    },
+    {
+      "material": "ch_concretewall04",
+      "count": 12
+    },
+    {
+      "material": "me_ground_drygrass",
+      "count": 6
+    },
+    {
+      "material": "ch_graffiti_5",
+      "count": 6
+    },
+    {
+      "material": "me_decal_plasterchunk",
+      "count": 6
+    },
+    {
+      "material": "ch_dec_darkstain_01",
+      "count": 6
+    },
+    {
+      "material": "icbm_decal_mural1",
+      "count": 6
+    },
+    {
+      "material": "icbm_decal_peelingpaint",
+      "count": 6
+    },
+    {
+      "material": "ch_brick_wall_08",
+      "count": 6
+    }
+  ]
+}

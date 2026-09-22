@@ -1,0 +1,284 @@
+{
+  "format": "dm1-geometry-1",
+  "source": "mp_citystreets.map",
+  "note": "Extracted from a Radiant .map source. Activision's geometry: keep it local.",
+  "counts": {
+    "vertices": 13149,
+    "indices": 13149
+  },
+  "layout": [
+    {
+      "name": "position",
+      "type": "Float32",
+      "components": 3,
+      "byteOffset": 0,
+      "byteLength": 157788
+    },
+    {
+      "name": "normal",
+      "type": "Float32",
+      "components": 3,
+      "byteOffset": 157788,
+      "byteLength": 157788
+    },
+    {
+      "name": "uv",
+      "type": "Float32",
+      "components": 2,
+      "byteOffset": 315576,
+      "byteLength": 105192
+    },
+    {
+      "name": "index",
+      "type": "Uint32",
+      "components": 1,
+      "byteOffset": 420768,
+      "byteLength": 52596
+    }
+  ],
+  "bounds": {
+    "minX": 1336,
+    "minY": -4208,
+    "minZ": -1288,
+    "maxX": 7488,
+    "maxY": 2672,
+    "maxZ": 512
+  },
+  "ranges": {
+    "floor": {
+      "start": 0,
+      "count": 4758
+    },
+    "wall": {
+      "start": 4758,
+      "count": 8391
+    }
+  },
+  "stats": {
+    "patches": 372,
+    "brushes": 948,
+    "patchTriangles": 578,
+    "brushTriangles": 3805,
+    "triangles": 4383,
+    "vertices": 13149,
+    "materials": 54
+  },
+  "materials": [
+    {
+      "material": "me_floor_concrete",
+      "count": 1851
+    },
+    {
+      "material": "me_cinderblock_wall2",
+      "count": 1674
+    },
+    {
+      "material": "ch_concretewall02",
+      "count": 1188
+    },
+    {
+      "material": "ch_plaster01",
+      "count": 1140
+    },
+    {
+      "material": "me_ground_dirt02_decal",
+      "count": 750
+    },
+    {
+      "material": "me_decal_adobe_top_01",
+      "count": 732
+    },
+    {
+      "material": "me_decal_adobe_bottom_01",
+      "count": 588
+    },
+    {
+      "material": "me_woodbeam_01",
+      "count": 510
+    },
+    {
+      "material": "ch_trim_stone01",
+      "count": 480
+    },
+    {
+      "material": "me_brick_01",
+      "count": 444
+    },
+    {
+      "material": "ch_concretewall01",
+      "count": 438
+    },
+    {
+      "material": "me_stonewall_01",
+      "count": 318
+    },
+    {
+      "material": "me_cinderblock_wall2_top",
+      "count": 309
+    },
+    {
+      "material": "me_brickwall_01",
+      "count": 252
+    },
+    {
+      "material": "ch_plaster_corner_01",
+      "count": 222
+    },
+    {
+      "material": "me_decal_darkstain_01",
+      "count": 216
+    },
+    {
+      "material": "me_trash01",
+      "count": 210
+    },
+    {
+      "material": "me_sidewalk_dogbone",
+      "count": 210
+    },
+    {
+      "material": "ch_tile_floor03",
+      "count": 192
+    },
+    {
+      "material": "ch_grass_02",
+      "count": 150
+    },
+    {
+      "material": "me_ground_dirt02",
+      "count": 138
+    },
+    {
+      "material": "me_sidewalk_curb_whiteorange",
+      "count": 132
+    },
+    {
+      "material": "me_stone_road01",
+      "count": 96
+    },
+    {
+      "material": "me_curtains_1",
+      "count": 96
+    },
+    {
+      "material": "ch_concrete_02",
+      "count": 90
+    },
+    {
+      "material": "ch_concrete_ceiling_01",
+      "count": 78
+    },
+    {
+      "material": "me_ground_dirt04_decal",
+      "count": 72
+    },
+    {
+      "material": "me_pinewood",
+      "count": 72
+    },
+    {
+      "material": "me_roof_01",
+      "count": 54
+    },
+    {
+      "material": "ch_woodplank02",
+      "count": 54
+    },
+    {
+      "material": "me_sidewalk_01",
+      "count": 54
+    },
+    {
+      "material": "ch_dec_darkstain_01",
+      "count": 42
+    },
+    {
+      "material": "me_woodplanks01",
+      "count": 36
+    },
+    {
+      "material": "ch_ground_mud03",
+      "count": 30
+    },
+    {
+      "material": "ch_plasterwall_long",
+      "count": 30
+    },
+    {
+      "material": "me_door_01",
+      "count": 24
+    },
+    {
+      "material": "me_archtrim01",
+      "count": 24
+    },
+    {
+      "material": "me_plaster_stripes",
+      "count": 18
+    },
+    {
+      "material": "me_signs_02",
+      "count": 12
+    },
+    {
+      "material": "me_signs_01",
+      "count": 12
+    },
+    {
+      "material": "me_poster_flag2",
+      "count": 12
+    },
+    {
+      "material": "me_metal_garage_door_red",
+      "count": 12
+    },
+    {
+      "material": "me_fence_chainlink",
+      "count": 12
+    },
+    {
+      "material": "me_plaster_03",
+      "count": 12
+    },
+    {
+      "material": "com_black",
+      "count": 12
+    },
+    {
+      "material": "me_graphitti_1",
+      "count": 6
+    },
+    {
+      "material": "me_decal_kleenexad",
+      "count": 6
+    },
+    {
+      "material": "ch_concretewall03",
+      "count": 6
+    },
+    {
+      "material": "me_metal_garage_door_blue",
+      "count": 6
+    },
+    {
+      "material": "me_windowfence",
+      "count": 6
+    },
+    {
+      "material": "me_door_06",
+      "count": 6
+    },
+    {
+      "material": "me_floor_02",
+      "count": 6
+    },
+    {
+      "material": "me_poster_deathblow3",
+      "count": 6
+    },
+    {
+      "material": "me_ground_drygrass",
+      "count": 3
+    }
+  ]
+}
