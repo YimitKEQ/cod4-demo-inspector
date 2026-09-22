@@ -86,6 +86,12 @@ const E_YAW = ENT_IDX.get("lerp.apos.trBase[1]");
 /* View pitch and the entity flags, which carry the stance (crouch, prone). */
 const E_PITCH = ENT_IDX.get("lerp.apos.trBase[0]");
 const E_FLAGS = ENT_IDX.get("lerp.eFlags");
+/* The animation the server was playing on the player's legs and torso: an
+   index into the animation list of mp/playeranim.script, with bit 9 a toggle
+   that flips when the same animation restarts. See js/core/playeranims.js. */
+const E_LEGS = ENT_IDX.get("legsAnim");
+const E_TORSO = ENT_IDX.get("torsoAnim");
+const E_MOVEDIR = ENT_IDX.get("lerp.u.player.movementDir");
 /** eType of a living player; corpses and objects have other values. */
 const ET_PLAYER = 1;
 /* Thrown grenades are missiles. launchTime identifies each throw uniquely -
@@ -106,6 +112,19 @@ const PS_POS = [PS_IDX.get("origin[0]"), PS_IDX.get("origin[1]"), PS_IDX.get("or
 const PS_YAW = PS_IDX.get("viewangles[1]");
 const PS_CLIENTNUM = PS_IDX.get("ClientNum");
 const PS_WEAPON = PS_IDX.get("weapon");
+/* What the first person camera needs beyond position and yaw: stance, the
+   real eye height (it animates through crouch and prone), how far into aim
+   down the sights, lean, and the server's own animation choice. */
+const PS_PMFLAGS = PS_IDX.get("pm_flags");
+const PS_VIEWHEIGHT = PS_IDX.get("viewHeightCurrent");
+const PS_ADSFRAC = PS_IDX.get("fWeaponPosFrac");
+const PS_EFLAGS = PS_IDX.get("eFlags");
+const PS_WEAPONSTATE = PS_IDX.get("weaponstate");
+const PS_LEAN = PS_IDX.get("leanf");
+const PS_LEGS = PS_IDX.get("legsAnim");
+const PS_TORSO = PS_IDX.get("torsoAnim");
+/* The first person weapon animation playing (idle, fire, reload, sprint). */
+const PS_WEAPANIM = PS_IDX.get("weapAnim");
 const C_TEAM = CS_IDX.get("team");
 
 /* ---- bit reader with CoD4 semantics ---- */
@@ -479,7 +498,8 @@ SnapshotReader.prototype.deltaEntity = function(m, time, to, num, old, msgSeq){
     if (!tr) { tr = []; this.tracks.set(num, tr); }
     tr.push([time, u2f(st[E_POS[0]]) | 0, u2f(st[E_POS[1]]) | 0,
              u2f(st[E_POS[2]]) | 0, u2f(st[E_YAW]) | 0, st[E_WEAPON],
-             st[E_FLAGS] | 0, u2f(st[E_PITCH]) | 0]);
+             st[E_FLAGS] | 0, u2f(st[E_PITCH]) | 0,
+             st[E_LEGS] | 0, st[E_TORSO] | 0, st[E_MOVEDIR] | 0]);
   }
 };
 
@@ -590,7 +610,10 @@ SnapshotReader.prototype.readDeltaPlayerState = function(m, time, frm){
   const px = u2f(to[PS_POS[0]]) | 0, py = u2f(to[PS_POS[1]]) | 0;
   if (px || py) {
     this.viewSamples.push([time, to[PS_CLIENTNUM], px, py,
-                           u2f(to[PS_POS[2]]) | 0, u2f(to[PS_YAW]) | 0, to[PS_WEAPON]]);
+                           u2f(to[PS_POS[2]]) | 0, u2f(to[PS_YAW]) | 0, to[PS_WEAPON],
+                           to[PS_EFLAGS] | 0, to[PS_PMFLAGS] | 0, u2f(to[PS_VIEWHEIGHT]),
+                           u2f(to[PS_ADSFRAC]), to[PS_WEAPONSTATE] | 0, u2f(to[PS_LEAN]),
+                           to[PS_LEGS] | 0, to[PS_TORSO] | 0, to[PS_WEAPANIM] | 0]);
   }
   return to;
 };

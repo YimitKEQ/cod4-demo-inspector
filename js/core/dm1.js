@@ -214,7 +214,11 @@ function* parseDemoSteps(bytes, deep){
     commands: [], configstrings: new Map(), players: new Map(), povClient: null,
     firstTime: null, lastTime: null, sizeBytes: size,
     events: [], clientTeams: new Map(), baselines: 0, snapshotErrors: 0,
-    viewSamples: [], viewFrames: []
+    viewSamples: [], viewFrames: [],
+    /* Every MSG_FRAME at full rate, flat, twelve values each: t, x, y, z, vx,
+       vy, vz, movementDir, bobCycle, pitch, yaw, roll. This is the recorder's own view as his client drew it,
+       about 125 times a second, and it is what the first person camera plays. */
+    povFrames: []
   };
   let p = 0, ft = 0, snaps = null, lastView = -1e9;
 
@@ -232,9 +236,17 @@ function* parseDemoSteps(bytes, deep){
         // commandTime, angles[3] - 52 bytes in total.
         const ct = dv.getInt32(p + 36, true);
         const fx = fi(dv.getFloat32(p + 4, true)), fy = fi(dv.getFloat32(p + 8, true));
+        if (fx || fy) {
+          const pf = out.povFrames;
+          pf.push(ct);
+          for (let k = 1; k <= 6; k++) pf.push(dv.getFloat32(p + k * 4, true));
+          pf.push(dv.getInt32(p + 28, true), dv.getInt32(p + 32, true) & 255);
+          pf.push(dv.getFloat32(p + 40, true), dv.getFloat32(p + 44, true), dv.getFloat32(p + 48, true));
+        }
         if ((fx || fy) && ct - lastView >= VIEW_STEP_MS) {
           out.viewFrames.push([ct, fx, fy, fi(dv.getFloat32(p + 12, true)),
-                               fi(dv.getFloat32(p + 44, true))]);
+                               fi(dv.getFloat32(p + 44, true)), fi(dv.getFloat32(p + 40, true)),
+                               dv.getInt32(p + 28, true)]);
           lastView = ct;
         }
       }
@@ -926,9 +938,14 @@ function viewTrack(d){
   if (!d.viewFrames || !d.viewFrames.length || !samples.length) return samples;
   const out = [];
   let i = 0;
-  for (const [t, x, y, z, yaw] of d.viewFrames) {
+  for (const [t, x, y, z, yaw, pitch, moveDir] of d.viewFrames) {
     while (i + 1 < samples.length && samples[i + 1][0] <= t) i++;
-    out.push([t, samples[i][1], x, y, z, yaw, samples[i][6]]);
+    const ps = samples[i];
+    /* Stance and the animation choice come from the player state beside the
+       frame; the frame itself has the finer position, yaw and pitch. */
+    out.push([t, ps[1], x, y, z, yaw, ps[6],
+              ps[7] === undefined ? undefined : ps[7], pitch,
+              ps[13], ps[14], moveDir]);
   }
   return out;
 }
@@ -945,10 +962,10 @@ function buildMap(d, t0){
   // state - there it is only an occasional correction.
   const merged = new Map();
   for (const [c, v] of (d.tracks || new Map())) merged.set(c, v.slice());
-  for (const [t, client, x, y, z, yaw, weapon] of viewTrack(d)) {
+  for (const [t, client, x, y, z, yaw, weapon, flags, pitch, legs, torso, moveDir] of viewTrack(d)) {
     let tr = merged.get(client);
     if (!tr) { tr = []; merged.set(client, tr); }
-    tr.push([t, x, y, z, yaw, weapon]);
+    tr.push([t, x, y, z, yaw, weapon, flags, pitch, legs, torso, moveDir]);
   }
   const tracks = {};
   for (const client of [...merged.keys()].sort((a, b) => a - b)) {
@@ -956,14 +973,14 @@ function buildMap(d, t0){
     const pts = merged.get(client).slice().sort((a, b) => a[0] - b[0]);
     const out = [];
     let lastT = null;
-    for (const [t, x, y, z, yaw, weapon, flags, pitch] of pts) {
+    const orNull = v => (v === undefined ? null : v);
+    for (const [t, x, y, z, yaw, weapon, flags, pitch, legs, torso, moveDir] of pts) {
       const ts = Math.trunc((t - t0) / 10);        // hundredths of a second since the start
       if (ts === lastT) continue;
-      // Flags and pitch only come with entity samples; the recorder's own
-      // frames do not carry them, and say so with null rather than a zero
-      // that would read as standing, level.
-      out.push([ts, x, y, z, yaw, weapon, flags === undefined ? null : flags,
-                pitch === undefined ? null : pitch]);
+      // Missing values say so with null rather than a zero that would read
+      // as standing, level, animation 0.
+      out.push([ts, x, y, z, yaw, weapon, orNull(flags), orNull(pitch),
+                orNull(legs), orNull(torso), orNull(moveDir)]);
       lastT = ts;
     }
     if (out.length > 1) tracks[String(client)] = out;
@@ -972,9 +989,50 @@ function buildMap(d, t0){
   // the tracks without knowing the config strings.
   const weapons = (d.configstrings.get(CS_WEAPON_LIST) || "").split(/\s+/).filter(Boolean)
     .map(w => prettyWeapon(w.replace(/_mp$/, "")));
+  /* The raw names too ("ak47_mp"), which is what the weapon definitions are
+     keyed by: the camera looks up each weapon's zoom there. */
+  const weaponFiles = (d.configstrings.get(CS_WEAPON_LIST) || "").split(/\s+/).filter(Boolean);
   return { compass: parts[0] || "", bounds,
-           center: d.configstrings.get(12) || "", tracks, weapons,
-           grenades: buildGrenades(d, t0) };
+           center: d.configstrings.get(12) || "", tracks, weapons, weaponFiles,
+           grenades: buildGrenades(d, t0), pov: buildPov(d, t0) };
+}
+
+/**
+ * The recorder's view at full client rate, packed for the first person camera.
+ *
+ *   t      Int32Array, milliseconds since the match start
+ *   v      Float32Array, POV_STRIDE per frame: x y z vx vy vz pitch yaw roll bob moveDir
+ *   state  player state samples at snapshot rate, milliseconds since start:
+ *          [t, client, eFlags, pmFlags, eyeHeight, adsFraction, weaponState,
+ *           lean, weapon, legsAnim, torsoAnim, weapAnim]
+ *
+ * Kept out of the tracks on purpose: 125 samples a second per match is right
+ * for a camera and wasteful for everything else.
+ */
+const POV_STRIDE = 11;
+function buildPov(d, t0){
+  const f = d.povFrames || [];
+  const n = Math.floor(f.length / 12);
+  const t = new Int32Array(n);
+  const v = new Float32Array(n * POV_STRIDE);
+  let m = 0, last = -Infinity;
+  for (let i = 0; i < n; i++) {
+    const o = i * 12, ct = f[o];
+    /* Frames are in client order; a replayed or duplicate command time would
+       make the camera stutter backwards. */
+    if (ct <= last) continue;
+    last = ct;
+    t[m] = ct - t0;
+    const w = m * POV_STRIDE;
+    v[w] = f[o + 1]; v[w + 1] = f[o + 2]; v[w + 2] = f[o + 3];
+    v[w + 3] = f[o + 4]; v[w + 4] = f[o + 5]; v[w + 5] = f[o + 6];
+    v[w + 6] = f[o + 9]; v[w + 7] = f[o + 10]; v[w + 8] = f[o + 11];
+    v[w + 9] = f[o + 8]; v[w + 10] = f[o + 7];
+    m++;
+  }
+  const state = (d.viewSamples || []).filter(s => s.length > 7).map(s =>
+    [s[0] - t0, s[1], s[7], s[8], s[9], s[10], s[11], s[12], s[6], s[13], s[14], s[15]]);
+  return { t: t.subarray(0, m), v: v.subarray(0, m * POV_STRIDE), stride: POV_STRIDE, state };
 }
 
 /** Flight paths of the thrown grenades.

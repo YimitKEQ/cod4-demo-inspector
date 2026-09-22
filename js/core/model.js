@@ -300,6 +300,9 @@ function buildModel(res){
     bounds: (res.map && res.map.bounds) || [],
     compass: (res.map && res.map.compass) || "",
     weaponNames: (res.map && res.map.weapons) || [],
+    weaponFiles: (res.map && res.map.weaponFiles) || [],
+    /* The recorder's view at full client rate; see js/core/pov.js. */
+    pov: (res.map && res.map.pov) || null,
     chat: res.chat,
     events: res.events,
     nameOf, teamOf,
