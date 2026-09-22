@@ -28,6 +28,12 @@ const CFG = {
   preRollS: 4.0,
   postRollS: 2.0,
 
+  /* No clip runs longer than this. A clutch can technically span most of a
+     round, but a 90 second clip is not a highlight and it is the renderer
+     that pays for it. The window is trimmed from the front, keeping the
+     moment that earned the highlight. */
+  maxClipS: 40.0,
+
   /* A burst of kills this close together counts as quick. */
   quickWindowS: 5.0,
 
@@ -271,9 +277,11 @@ function detectClutches(model, out){
       const times = theirKills.length ? theirKills.map(k => k.tS) : [clutchStart];
       const win = windowFor(times);
       /* A clutch is about the whole situation, so the window opens at the
-         moment it became a clutch, not at the first kill. */
+         moment it became a clutch, not at the first kill. It closes on the
+         last kill; only a clutch won without firing a shot (a defuse, or the
+         timer) runs to the end of the round. */
       win.startS = +Math.max(0, clutchStart - CFG.preRollS).toFixed(2);
-      if (won) win.endS = +Math.max(win.endS, state.endS).toFixed(2);
+      if (won && !theirKills.length) win.endS = +Math.max(win.endS, state.endS).toFixed(2);
 
       const name = model.nameOf(client);
       const tags = ["Clutch", "1v" + n, won ? "Won" : "Lost"];
@@ -516,6 +524,19 @@ function detectBomb(model, out, bombTimerS){
 /* ---- assembly ---- */
 
 /**
+ * Hold a clip to its maximum length. The trim comes off the front, because
+ * the end of the window is the moment worth watching, and the focus point is
+ * pulled inside whatever is left.
+ */
+function trimWindow(h){
+  if (h.endS - h.startS > CFG.maxClipS) h.startS = +(h.endS - CFG.maxClipS).toFixed(2);
+  if (h.startS < 0) h.startS = 0;
+  if (h.focusS < h.startS) h.focusS = h.startS;
+  if (h.focusS > h.endS) h.focusS = h.endS;
+  return h;
+}
+
+/**
  * Overlapping highlights for the same player collapse into the strongest one,
  * keeping the union of the tags and the widest window. Without this a 4k that
  * was also a clutch shows up three times in the top ten.
@@ -577,10 +598,12 @@ function detect(model, options){
   detectCollaterals(model, raw);
   detectBomb(model, raw, bombTimerS);
 
+  raw.forEach(trimWindow);
   raw.sort((a, b) => b.score - a.score || a.startS - b.startS || a.kind.localeCompare(b.kind));
   raw.forEach((h, i) => { h.id = "h" + i; });
 
-  const merged = mergeOverlapping(raw);
+  /* Merging widens windows, so the cap is applied again afterwards. */
+  const merged = mergeOverlapping(raw).map(trimWindow);
   merged.sort((a, b) => b.score - a.score || a.startS - b.startS);
 
   /* Write tags and a score back onto the kills. A kill's score is the best

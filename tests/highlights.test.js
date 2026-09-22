@@ -344,3 +344,21 @@ describe("highlights: weapon classes", () => {
     assert.equal(HL.weaponClass("something_new"), "other");
   });
 });
+
+describe("highlights: clip windows", () => {
+  it("never produces a clip longer than the cap", () => {
+    const res = run();
+    for (const h of res.highlights.concat(res.merged))
+      assert.ok(h.endS - h.startS <= HL.CFG.maxClipS + 0.01,
+                h.kind + " clip is " + (h.endS - h.startS).toFixed(1) + " s");
+  });
+
+  it("ends a won clutch on its last kill, not at the round timer", () => {
+    const m = build();
+    const res = run(m);
+    const won = res.highlights.find(h => h.kind === "clutch" && h.round === 2 &&
+                                         h.tags.indexOf("Won") >= 0);
+    const last = m.kills.find(k => k.id === won.killIds[won.killIds.length - 1]);
+    assert.close(won.endS, last.tS + HL.CFG.postRollS, 0.01);
+  });
+});
