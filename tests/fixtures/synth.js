@@ -95,11 +95,32 @@ function buildMatch(spec){
     const roundKills = (rspec.kills || []).slice().sort((a, b) => a.t - b.t);
     const timeline = [];
 
-    /* Baseline: everyone sampled every two seconds so no position is stale. */
+    /* Baseline walk.
+     *
+     * Sampled at 20 Hz like a real demo, and shaped so the ten players between
+     * them cover an area rather than a diagonal line. Each player loops around
+     * their own part of the map at a plausible running speed, with a height
+     * step for half of them so the reconstruction has two floors to find. The
+     * sample match is what a first time visitor sees, so it has to look like a
+     * match rather than a test artefact. */
+    const STEP = 0.05;
     for (const p of players) {
-      for (let t = 0; t <= ROUND_LEN; t += 2) {
-        pushSample(p.client, startS + t, 500 + p.client * 130 + t * 3,
-                   800 + p.client * 90, 100, (p.client * 37) % 360, 1);
+      const lane = p.client;
+      /* Each player owns a lap of a different size and phase. */
+      const radius = 520 + (lane % 5) * 260;
+      const cx = (lane < 5 ? -420 : 520);
+      const cy = -160 + ((lane % 5) - 2) * 190;
+      const phase = (lane * 2.1) % (Math.PI * 2);
+      const upper = lane % 2 === 1;
+      for (let t = 0; t <= ROUND_LEN; t += STEP) {
+        /* About 190 units a second along the lap, which is a CoD4 run. */
+        const a = phase + (t * 190) / radius;
+        const wobble = Math.sin(a * 3.1) * 70;
+        const x = cx + Math.cos(a) * (radius + wobble);
+        const y = cy + Math.sin(a) * (radius * 0.72 + wobble);
+        const z = 100 + (upper ? 128 : 0) + Math.sin(a * 2) * 8;
+        pushSample(p.client, startS + t, x, y, z,
+                   ((-a * 180) / Math.PI + 90) % 360, 1);
       }
     }
 
