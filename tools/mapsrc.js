@@ -252,29 +252,32 @@ function build(src){
     return !/^(caulk|clip|nodraw|hint|skip|trigger|portal|sky_|tool|editor|utility)/.test(m);
   };
 
-  /* Two buckets. An up facing surface is floor or roof and gets the map's own
-     overhead image projected onto it, which is what makes the real geometry
-     read as the real place without extracting a single texture. Everything
-     else is a wall and is shaded flat.
+  /* One index list per material, so every surface can wear its own texture.
+     Texture coordinates are kept in texels rather than normalised, because the
+     image size is not known here: the viewer divides by it with the texture's
+     own repeat, which is the same thing and keeps this tool independent of
+     whether the textures were ever extracted. */
+  const byMaterial = new Map();
 
-     Floor UVs are raw world x and y: the viewer scales them onto the compass
-     rectangle with the texture's own repeat and offset, so the projection
-     lines up with the 2D map exactly. */
-  const floorIdx = [], wallIdx = [];
+  const pushTri = (a, b, c, n, material, uvA, uvB, uvC) => {
+    /* A control grid regularly repeats a point to hold a corner, which makes a
+       triangle with no area and no usable normal. Those rendered as black
+       wedges scattered over the map. */
+    if (!Number.isFinite(n[0]) || !Number.isFinite(n[1]) || !Number.isFinite(n[2])) return;
+    const e1 = sub(b, a), e2 = sub(c, a);
+    if (len(cross(e1, e2)) < 1e-3) return;
 
-  const pushTri = (a, b, c, n, material) => {
     const base = positions.length / 3;
-    /* Horizontal, either way up. Patch winding is inconsistent in the source
-       so the sign of the normal says nothing; what matters is that the surface
-       is flat enough for an overhead projection to land on it sensibly. */
-    const up = Math.abs(n[2]) > 0.5;
-    for (const p of [a, b, c]) {
+    const tri = [[a, uvA], [b, uvB], [c, uvC]];
+    for (const [p, uv] of tri) {
       /* CoD is Z up in inches; the scene is Y up. */
       positions.push(p[0], p[2], -p[1]);
       normals.push(n[0], n[2], -n[1]);
-      uvs.push(p[0], p[1]);
+      uvs.push(uv[0], uv[1]);
     }
-    (up ? floorIdx : wallIdx).push(base, base + 1, base + 2);
+    let list = byMaterial.get(material);
+    if (!list) { list = []; byMaterial.set(material, list); }
+    list.push(base, base + 1, base + 2);
     const g = groups.get(material) || { material, count: 0 };
     g.count += 3;
     groups.set(material, g);
@@ -293,8 +296,10 @@ function build(src){
         if (!v00 || !v10 || !v01 || !v11) continue;
         const n = norm(cross(sub(v10, v00), sub(v01, v00)));
         if (!Number.isFinite(n[0])) continue;
-        pushTri(v00, v10, v11, n, p.material);
-        pushTri(v00, v11, v01, n, p.material);
+        /* The source carries real texture coordinates per control point. */
+        const uv = v => [v[3], v[4]];
+        pushTri(v00, v10, v11, n, p.material, uv(v00), uv(v10), uv(v11));
+        pushTri(v00, v11, v01, n, p.material, uv(v00), uv(v11), uv(v01));
         patchTris += 2;
       }
     }
@@ -307,8 +312,17 @@ function build(src){
     const recovered = brushFaces(faces, worldSize);
     for (const f of recovered) {
       if (!keep(f.material)) continue;
+      /* A brush face carries texture axes in the source, but their layout is
+         not documented and guessing it produces visibly wrong tiling. A planar
+         projection along the dominant axis, in world units, is predictable and
+         matches CoD's default scale of one texel to one unit. */
+      const ax = Math.abs(f.n[0]), ay = Math.abs(f.n[1]), az = Math.abs(f.n[2]);
+      const uvOf = p => (az >= ax && az >= ay) ? [p[0], p[1]]
+                      : (ax >= ay) ? [p[1], p[2]]
+                                   : [p[0], p[2]];
       for (let k = 1; k + 1 < f.poly.length; k++) {
-        pushTri(f.poly[0], f.poly[k], f.poly[k + 1], f.n, f.material);
+        pushTri(f.poly[0], f.poly[k], f.poly[k + 1], f.n, f.material,
+                uvOf(f.poly[0]), uvOf(f.poly[k]), uvOf(f.poly[k + 1]));
         brushTris++;
       }
     }
@@ -324,16 +338,23 @@ function build(src){
     if (wz < minZ) minZ = wz; if (wz > maxZ) maxZ = wz;
   }
 
-  /* Floors first, then walls, so the two are contiguous index ranges. */
-  const indices = floorIdx.concat(wallIdx);
+  /* Materials laid out one after another, each a contiguous range the viewer
+     can turn into its own draw call with its own texture. Biggest first, so
+     the heaviest surfaces are the ones that definitely render. */
+  const ordered = [...byMaterial.entries()].sort((a, b) => b[1].length - a[1].length);
+  const indices = [];
+  const ranges = [];
+  for (const [material, list] of ordered) {
+    ranges.push({ material, start: indices.length, count: list.length });
+    for (const v of list) indices.push(v);
+  }
 
   return {
     positions: new Float32Array(positions),
     normals: new Float32Array(normals),
     uvs: new Float32Array(uvs),
     indices: new Uint32Array(indices),
-    ranges: { floor: { start: 0, count: floorIdx.length },
-              wall: { start: floorIdx.length, count: wallIdx.length } },
+    ranges,
     bounds: { minX, minY, minZ, maxX, maxY, maxZ },
     stats: {
       patches: patches.length, brushes: brushes.length,
@@ -412,8 +433,7 @@ function main(){
     s.patchTriangles.toLocaleString() + " from patches)\n");
   process.stdout.write("    " + s.materials + " materials, top: " +
     mesh.materials.slice(0, 5).map(m => m.material).join(", ") + "\n");
-  process.stdout.write("    " + (mesh.ranges.floor.count / 3).toLocaleString() +
-    " floor triangles, " + (mesh.ranges.wall.count / 3).toLocaleString() + " wall\n");
+  process.stdout.write("    " + mesh.ranges.length + " material groups\n");
   const b = mesh.bounds;
   process.stdout.write("    world bounds x " + Math.round(b.minX) + " to " + Math.round(b.maxX) +
     ", y " + Math.round(b.minY) + " to " + Math.round(b.maxY) +

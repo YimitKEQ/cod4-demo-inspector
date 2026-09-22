@@ -130,6 +130,32 @@ function createViewport3D(container, state){
     return roundCache;
   }
 
+/* A plausible colour for a surface whose texture could not be resolved.
+   The real image name lives in the material asset inside the fastfiles, which
+   is a much larger read; until then a material called me_ground_dirt03 should
+   at least be the colour of dirt rather than a uniform grey that makes the
+   whole map look unfinished. */
+const MATERIAL_TINTS = [
+  [/grass|foliage|hedge|bush/, 0x6B7A4C],
+  [/dirt|ground|mud|earth|soil/, 0x8A7654],
+  [/sand|desert/, 0xBCA985],
+  [/asphalt|road|tarmac/, 0x585856],
+  [/concrete|cement|sidewalk|curb|kerb/, 0x96958C],
+  [/brick|adobe|clay/, 0x8C5A44],
+  [/wood|beam|plank|timber|crate/, 0x7A5F3E],
+  [/metal|steel|iron|pipe|fence/, 0x6E7278],
+  [/rubble|debris|trash|rubbish/, 0x7E7566],
+  [/roof|tile|shingle/, 0x7A6857],
+  [/glass|window/, 0x8FA2A8],
+  [/paper|decal|poster/, 0x9A9384]
+];
+
+function materialColour(name){
+  const n = String(name || "").toLowerCase();
+  for (const [re, colour] of MATERIAL_TINTS) if (re.test(n)) return colour;
+  return 0x8A9380;
+}
+
   /* ---- the map ---- */
 
   /**
@@ -149,7 +175,11 @@ function createViewport3D(container, state){
       .then(manifest => fetch(base + "geometry.bin")
         .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error("no geometry"))))
         .then(buf => ({ manifest, buf })))
-      .then(({ manifest, buf }) => {
+      .then(({ manifest, buf }) => fetch(base + "textures/textures.json")
+        .then(r => (r.ok ? r.json() : { textures: {} }))
+        .catch(() => ({ textures: {} }))
+        .then(tex => ({ manifest, buf, tex, base })))
+      .then(({ manifest, buf, tex, base }) => {
         const find = n => manifest.layout.find(l => l.name === n);
         const pos = find("position"), nor = find("normal");
         const uv = find("uv"), idx = find("index");
@@ -163,7 +193,7 @@ function createViewport3D(container, state){
         geo.setIndex(new THREE.BufferAttribute(
           new Uint32Array(buf, idx.byteOffset, idx.byteLength / 4), 1));
         geo.computeBoundingSphere();
-        then({ geo, manifest });
+        then({ geo, manifest, tex, base });
       })
       .catch(() => then(null));
   }
@@ -210,28 +240,6 @@ function createViewport3D(container, state){
   }
 
   /**
-   * Scale raw world coordinates onto the compass rectangle.
-   *
-   * The floor UVs from mapsrc.js are world x and y in inches. three applies
-   * uv * repeat + offset, so choosing repeat and offset this way makes the
-   * overhead image land exactly where it lands in the 2D view, vertical flip
-   * included.
-   */
-  function applyFloorProjection(mat){
-    const b = state.model.bounds;
-    if (!mat.map || !b || b.length !== 4) return;
-    const minX = Math.min(b[0], b[2]), maxX = Math.max(b[0], b[2]);
-    const minY = Math.min(b[1], b[3]), maxY = Math.max(b[1], b[3]);
-    const w = (maxX - minX) || 1, h = (maxY - minY) || 1;
-    mat.map.wrapS = THREE.ClampToEdgeWrapping;
-    mat.map.wrapT = THREE.ClampToEdgeWrapping;
-    mat.map.repeat.set(1 / w, -1 / h);
-    mat.map.offset.set(-minX / w, 1 + minY / h);
-    mat.map.needsUpdate = true;
-    mat.needsUpdate = true;
-  }
-
-  /**
    * The compass image, applied to the existing material when it arrives.
    * Building the map only after the image loaded made the whole 3D setup
    * asynchronous, which let a camera chosen from a link be silently undone.
@@ -247,15 +255,16 @@ function createViewport3D(container, state){
         tex.anisotropy = renderer.capabilities.getMaxAnisotropy
           ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 4;
         mapTexture = tex;
-        const mesh = gMap.children.find(c => c.isMesh);
-        if (mesh) {
-          /* Only the floor material takes the image; a wall wearing a top down
-             photograph looks like a mistake, because it is one. */
-          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-          mats[0].map = tex;
-          mats[0].color.setHex(0xFFFFFF);
-          if (state.geometrySource === "extracted") applyFloorProjection(mats[0]);
-          mats[0].needsUpdate = true;
+        /* Only the reconstruction wears the overhead image. Real geometry has
+           the game's own textures on each material and must not be painted
+           over with a photograph of itself from above. */
+        if (state.geometrySource !== "extracted") {
+          const mesh = gMap.children.find(c => c.isMesh);
+          if (mesh && !Array.isArray(mesh.material)) {
+            mesh.material.map = tex;
+            mesh.material.color.setHex(0xFFFFFF);
+            mesh.material.needsUpdate = true;
+          }
         }
         state.backdrop = "image";
       },
@@ -291,6 +300,62 @@ function createViewport3D(container, state){
     return spr;
   }
 
+  /* Shared geometry for every soldier: ten players is sixty meshes, and they
+     all point at the same handful of buffers. */
+  let SOLDIER = null;
+  function soldierGeometry(){
+    if (SOLDIER) return SOLDIER;
+    SOLDIER = {
+      leg: new THREE.BoxGeometry(8, 34, 9),
+      torso: new THREE.BoxGeometry(21, 25, 13),
+      arm: new THREE.BoxGeometry(6, 23, 7),
+      head: new THREE.SphereGeometry(7, 12, 10),
+      helmet: new THREE.SphereGeometry(7.6, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.55),
+      gun: new THREE.BoxGeometry(3.4, 3.4, 30)
+    };
+    return SOLDIER;
+  }
+
+  /**
+   * A readable soldier rather than a capsule.
+   *
+   * Roughly the proportions of a CoD4 player: 72 units tall, eyes at 60. It is
+   * not the game's model, which lives inside the fastfiles, but it reads as a
+   * person facing a direction with a weapon up, which is what the view needs
+   * in order to be about a match rather than about dots.
+   */
+  function buildSoldier(colour){
+    const G = soldierGeometry();
+    const parts = [];
+    const group = new THREE.Group();
+
+    const kit = new THREE.MeshStandardMaterial({ color: colour, roughness: 0.62 });
+    const dark = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(colour).multiplyScalar(0.55), roughness: 0.78 });
+    const skin = new THREE.MeshStandardMaterial({ color: 0xC8A683, roughness: 0.8 });
+    const steel = new THREE.MeshStandardMaterial({ color: 0x2B2E29, roughness: 0.5 });
+
+    const put = (geo, mat, x, y, z) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      group.add(m);
+      parts.push(m);
+      return m;
+    };
+
+    put(G.leg, dark, -5, 17, 0);
+    put(G.leg, dark, 5, 17, 0);
+    put(G.torso, kit, 0, 47, 0);
+    put(G.arm, dark, -13, 47, -2);
+    put(G.arm, dark, 13, 47, -2);
+    put(G.head, skin, 0, 65, 0);
+    put(G.helmet, kit, 0, 65, 0);
+    /* Weapon held across the chest, pointing where the player looks. */
+    put(G.gun, steel, 7, 52, -14);
+
+    return { group, parts };
+  }
+
   function buildPlayers(){
     clearGroup(gPlayers);
     clearGroup(gTrails);
@@ -304,12 +369,8 @@ function createViewport3D(container, state){
       const team = m.teamOf(client);
       const colour = team === m.teamNames[0] ? COL.allies : COL.opfor;
 
-      const body = new THREE.Mesh(
-        new THREE.CapsuleGeometry(15, PLAYER_H - 30, 4, 10),
-        new THREE.MeshStandardMaterial({ color: colour, roughness: 0.6,
-                                         transparent: true, opacity: 1 })
-      );
-      body.position.y = PLAYER_H / 2;
+      const figure = buildSoldier(colour);
+      const body = figure.group;
 
       const cone = new THREE.Mesh(
         new THREE.ConeGeometry(34, 150, 3, 1, true),
@@ -322,6 +383,8 @@ function createViewport3D(container, state){
 
       const holder = new THREE.Group();
       holder.add(body, cone);
+      /* The whole figure faces the way the cone does. */
+      figure.parts.forEach(m => { m.material.transparent = true; });
 
       const label = nameSprite(p ? p.name.replace(/\^./g, "") : ("client " + client));
       label.position.y = PLAYER_H + 34;
@@ -349,7 +412,8 @@ function createViewport3D(container, state){
 
       holder.visible = false;
       gPlayers.add(holder);
-      players.set(client, { holder, body, cone, label, ring, marker, colour });
+      players.set(client, { holder, body, cone, label, ring, marker, colour,
+                            parts: figure.parts });
 
       /* One trail line per player, buffer allocated once. */
       const geo = new THREE.BufferGeometry();
@@ -376,10 +440,18 @@ function createViewport3D(container, state){
 
       node.holder.visible = true;
       V(pos.x, pos.y, pos.z, node.holder.position);
-      node.holder.rotation.y = (pos.yaw * Math.PI) / 180;
+      /* CoD yaw 0 looks along world +X. A three.js object with rotation.y = 0
+         looks along its own -Z, which the world to scene mapping puts at world
+         +Y. That is a quarter turn apart, and without this correction every
+         player and every view cone pointed ninety degrees away from where they
+         were actually looking. Verified against the kill feed: at the moment
+         of a kill the killer's aim now sits a median two degrees off the
+         victim. */
+      node.holder.rotation.y = ((pos.yaw - 90) * Math.PI) / 180;
 
       const fresh = pos.ageS <= FRESH_S;
-      node.body.material.opacity = fresh ? 1 : 0.28;
+      const bodyAlpha = fresh ? 1 : 0.28;
+      for (const part of node.parts) part.material.opacity = bodyAlpha;
       node.cone.material.opacity = fresh ? 0.22 : 0.07;
       node.label.material.opacity = fresh ? 1 : 0.4;
       node.ring.visible = state.followClient === client;
@@ -753,78 +825,47 @@ function createViewport3D(container, state){
     if (!real) { state.geometrySource = "reconstructed"; state.emit("geometry"); return; }
     clearGroup(gMap);
 
-    /* Floors carry the map's own overhead image, projected from above; walls
-       are shaded flat. The floor UVs are raw world coordinates, so the texture
-       transform maps them onto the compass rectangle, which is the same
-       rectangle the 2D view uses. The two views therefore agree exactly. */
-    const r = real.manifest.ranges;
     const geo = real.geo;
-    const idx = geo.getIndex();
-    const pos = geo.getAttribute("position");
-
-    /* A stock map extends well past the playable area: terrain skirts, the
-       skybox shell, blocked off streets. The overhead image only covers the
-       compass rectangle, so projecting it onto those outer surfaces clamps to
-       the edge pixel and paints them black. Splitting the floors by whether
-       they fall inside the rectangle lets the outside be shaded as ground
-       instead of looking like holes in the world. */
-    const b = state.model.bounds;
-    const inRect = (b && b.length === 4)
-      ? { minX: Math.min(b[0], b[2]), maxX: Math.max(b[0], b[2]),
-          minY: Math.min(b[1], b[3]), maxY: Math.max(b[1], b[3]) }
-      : null;
-
-    let floorIn = r ? r.floor.count : 0, floorOut = 0;
-    if (r && inRect && idx) {
-      const arr = idx.array;
-      const inside = [], outside = [];
-      for (let i = r.floor.start; i < r.floor.start + r.floor.count; i += 3) {
-        let cx = 0, cy = 0;
-        for (let k = 0; k < 3; k++) {
-          const v = arr[i + k];
-          cx += pos.getX(v);
-          /* Scene Z is negated world Y. */
-          cy += -pos.getZ(v);
-        }
-        cx /= 3; cy /= 3;
-        const pad = 200;
-        const hit = cx >= inRect.minX - pad && cx <= inRect.maxX + pad &&
-                    cy >= inRect.minY - pad && cy <= inRect.maxY + pad;
-        (hit ? inside : outside).push(arr[i], arr[i + 1], arr[i + 2]);
-      }
-      const rest = Array.from(arr.slice(r.wall.start, r.wall.start + r.wall.count));
-      const merged = inside.concat(outside, rest);
-      geo.setIndex(new THREE.BufferAttribute(new Uint32Array(merged), 1));
-      floorIn = inside.length;
-      floorOut = outside.length;
-    }
+    const ranges = real.manifest.ranges || [];
+    const textures = (real.tex && real.tex.textures) || {};
+    const loader = new THREE.TextureLoader();
+    const mats = [];
 
     geo.clearGroups();
-    if (r) {
-      if (floorIn) geo.addGroup(0, floorIn, 0);
-      if (floorOut) geo.addGroup(floorIn, floorOut, 2);
-      if (r.wall.count) geo.addGroup(floorIn + floorOut, r.wall.count, 1);
-    }
+    ranges.forEach((r, i) => {
+      if (!r.count) return;
+      geo.addGroup(r.start, r.count, mats.length);
 
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: mapTexture ? 0xFFFFFF : 0x8D9683,
-      map: mapTexture || null,
-      roughness: 0.94, metalness: 0, side: THREE.DoubleSide
-    });
-    const wallMat = new THREE.MeshStandardMaterial({
-      color: 0x7E8878, roughness: 0.96, metalness: 0, side: THREE.DoubleSide
-    });
-    /* Out of play ground: present, clearly not where the match happened. */
-    const outerMat = new THREE.MeshStandardMaterial({
-      color: 0x5A6353, roughness: 1, metalness: 0, side: THREE.DoubleSide
-    });
-    applyFloorProjection(floorMat);
+      const info = textures[r.material];
+      const mat = new THREE.MeshStandardMaterial({
+        color: info ? 0xFFFFFF : materialColour(r.material),
+        roughness: 0.92, metalness: 0, side: THREE.DoubleSide
+      });
 
-    gMap.add(new THREE.Mesh(geo, r ? [floorMat, wallMat, outerMat] : floorMat));
-    gMap.add(new THREE.LineSegments(
-      new THREE.EdgesGeometry(geo, 30),
-      new THREE.LineBasicMaterial({ color: 0x1B1F18, transparent: true, opacity: 0.22 })));
+      if (info) {
+        /* The mesh carries texture coordinates in texels, because the image
+           size was not known when it was built. Dividing by the real size
+           here is what turns them into the coordinates the game used. */
+        loader.load(real.base + "textures/" + info.file, tex => {
+          tex.colorSpace = THREE.SRGBColorSpace;
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(1 / info.width, -1 / info.height);
+          tex.anisotropy = renderer.capabilities.getMaxAnisotropy
+            ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 4;
+          mat.map = tex;
+          mat.needsUpdate = true;
+        }, undefined, () => { /* leave it flat */ });
+      }
+      mats.push(mat);
+    });
+
+    gMap.add(new THREE.Mesh(geo, mats.length ? mats : new THREE.MeshStandardMaterial({
+      color: 0x8A9380, roughness: 0.92, side: THREE.DoubleSide })));
+
     xrayOn = null;
+    state.texturedGroups = ranges.filter(r => textures[r.material]).length;
+    state.totalGroups = ranges.length;
 
     /* Frame the real geometry, not the reconstruction it replaced. The
        extracted map extends past the playable area (terrain, skybox shells),
