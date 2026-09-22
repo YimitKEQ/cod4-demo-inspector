@@ -245,6 +245,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* The kill feed drawn over the map during playback. Grease pencil on acetate:
    a flat card, no shadow, hairline rule. */
+.cambar { display: flex; gap: 2px; }
+.viewport-3d canvas { display: block; width: 100%; height: 100%; }
+
 .killfeed {
   position: absolute; top: 44px; right: var(--s2);
   width: 270px; z-index: 2; pointer-events: none;

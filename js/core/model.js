@@ -214,12 +214,37 @@ function buildModel(res){
   const roundStates = res.rounds.map((r, ri) => {
     const roundKills = kills.filter(k => k.roundIdx === ri);
     const endS = r.startS + r.durS;
+    /* Who was on each side for this round.
+     *
+     * The connect and disconnect messages look authoritative and are not. In a
+     * real demo one player's only MP_CONNECTED arrives at 1508 s of a 1537 s
+     * match, because it is a late reconnect rather than their first
+     * appearance; trusting it dropped them from every round, shrank their team
+     * to four, and turned a four kill round into an ace.
+     *
+     * So evidence outranks the heuristic. A player who killed, died, or was
+     * being transmitted during the round was demonstrably there, whatever the
+     * messages say. The join and leave window is only consulted for players
+     * who left no trace at all.
+     */
+    const played = new Set();
+    for (const k of roundKills) {
+      if (k.killer !== null) played.add(k.killer);
+      played.add(k.victim);
+    }
+    const seenInRound = c => {
+      const t = tracks[String(c)];
+      if (!t || !t.length) return false;
+      const i = sampleIndexAt(t, endS);
+      return i >= 0 && t[i][0] / 100 >= r.startS;
+    };
+
     const alive = new Map();
     for (const t of teamNames) {
-      /* Only players actually in the match at this point in time count. */
       const inRound = (rosters.get(t) || []).filter(c => {
         const p = playerBy.get(c);
         if (!p) return false;
+        if (played.has(c) || seenInRound(c)) return true;
         if (p.joinedS !== null && p.joinedS > endS) return false;
         if (p.leftS !== null && p.leftS < r.startS) return false;
         return true;

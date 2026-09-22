@@ -123,6 +123,11 @@ async function main(){
 
   const proc = spawn(chrome, [
     "--headless=new",
+    /* Software WebGL: headless has no GPU, and without this the 3D view gets
+       a null context and renders nothing at all. */
+    "--use-gl=angle",
+    "--use-angle=swiftshader",
+    "--enable-unsafe-swiftshader",
     "--disable-gpu",
     "--no-sandbox",
     "--no-first-run",

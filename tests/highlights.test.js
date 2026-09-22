@@ -413,3 +413,57 @@ describe("model: unknown weapons", () => {
     for (const k of normal) assert.equal(k.weaponKnown, true);
   });
 });
+
+describe("model: round rosters trust evidence over connect messages", () => {
+  /* A real demo carried one player's only MP_CONNECTED at 1508 s of a 1537 s
+     match, a late reconnect rather than their first appearance. Trusting it
+     dropped them from every round, shrank their team to four, and turned a
+     four kill round into an ace. */
+  const withLateJoin = () => {
+    const match = referenceMatch();
+    const victim = match.players.find(p => p.name === "Sander");
+    victim.joinedS = match.info.durationS - 5;
+    return MODEL.buildModel(match);
+  };
+
+  it("keeps a player who demonstrably played, whatever the join message says", () => {
+    const m = withLateJoin();
+    for (const st of m.roundStates) {
+      const roster = st.rosters.get("Rivals") || [];
+      assert.equal(roster.length, 5,
+                   "round " + st.n + " roster should still hold five players");
+    }
+  });
+
+  it("does not call a quad kill an ace because the roster came up short", () => {
+    const res = run(withLateJoin());
+    const quad = res.highlights.find(h => h.kind === "multikill" && h.round === 1);
+    assert.equal(quad.killIds.length, 4);
+    assert.equal(quad.tags.indexOf("Ace"), -1, "four kills against five is not an ace");
+    assert.includes(quad.tags, "Quad kill");
+  });
+
+  it("an ace requires having killed every enemy on the roster", () => {
+    const m = MODEL.buildModel(buildMatch({
+      teams: { A: ["Solo", "Mate"], B: ["F1", "F2", "F3"] },
+      rounds: [{ winner: "A", reason: "B eliminated", kills: [
+        { t: 5, killer: "Solo", victim: "F1" },
+        { t: 7, killer: "Solo", victim: "F2" },
+        { t: 9, killer: "Solo", victim: "F3" }
+      ] }]
+    }));
+    const h = run(m).highlights.find(x => x.kind === "multikill");
+    assert.includes(h.tags, "Ace", "three of three is an ace");
+
+    const partial = MODEL.buildModel(buildMatch({
+      teams: { A: ["Solo", "Mate"], B: ["F1", "F2", "F3"] },
+      rounds: [{ winner: "A", kills: [
+        { t: 5, killer: "Solo", victim: "F1" },
+        { t: 7, killer: "Solo", victim: "F2" },
+        { t: 9, killer: "Mate", victim: "F3" }
+      ] }]
+    }));
+    const h2 = run(partial).highlights.find(x => x.kind === "multikill" && x.killIds.length === 2);
+    assert.equal(h2.tags.indexOf("Ace"), -1, "a teammate took the third, so not an ace");
+  });
+});

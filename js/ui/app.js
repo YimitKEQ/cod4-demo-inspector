@@ -82,6 +82,8 @@ state.on("tab", () => showTab(state.tab));
 
 const viewport = VIEWPORT.createViewport($("#viewport"), state);
 const timeline = TIMELINE.createTimeline($("#timeline"), state);
+const viewSwitch = root.DM1_VIEWSWITCH.createViewSwitch(
+  $("#viewport"), document.querySelector(".viewport-bar"), viewport, state);
 
 /* ---- header ---- */
 
@@ -295,6 +297,12 @@ function applyUrl(){
   const q = new URLSearchParams(location.search);
   if (q.has("tab")) { const t = q.get("tab"); if (TAB_KEYS.includes(t)) state.setTab(t); }
   if (q.has("t")) { const t = Number(q.get("t")); if (isFinite(t)) state.seek(t); }
+  if (q.get("view") === "3d") viewSwitch.setMode("3d");
+  if (q.has("cam")) viewSwitch.setCamera(q.get("cam"));
+  if (q.has("kill")) {
+    const k = state.model.kills.find(x => x.id === q.get("kill"));
+    if (k) state.selectKill(k.id, { play: false });
+  }
 }
 /**
  * Load a demo the page can reach over HTTP. That is what makes a link to a
@@ -373,6 +381,9 @@ window.addEventListener("keydown", e => {
   if (e.key === "?") { help.classList.toggle("hidden"); e.preventDefault(); return; }
   if (typing || !state.model) return;
 
+  /* The 3D view takes the camera keys, V and R before anything else. */
+  if (viewSwitch.handleKey(e)) { e.preventDefault(); return; }
+
   /* The active list gets first refusal on the arrow keys. */
   const list = state.tab === "kills" ? killBrowser
              : state.tab === "highlights" ? highlightList : null;
@@ -398,11 +409,14 @@ window.addEventListener("keydown", e => {
     case "a": case "A": state.toggleView("aimRays"); break;
     case "n": case "N": state.toggleView("names"); break;
     case "g": case "G": state.toggleView("grenades"); break;
-    default:
-      if (e.key >= "1" && e.key <= "7") {
-        const name = TAB_KEYS[Number(e.key) - 1];
-        if (name) state.setTab(name);
-      }
+    case "[": case "]": {
+      const i = TAB_KEYS.indexOf(state.tab);
+      const next = (i + (e.key === "]" ? 1 : TAB_KEYS.length - 1)) % TAB_KEYS.length;
+      state.setTab(TAB_KEYS[next]);
+      e.preventDefault();
+      break;
+    }
+    case "h": case "H": state.toggleView("heatmap"); break;
   }
 });
 

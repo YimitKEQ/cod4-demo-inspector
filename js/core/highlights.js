@@ -211,8 +211,14 @@ function detectMultikills(model, out){
       list.sort((a, b) => a.tS - b.tS);
       const team = model.teamOf(client);
       const enemyTeam = model.teamNames.find(t => t !== team);
-      const enemyCount = (state.rosters.get(enemyTeam) || []).length;
-      const isAce = enemyCount > 0 && list.length >= enemyCount;
+      const enemyRoster = state.rosters.get(enemyTeam) || [];
+      /* An ace is killing the whole enemy team yourself. Testing that the
+         victims actually cover the roster is stricter than comparing counts
+         and cannot be fooled by a roster that is one short: a four kill round
+         was being called an ace because one player was wrongly missing from
+         the other side. */
+      const victims = new Set(list.map(k => k.victim));
+      const isAce = enemyRoster.length > 0 && enemyRoster.every(c => victims.has(c));
       const n = list.length;
 
       const times = list.map(k => k.tS);

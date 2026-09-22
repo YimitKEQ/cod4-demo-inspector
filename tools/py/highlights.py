@@ -211,8 +211,12 @@ def detect_multikills(m: Match, out: List[Dict[str, Any]]) -> None:
             lst.sort(key=lambda k: k["tS"])
             team = m.team_of(client)
             enemy_team = next((t for t in m.team_names if t != team), None)
-            enemy_count = len(state["rosters"].get(enemy_team, []))
-            is_ace = enemy_count > 0 and len(lst) >= enemy_count
+            enemy_roster = state["rosters"].get(enemy_team, [])
+            # An ace is killing the whole enemy team yourself. Testing that the
+            # victims cover the roster is stricter than comparing counts and
+            # cannot be fooled by a roster that is one short.
+            victims = {k["victim"] for k in lst}
+            is_ace = len(enemy_roster) > 0 and all(c in victims for c in enemy_roster)
             n = len(lst)
 
             times = [k["tS"] for k in lst]
