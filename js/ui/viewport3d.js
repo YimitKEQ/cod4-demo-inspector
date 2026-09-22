@@ -94,6 +94,18 @@ function createViewport3D(container, state){
     state.contextLost = false;
     if (state.model) rebuild();
   });
+  /* Raw linear output of a lit scene looks like a technical drawing: flat,
+     chalky, with blown highlights and no depth. A filmic curve is what makes
+     it read as something photographed rather than something plotted. */
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+
+  /* Shadows are the single biggest thing separating a model of a map from a
+     place. Without them nothing sits on the ground: every building floats and
+     the whole scene reads as cardboard. */
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   renderer.domElement.style.display = "block";
   renderer.domElement.style.width = "100%";
@@ -101,13 +113,106 @@ function createViewport3D(container, state){
   container.append(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(COL.slate);
-  scene.fog = new THREE.Fog(COL.slate, 6000, 26000);
 
-  scene.add(new THREE.HemisphereLight(0xF6F8F0, 0x4E5845, 3.1));
-  const key = new THREE.DirectionalLight(0xFFF8E6, 1.9);
-  key.position.set(1200, 2400, 900);
+  /* The sky.
+     A flat background colour behind a map reads as a void, and the eye takes
+     the whole thing for a diagram. Crash is a dusty town on a hot afternoon,
+     so the dome runs from a washed out warm haze at the horizon to a dusty
+     blue overhead, with the sun blooming where the light actually comes from.
+     It is a shader rather than an image because it has to cost nothing to
+     download and stays sharp at any size. */
+  const SKY = {
+    zenith: new THREE.Color(0x3C74B0),
+    horizon: new THREE.Color(0xDCCBA6),
+    sun: new THREE.Color(0xFFF0CE)
+  };
+  /* Up and across the map rather than straight overhead: a high sun flattens
+     everything it lights, and the long shadows are the point. */
+  const SUN_DIR = new THREE.Vector3(0.52, 0.60, 0.42).normalize();
+
+  const sky = new THREE.Mesh(
+    new THREE.SphereGeometry(20000, 32, 20),
+    new THREE.ShaderMaterial({
+      side: THREE.BackSide, depthWrite: false, fog: false,
+      uniforms: {
+        zenith: { value: SKY.zenith },
+        horizon: { value: SKY.horizon },
+        sunColour: { value: SKY.sun },
+        sunDir: { value: SUN_DIR.clone() }
+      },
+      vertexShader:
+        "varying vec3 vDir;" +
+        "void main(){ vDir = normalize(position);" +
+        "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+      fragmentShader:
+        "uniform vec3 zenith; uniform vec3 horizon; uniform vec3 sunColour;" +
+        "uniform vec3 sunDir; varying vec3 vDir;" +
+        "void main(){" +
+        "  float h = clamp(vDir.y, 0.0, 1.0);" +
+        /* The haze is a band sitting on the horizon, not a wash over the whole
+           sky. Blending it across the full dome is what made the first attempt
+           look like brown soup from every angle: at a low camera pitch almost
+           everything on screen is near the horizon, so the band has to end
+           quickly or it is the only sky anyone ever sees. */
+        "  vec3 col = mix(horizon, zenith, smoothstep(0.0, 0.30, h));" +
+        /* Below the horizon the haze keeps going, so the ground plane never
+           meets a hard edge. */
+        "  col = mix(col, horizon * 0.82, clamp(-vDir.y * 6.0, 0.0, 1.0));" +
+        "  float d = clamp(dot(normalize(vDir), normalize(sunDir)), 0.0, 1.0);" +
+        "  col += sunColour * pow(d, 28.0) * 0.55;" +   /* the disc */
+        "  col += sunColour * pow(d, 5.0) * 0.10;" +    /* the haze around it */
+        "  gl_FragColor = vec4(col, 1.0); }"
+    })
+  );
+  sky.frustumCulled = false;
+  sky.renderOrder = -1;
+  scene.add(sky);
+
+  /* Distance haze in the horizon colour, so far geometry dissolves into the
+     sky instead of ending against it. Ranges are set from the map's real size
+     once it loads. */
+  scene.background = SKY.horizon.clone();
+  scene.fog = new THREE.Fog(SKY.horizon.clone(), 6000, 26000);
+
+  /* Sky bounce: cool from above, warm bounce off the sand below. Kept low,
+     because its job is to open the shadows, not to light the scene. */
+  scene.add(new THREE.HemisphereLight(0x9FC0E0, 0x6B5B42, 0.85));
+
+  const key = new THREE.DirectionalLight(0xFFF1D2, 3.1);
+  key.position.copy(SUN_DIR).multiplyScalar(9000);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.bias = -0.0009;
+  key.shadow.normalBias = 2.5;
   scene.add(key);
+  scene.add(key.target);
+
+  /**
+   * Point the sun at the map and size its shadow camera to cover it.
+   *
+   * A directional shadow is an orthographic render of the scene from the
+   * light, so the box has to be fitted to what is actually being looked at:
+   * too big and the shadows turn to mush, too small and they stop at a line
+   * across the middle of the map.
+   */
+  function fitSun(b){
+    if (!b) return;
+    const cx = (b.minX + b.maxX) / 2, cy = (b.minY + b.maxY) / 2;
+    const cz = (b.minZ + b.maxZ) / 2;
+    const centre = V(cx, cy, cz);
+    const span = Math.max(600, b.maxX - b.minX, b.maxY - b.minY);
+    const reach = span * 0.75;
+
+    key.target.position.copy(centre);
+    key.position.copy(centre).addScaledVector(SUN_DIR, span * 1.6);
+
+    const cam = key.shadow.camera;
+    cam.left = -reach; cam.right = reach;
+    cam.top = reach; cam.bottom = -reach;
+    cam.near = 1;
+    cam.far = span * 3.4;
+    cam.updateProjectionMatrix();
+  }
 
   const cameras = root.DM1_CAMERAS.createCameraRig(THREE, renderer.domElement, state);
   scene.add(cameras.group);
@@ -120,6 +225,11 @@ function createViewport3D(container, state){
   const gHeat = new THREE.Group();
   const gOverlay = new THREE.Group();
   const gProps = new THREE.Group();
+  /* Named so the scene can be read at a glance from the console or a probe,
+     rather than counted as a list of anonymous groups. */
+  gMap.name = "map"; gProps.name = "props"; gPlayers.name = "players";
+  gTrails.name = "trails"; gKills.name = "kills"; gNades.name = "nades";
+  gHeat.name = "heat"; gOverlay.name = "overlay"; sky.name = "sky";
   scene.add(gMap, gProps, gPlayers, gTrails, gKills, gNades, gHeat, gOverlay);
 
   let occupancy = null;
@@ -969,6 +1079,8 @@ function materialColour(name){
                instance before the renderer can cull it; without one the only
                safe thing it can do is draw all of them, every frame. */
             mesh.computeBoundingSphere();
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
             gProps.add(mesh);
             placed += rows.length;
             state.propCount = placed;
@@ -1039,6 +1151,9 @@ function materialColour(name){
       cameras.reset(state.model);
       cameras.setAspect(cam.aspect || 1);
     }
+    /* The dome is centred on the viewer, so flying across a map the size of a
+       town never reaches its edge. */
+    sky.position.copy(cam.position);
 
     renderer.render(scene, cameras.active());
     /* What actually reached the screen, so a blank view can be told apart
@@ -1110,8 +1225,11 @@ function materialColour(name){
       mats.push(mat);
     });
 
-    gMap.add(new THREE.Mesh(geo, mats.length ? mats : new THREE.MeshStandardMaterial({
-      color: 0x8A9380, roughness: 0.92, side: THREE.DoubleSide })));
+    const shell = new THREE.Mesh(geo, mats.length ? mats : new THREE.MeshStandardMaterial({
+      color: 0x8A9380, roughness: 0.92, side: THREE.DoubleSide }));
+    shell.castShadow = true;
+    shell.receiveShadow = true;
+    gMap.add(shell);
 
     /* A ground plane under everything. The extracted shell has gaps where a
        surface was caulk or a brush was never drawn, and without this you see
@@ -1121,8 +1239,12 @@ function materialColour(name){
     const pad = 1500;
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry((b.maxX - b.minX) + pad * 2, (b.maxY - b.minY) + pad * 2),
-      new THREE.MeshStandardMaterial({ color: 0x5E6656, roughness: 1 })
+      /* Dry dirt rather than the old grey green. A neutral slab under a warm
+         map is the thing that made the whole view look like a model on a
+         table. */
+      new THREE.MeshStandardMaterial({ color: 0x8C7A5C, roughness: 1 })
     );
+    ground.receiveShadow = true;
     ground.rotation.x = -Math.PI / 2;
     V((b.minX + b.maxX) / 2, (b.minY + b.maxY) / 2, b.minZ - 12, ground.position);
     gMap.add(ground);
@@ -1159,6 +1281,7 @@ function materialColour(name){
       o.maxX - o.minX > 1 && o.maxY - o.minY > 1;
     const framed = usable(overlap) ? overlap : rb;
     cameras.setBounds(framed);
+    fitSun(framed);
 
     /* Fog has to stay positive and has to start beyond the map, or the map is
        inside its own haze. */

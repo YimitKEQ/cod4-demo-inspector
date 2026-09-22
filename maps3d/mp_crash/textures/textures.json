@@ -8,9 +8,9 @@
     },
     "me_ground_dirt03_decal": {
       "file": "me_ground_dirt03_decal.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT5"
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
     },
     "me_ground_dirt03": {
       "file": "me_ground_dirt03.png",
@@ -30,6 +30,12 @@
       "height": 512,
       "format": "DXT1"
     },
+    "me_woodbeam_01": {
+      "file": "me_woodbeam_01.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
     "me_cinderblock_wall2": {
       "file": "me_cinderblock_wall2.png",
       "width": 256,
@@ -38,9 +44,9 @@
     },
     "me_decal_papers": {
       "file": "me_decal_papers.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT1"
+      "width": 512,
+      "height": 512,
+      "format": "DXT5"
     },
     "me_ground_drygrass_dec": {
       "file": "me_ground_drygrass_dec.png",
@@ -92,9 +98,9 @@
     },
     "me_ground_dirt04_decal": {
       "file": "me_ground_dirt04_decal.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT5"
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
     },
     "me_concrete_dest1": {
       "file": "me_concrete_dest1.png",
@@ -110,8 +116,8 @@
     },
     "me_cinderblock_wall2_top": {
       "file": "me_cinderblock_wall2_top.png",
-      "width": 128,
-      "height": 128,
+      "width": 256,
+      "height": 256,
       "format": "DXT1"
     },
     "me_stonewall_03": {
@@ -134,6 +140,12 @@
     },
     "me_metal_rust_02": {
       "file": "me_metal_rust_02.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_woodbeam_end_01": {
+      "file": "me_woodbeam_end_01.png",
       "width": 512,
       "height": 512,
       "format": "DXT1"
@@ -205,8 +217,5 @@
       "format": "DXT1"
     }
   },
-  "missing": [
-    "me_woodbeam_01",
-    "me_woodbeam_end_01"
-  ]
+  "missing": []
 }

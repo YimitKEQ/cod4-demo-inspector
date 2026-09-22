@@ -165,10 +165,13 @@ function createCameraRig(THREE, dom, state){
     const b = bounds;
     if (b) {
       orbit.target.set((b.minX + b.maxX) / 2, (b.minZ + b.maxZ) / 2, -(b.minY + b.maxY) / 2);
-      orbit.dist = Math.max(b.maxX - b.minX, b.maxY - b.minY) * 0.9;
-      fly.pos.copy(orbit.target).add(new THREE.Vector3(0, orbit.dist * 0.6, orbit.dist * 0.6));
+      orbit.dist = Math.max(b.maxX - b.minX, b.maxY - b.minY) * 0.62;
+      fly.pos.copy(orbit.target).add(new THREE.Vector3(0, orbit.dist * 0.45, orbit.dist * 0.6));
     }
-    orbit.yaw = 0.8; orbit.pitch = 0.75;
+    /* Low and close enough that buildings have height and the streets read as
+       streets. The old default sat high and far, which turns any map into a
+       floor plan no matter how well it is lit. */
+    orbit.yaw = 0.8; orbit.pitch = 0.34;
     /* Rebuilding the map must not steal the camera the user already chose.
        Loading the texture is asynchronous, so a camera picked from the URL or
        by a keypress was arriving before this ran and being silently reset to

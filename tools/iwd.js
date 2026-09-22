@@ -332,8 +332,20 @@ function colourIndex(index){
  * Anything still unresolved is left untextured rather than given the wrong
  * picture.
  */
+/* A few materials are drawn with an image that shares no name with them at
+   all, so no amount of rule following will connect the two. Naming them here
+   is honest about that: it is a lookup table, not a guess. */
+const ALIASES = {
+  me_woodbeam_01: "ch_wood01_col",
+  me_woodbeam_end_01: "ch_wood01_col"
+};
+
 function findImage(index, name){
   const n = String(name).toLowerCase().replace(/^\*/, "");
+  if (ALIASES[n]) {
+    const hit = index.get("images/" + ALIASES[n] + ".iwi");
+    if (hit) return hit;
+  }
   const bases = [n];
 
   for (const p of PREFIXES) if (n.startsWith(p)) bases.push(n.slice(p.length));
@@ -350,6 +362,15 @@ function findImage(index, name){
     /* me_cinderblock_wall2 is stored as me_cinderblock_wall. */
     const untrailed = b.replace(/\d+$/, "");
     if (untrailed !== b) tries.push(untrailed, untrailed + "_col");
+    /* A material often names a variant of a set that ships only one image:
+       ch_woodplank02 is drawn with ch_woodplank01_col. The numbering starts
+       at 01 and rarely passes 04, so walking the set is cheap and exact. */
+    const stem = b.replace(/_?\d+$/, "");
+    if (stem !== b) {
+      for (const n of ["01", "02", "03", "04"]) {
+        tries.push(stem + n, stem + n + "_col", stem + "_" + n + "_col");
+      }
+    }
   }
 
   for (const t of tries) {
@@ -362,12 +383,18 @@ function findImage(index, name){
      words. More than half of them has to match, so a single common word like
      "ground" cannot drag in something unrelated, and the shortest name wins
      because the least padded one is the base texture. */
-  const tokens = n.split(/[_\s]+/).filter(w => w.length > 3);
+  /* Variant numbers and plurals are noise when matching by name: the material
+     me_woodplanks01 is drawn with ch_woodplank01_col, which shares no prefix
+     and no exact word with it until both are stripped of digits and the
+     trailing s. */
+  const strip = w => w.replace(/\d+/g, "").replace(/s$/, "");
+  const tokens = n.split(/[_\s]+/).map(strip).filter(w => w.length > 3);
   if (!tokens.length) return null;
   let best = null, bestScore = 0;
   for (const bare of colourIndex(index)) {
+    const flat = strip(bare);
     let score = 0;
-    for (const w of tokens) if (bare.includes(w)) score++;
+    for (const w of tokens) if (flat.includes(w) || bare.includes(w)) score++;
     if (score * 2 < tokens.length || score === 0) continue;
     const s = score * 1000 - bare.length;
     if (s > bestScore) { bestScore = s; best = bare; }

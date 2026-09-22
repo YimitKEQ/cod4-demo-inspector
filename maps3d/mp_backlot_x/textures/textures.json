@@ -8,15 +8,15 @@
     },
     "me_ground_dirt04_decal": {
       "file": "me_ground_dirt04_decal.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT5"
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
     },
     "me_decal_papers": {
       "file": "me_decal_papers.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT1"
+      "width": 512,
+      "height": 512,
+      "format": "DXT5"
     },
     "me_cinderblock_wall2": {
       "file": "me_cinderblock_wall2.png",
@@ -86,15 +86,15 @@
     },
     "me_cinderblock_wall2_top": {
       "file": "me_cinderblock_wall2_top.png",
-      "width": 128,
-      "height": 128,
+      "width": 256,
+      "height": 256,
       "format": "DXT1"
     },
     "me_ground_dirt03_decal": {
       "file": "me_ground_dirt03_decal.png",
-      "width": 256,
-      "height": 256,
-      "format": "DXT5"
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
     },
     "me_ground_drygrass": {
       "file": "me_ground_drygrass.png",
@@ -162,6 +162,12 @@
       "height": 512,
       "format": "DXT1"
     },
+    "ch_woodplank02": {
+      "file": "ch_woodplank02.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
     "me_fence_chainlink": {
       "file": "me_fence_chainlink.png",
       "width": 256,
@@ -192,6 +198,18 @@
       "height": 512,
       "format": "DXT1"
     },
+    "me_woodbeam_end_01": {
+      "file": "me_woodbeam_end_01.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
+    "me_woodplanks01": {
+      "file": "me_woodplanks01.png",
+      "width": 512,
+      "height": 512,
+      "format": "DXT1"
+    },
     "me_decal_bullet_holes01": {
       "file": "me_decal_bullet_holes01.png",
       "width": 512,
@@ -200,8 +218,8 @@
     },
     "me_door_rollup1": {
       "file": "me_door_rollup1.png",
-      "width": 32,
-      "height": 64,
+      "width": 512,
+      "height": 512,
       "format": "DXT1"
     },
     "me_graffiti13": {
@@ -222,6 +240,12 @@
       "height": 256,
       "format": "DXT1"
     },
+    "me_graffiti02": {
+      "file": "me_graffiti02.png",
+      "width": 512,
+      "height": 128,
+      "format": "DXT5"
+    },
     "ch_grass_01": {
       "file": "ch_grass_01.png",
       "width": 512,
@@ -229,10 +253,5 @@
       "format": "DXT1"
     }
   },
-  "missing": [
-    "ch_woodplank02",
-    "me_woodbeam_end_01",
-    "me_woodplanks01",
-    "me_graffiti02"
-  ]
+  "missing": []
 }
