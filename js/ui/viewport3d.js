@@ -76,13 +76,23 @@ function createViewport3D(container, state){
     return null;
   }
 
-  /* A lost context looks exactly like a bug in this code, so it has to
-     announce itself. */
+  /* Losing the context is survivable and must be survived.
+     Windows resets a GPU driver that takes too long on one frame, and the
+     browser hands back a dead canvas: the view renders once and then goes
+     black forever. Calling preventDefault lets the browser give the context
+     back, and rebuilding on restore puts the scene into it. */
+  let contextLost = false;
   renderer.domElement.addEventListener("webglcontextlost", ev => {
     ev.preventDefault();
-    if (root.APP_REPORT) root.APP_REPORT("The 3D context was lost",
-      "The browser dropped the WebGL context, usually a driver or memory " +
-      "problem. Reload to get it back.");
+    contextLost = true;
+    ready = false;
+    state.contextLost = true;
+    state.emit("geometry");
+  });
+  renderer.domElement.addEventListener("webglcontextrestored", () => {
+    contextLost = false;
+    state.contextLost = false;
+    if (state.model) rebuild();
   });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   renderer.domElement.style.display = "block";
@@ -142,13 +152,19 @@ function createViewport3D(container, state){
   const _up = new THREE.Vector3(0, 1, 0);
 
   function clearGroup(g){
+    const dropMaterial = m => {
+      if (!m) return;
+      /* A disposed material still holds its textures, and a texture still
+         holds GPU memory. Rebuilding without this leaks a whole map's worth
+         every time. */
+      if (m.map && m.map.dispose) m.map.dispose();
+      m.dispose();
+    };
     while (g.children.length) {
       const c = g.children.pop();
       if (c.geometry) c.geometry.dispose();
-      if (c.material) {
-        if (Array.isArray(c.material)) c.material.forEach(m => m.dispose());
-        else c.material.dispose();
-      }
+      if (Array.isArray(c.material)) c.material.forEach(dropMaterial);
+      else dropMaterial(c.material);
     }
   }
 
@@ -883,7 +899,13 @@ function materialColour(name){
    */
   function loadProps(){
     clearGroup(gProps);
-    if (!state.view.props) { state.propCount = 0; state.emit("geometry"); return; }
+    if (!state.view.props) {
+      state.propCount = 0;
+      state.loading = null;
+      state.emit("loading");
+      state.emit("geometry");
+      return;
+    }
     const map = state.model.info.map;
     const base = "maps3d/" + map + "/";
 
@@ -906,15 +928,26 @@ function materialColour(name){
         const az = new THREE.Vector3(0, 0, 1);
         const D = Math.PI / 180;
 
-        let placed = 0;
         track("props", spec.models.length);
-        spec.models.forEach((model, mi) => {
-          const rows = perModel.get(mi);
-          if (!rows || !rows.length) { tick(); return; }
-          root.DM1_GLB.load(THREE, base + "props/" + model.file).then(built => {
+
+        /* One model at a time.
+           Firing thirty four parallel downloads and uploading every mesh and
+           texture to the GPU in the same handful of frames is what made a
+           frame take long enough for the driver to give up on it. Sequential
+           loading spreads the work over many frames and keeps every one of
+           them short. */
+        const queue = spec.models.map((model, mi) => ({ model, mi }));
+        let placed = 0;
+
+        const next = () => {
+          const job = queue.shift();
+          if (!job) return;
+          const rows = perModel.get(job.mi);
+          if (!rows || !rows.length) { tick(); return next(); }
+
+          root.DM1_GLB.load(THREE, base + "props/" + job.model.file).then(built => {
             const mesh = new THREE.InstancedMesh(
               built.geometry, built.materials, rows.length);
-            mesh.frustumCulled = false;
             const mat = new THREE.Matrix4();
             const pos = new THREE.Vector3();
             const scl = new THREE.Vector3();
@@ -932,13 +965,21 @@ function materialColour(name){
               mesh.setMatrixAt(n, mat);
             });
             mesh.instanceMatrix.needsUpdate = true;
+            /* An instanced mesh needs a bounding volume that covers every
+               instance before the renderer can cull it; without one the only
+               safe thing it can do is draw all of them, every frame. */
+            mesh.computeBoundingSphere();
             gProps.add(mesh);
             placed += rows.length;
             state.propCount = placed;
             tick();
             state.emit("geometry");
-          }).catch(() => { tick(); });
-        });
+            /* Yield a frame before the next one so the view stays alive
+               while the map fills in. */
+            requestAnimationFrame(next);
+          }).catch(() => { tick(); requestAnimationFrame(next); });
+        };
+        next();
       })
       .catch(() => { state.propCount = 0; });
   }
@@ -976,7 +1017,7 @@ function materialColour(name){
   function frame(now){
     if (!running) return;
     raf = requestAnimationFrame(frame);
-    if (!ready) return;
+    if (contextLost || !ready) return;
 
     applyXray();
     const t = state.timeS;
@@ -1117,6 +1158,7 @@ function materialColour(name){
   state.on("load", () => { if (state.model) rebuild(); });
   state.on("view", () => { heatBuilt = false; });
   state.on("props", loadProps);
+  state.on("quality", loadProps);
   state.on("heat", () => { heatBuilt = false; });
   state.on("overlay", buildOverlay);
   window.addEventListener("resize", resize);

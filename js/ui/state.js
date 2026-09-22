@@ -235,6 +235,16 @@ function createState(){
     s.emit("overlay");
   };
 
+  /* Turned off automatically when the frame rate collapses, and by the user
+     from the viewport bar. Kept apart from the view switches because it is
+     expensive enough to be worth its own signal. */
+  s.setProps = function (on, automatic){
+    if (s.view.props === on) return;
+    s.view.props = on;
+    s.propsAutoOff = !!(automatic && !on);
+    s.emit("props");
+  };
+
   s.toggleView = function (key){
     s.view[key] = !s.view[key];
     s.emit("view");

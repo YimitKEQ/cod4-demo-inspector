@@ -58,6 +58,11 @@ function createViewSwitch(host, bar, viewport2d, state){
     camBar.append(b);
   }
 
+  const propsBtn = el("button", "btn btn-quiet on", "Props");
+  propsBtn.title = "The map's clutter: foliage, rubble, barriers. " +
+                   "Switch it off if the view struggles.";
+  propsBtn.addEventListener("click", () => state.setProps(!state.view.props, false));
+
   const replayBtn = el("button", "btn", "Replay kill");
   replayBtn.title = "Frame the selected kill in 3D and swing around the shot (R)";
   replayBtn.disabled = true;
@@ -72,7 +77,7 @@ function createViewSwitch(host, bar, viewport2d, state){
   loading.hidden = true;
   host.append(loading);
 
-  bar.append(btn3d, camBar, replayBtn, stats);
+  bar.append(btn3d, camBar, propsBtn, replayBtn, stats);
 
   /* ---- switching ---- */
 
@@ -183,6 +188,8 @@ function createViewSwitch(host, bar, viewport2d, state){
 
   function refresh(){
     replayBtn.disabled = !selectedKill();
+    propsBtn.classList.toggle("on", !!state.view.props);
+    propsBtn.style.display = mode === "3d" ? "" : "none";
     if (mode === "3d" && vp3d) {
       const cur = vp3d.cameras.mode;
       for (const [id, b] of camButtons) b.classList.toggle("on", id === cur);
@@ -192,7 +199,10 @@ function createViewSwitch(host, bar, viewport2d, state){
       stats.textContent = (state.fps ? state.fps + " fps  ·  " : "") +
         (real ? "extracted map, " : "reconstructed map, ") +
         tris.toLocaleString() + " triangles" +
-        (state.propCount ? "  ·  " + state.propCount.toLocaleString() + " props" : "");
+        (state.propCount && state.view.props
+          ? "  ·  " + state.propCount.toLocaleString() + " props" : "") +
+        (state.propsAutoOff
+          ? "  ·  props off, the view was struggling" : "");
       stats.title = real
         ? "Real geometry from the map's own Radiant source."
         : "Reconstructed from every position players occupied. It only claims " +
@@ -213,7 +223,29 @@ function createViewSwitch(host, bar, viewport2d, state){
     }
   });
   state.on("camera", refresh);
-  state.on("fps", refresh);
+  state.on("props", refresh);
+
+  /* A frame rate watchdog.
+     A frame slow enough to trip a graphics driver's timeout gets the whole
+     WebGL context killed, and the view goes black with no explanation. Rather
+     than let that happen, the heaviest thing in the scene is dropped when the
+     view is clearly struggling, and it says so. */
+  let slowSamples = 0;
+  state.on("fps", () => {
+    refresh();
+    if (mode !== "3d" || !state.view.props) return;
+    /* Never judge the frame rate while the map is still streaming in. Loading
+       is bursty by nature, and dropping the props because a download was in
+       flight would punish a slow connection for a fast machine's work. */
+    const l = state.loading;
+    if (l && l.done < l.total) { slowSamples = 0; return; }
+    if (state.fps > 0 && state.fps < 12) slowSamples++;
+    else slowSamples = 0;
+    if (slowSamples >= 6) {
+      slowSamples = 0;
+      state.setProps(false, true);
+    }
+  });
   state.on("geometry", refresh);
   state.on("loading", () => {
     const l = state.loading;

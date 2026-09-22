@@ -558,6 +558,14 @@ kbd {
   font-size: var(--t-13); color: #C9A9A3; margin-top: 2px; overflow-wrap: anywhere;
 }
 
+/* The readout must never squeeze the buttons: it is the least important thing
+   in the bar and the first that should be cut. */
+.viewport-bar .mute {
+  flex: 0 1 auto; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.viewport-bar .btn { flex: 0 0 auto; white-space: nowrap; }
+
 /* Streaming the 3D map takes a moment; silence looks like failure. */
 .loading3d {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
