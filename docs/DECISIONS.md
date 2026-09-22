@@ -220,3 +220,57 @@ position is `M` applied to the origin.
 
 **All of it stays local.** `maps3d/` is gitignored. The tools ship, the output
 does not, so the published site falls back to the reconstruction and says so.
+
+
+## 2026-09-22: every map straight from the fastfiles
+
+**Why not keep going with `.map` sources.** They exist for a handful of maps,
+they are not what the game renders (the compiler adds terrain detail, splits,
+decals and trims), and every material had to be matched to an image by name,
+which is guessing. The fastfile holds the compiled `GfxWorld`: exact triangles,
+each surface's `Material` with the image it samples, every static model with
+its own rotation matrix, lightmaps, the sun and the skybox. OpenAssetTools
+already loads it on IW3 and only lacked a writer, so `tools/oat/` adds one
+(about 250 lines of C++) rather than parsing the zone format ourselves: the
+world sits roughly 1,450 assets deep in a linear stream, and reaching it means
+decoding every asset before it correctly.
+
+Validated against ground truth: mp_crash's extracted X and Y extents match the
+hand extracted `.map` version to the unit, and 400 of 400 sampled static model
+matrices equal CoD's `AnglesToAxis` of the `.map` angles.
+
+**Three things that were wrong first, all silent.**
+
+1. *Winding.* D3D front faces wind clockwise, WebGL counter clockwise. Keeping
+   the game's order made every face show its back, and a double sided material
+   then flips the normal: the whole world came out black while the props next
+   to it looked fine. Triangles are reversed on the way out (`b` and `c`
+   swapped); a test pins it.
+2. *Which state bits.* A material has state bits per technique, and the extra
+   light passes are additive by design. OR-ing them all marked every wall as
+   blended, which disabled its depth writes, which let the decals on it float
+   in mid air with the wall gone. Only the lit pass (`stateBitsEntry` slot 8,
+   then 7, then 4) says how the surface is drawn.
+3. *Indices* are relative to the surface's `firstVertex`. Every index is below
+   the surface's vertex count, which settles it.
+
+**Payload.** PNG of DXT decoded textures is lossless storage of detail that was
+never there: 21.7 MB for Crash's colour maps. WebP at quality 82 with lossless
+alpha is 4.3 MB and keeps cutout edges clean. Normals ship as normalised Int8.
+Pages gzips `.bin`, so geometry travels at about a third of its size.
+
+**Water** is drawn by its own shader in the game and its colour slot holds a
+placeholder (`case64blue`), so it gets a flat murky material instead.
+
+## 2026-09-22: animated players
+
+Rotations in the game's XAnims are absolute bone local quaternions (every
+bone lands close to its rest pose); translations are offsets on the rest
+position (the idle clip's root sits at z -4.4 against a rest of 37). The
+patched OpenAssetTools writes each XAnim as JSON with the tracks still
+quantised, `tools/xanim.js` decodes them, and `js/ui/playeranim.js` picks the
+clip from the demo: stance from the entity flags (0x4 crouch, 0x8 prone,
+measured at 21.6% and 2.8% of samples on a real promod match), speed and
+direction relative to facing from the track, with the clip's rate scaled to
+ground speed so feet do not skate. Positions are interpolated between
+snapshots instead of held.

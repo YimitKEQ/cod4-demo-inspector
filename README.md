@@ -9,14 +9,17 @@ GPL-3.0, whose `.dm_1` parser does the hard part.
 
 ## What works now
 
-- **3D, with the real map.** Point the tools at your own CoD4 install and the
-  view loads the map's actual geometry, the game's own textures and its props:
-  mp_crash is 8,761 triangles across 36 materials plus 2,454 instanced props.
-  Players are soldier figures at CoD4's proportions facing where they were
-  actually looking. Six cameras: free fly, orbit, follow, the recorder's own
-  eyes, another player's eyes (marked approximate) and a tactical plan view.
-  Without an install it falls back to a reconstruction built from where players
-  walked, which works on any map and says so.
+- **3D, with the real map, on every stock map.** All 21 multiplayer maps are
+  built straight from the game's own fastfiles: the exact triangles the game
+  renders (mp_crash is 115,000 of them), each material's real texture, the
+  baked lightmaps, every static prop in its place (3,800 on Crash), the map's
+  own skybox and its own sun. Players are the game's soldier models, skinned
+  and driven by the game's own animations: they stand, walk, run, sprint,
+  strafe, backpedal, crouch and crawl according to what the demo says they
+  were doing. Six cameras: free fly, orbit, follow (which stops at walls), the
+  recorder's own eyes, another player's eyes with his real pitch (marked
+  approximate) and a tactical plan view. Maps with nothing extracted fall back
+  to a reconstruction built from where players walked, and say so.
 - **Watch the kill.** Pick any kill and the camera frames it from the side and
   swings around the shot at half speed. One key, `R`.
 - **Coach.** What the team does that an opponent can read: repeated grenade
@@ -38,9 +41,9 @@ GPL-3.0, whose `.dm_1` parser does the hard part.
 - **A command line.** `node tools/cli.js demo.dm_1` for the summary and the top
   moments, with no browser involved.
 
-Still to come: real map geometry extracted from the game, the analytics that
-need collision geometry for line of sight, and the one pass batch renderer that
-turns ticked kills into real MP4s. See `docs/ROADMAP.md`.
+Still to come: the analytics that need line of sight (the collision grid the
+cameras use is the start of it), and the one pass batch renderer that turns
+ticked kills into real MP4s. See `docs/ROADMAP.md`.
 
 ## Running it
 
@@ -52,24 +55,26 @@ python -m http.server 8899
 
 ### Getting the real map into 3D
 
-Needs CoD4 installed. Geometry comes from the map's Radiant `.map` source
-(Infinity Ward released mp_backlot's in the mod tools; the others circulate in
-the mapping community), textures come straight out of your `main/*.iwd`
-archives, and props need one run of OpenAssetTools:
+The published site already carries every stock map. To rebuild them from your
+own install you need CoD4 and a patched OpenAssetTools Unlinker, which adds the
+missing writer for a map's compiled world (see `tools/oat/README.md` for the
+patch and the three build commands). Then:
 
 ```
-Unlinker.exe --model-format GLB --include-assets xmodel,material,image   --search-path "<CoD4>/main" -o dump "<CoD4>/zone/english/mp_crash.ff"
-
-set OAT_MODELS=dump/model_export
-node tools/extract.js mp_crash.map mp_crash
+set OAT_UNLINKER=<oat-src>/build/bin/Release_x86/Unlinker.exe
+node tools/ffbatch.js                   every mp_*.ff, or name the maps you want
 ```
 
-The map name must match what the demo reports, so a backlot source is built
-twice, once as `mp_backlot` and once as `mp_backlot_x`.
+Player animations come from `common_mp.ff` the same way:
 
-Everything this writes lands in `maps3d/`, which is gitignored on purpose: the
-geometry, textures and models are Activision's. The tools ship, the output does
-not, which is why the published site shows the reconstruction.
+```
+Unlinker.exe --include-assets xanim -o anims "<CoD4>/zone/english/common_mp.ff"
+node tools/xanim.js anims/xanim_json maps3d/_players/anims.json
+```
+
+The older Radiant path (`tools/extract.js <map.map>`) still works for custom
+maps that ship a `.map` source. Promod's `mp_backlot_x` is stock Backlot with
+exploit fixes and the same coordinates, so it draws the stock build.
 
 Open `http://127.0.0.1:8899/index.html` and drop a demo on it. Press `?` for
 the keys. With no demo to hand, the empty state offers a sample match.
