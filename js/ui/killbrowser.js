@@ -138,7 +138,10 @@ function createKillBrowser(container, state){
     who.append(line);
 
     const sub = el("div", "sub");
-    sub.append(el("span", null, k.weaponLabel));
+    /* With an unknown weapon the Headshot chip already says what happened, so
+       the row shows nothing rather than printing "Headshot" as if it were a
+       gun. */
+    if (k.weaponKnown) sub.append(el("span", null, k.weaponLabel));
     if (k.distanceM !== null) {
       const d = el("span", null, k.distanceM.toFixed(0) + " m");
       if (k.distanceApprox) d.title = "Approximate: computed from entity state positions";

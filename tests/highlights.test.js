@@ -397,3 +397,19 @@ describe("highlights: merging does not corrupt the raw list", () => {
     }
   });
 });
+
+describe("model: unknown weapons", () => {
+  it("marks a headshot kill as having no known weapon", () => {
+    const m = build();
+    const hs = m.kills.filter(k => k.headshot);
+    assert.ok(hs.length > 0, "the fixture should hold headshot kills");
+    for (const k of hs) assert.equal(k.weaponKnown, false, "a headshot hides the weapon");
+  });
+
+  it("keeps the weapon on an ordinary kill", () => {
+    const m = build();
+    const normal = m.kills.filter(k => !k.headshot && !k.suicide);
+    assert.ok(normal.length > 0);
+    for (const k of normal) assert.equal(k.weaponKnown, true);
+  });
+});

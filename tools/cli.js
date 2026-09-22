@@ -101,19 +101,43 @@ function inventory(model){
              (model.info.mod ? "  fs_game " + model.info.mod : "  no mod"));
   lines.push("Recorder: client " + pov + " (" + model.info.povName + ")");
   lines.push("");
-  lines.push("Per client coverage. Gap is the longest stretch the server sent nothing.");
+  lines.push("Per client coverage.");
+  lines.push("  raw gap    longest stretch with no sample at all, dead time included");
+  lines.push("  alive cov  share of living seconds where the player could be placed");
+  lines.push("  alive gap  longest stretch unplaceable while alive and in a round");
   lines.push("");
 
+  /* Coverage is only meaningful while a player is alive and in a round. A
+     dead player is correctly not sent, and the gap between rounds is not a
+     dropout, so counting those made every player look half missing. This
+     walks each player's living seconds and asks how many had a sample fresh
+     enough to place them. That is the number the 3D view depends on. */
+  const STEP = 0.25;
   const rows = [];
-  const matchEnd = model.info.durationS;
   for (const cl of clients) {
     const p = model.playerBy.get(cl);
     const t = tracks[String(cl)];
-    let maxGap = 0, gapTotal = 0;
+    let maxGap = 0;
     for (let i = 1; i < t.length; i++) {
       const gap = (t[i][0] - t[i - 1][0]) / 100;
       if (gap > maxGap) maxGap = gap;
-      if (gap > MODEL.STALE_S) gapTotal += gap;
+    }
+    let live = 0, covered = 0, liveGapMax = 0, sinceSample = 0;
+    for (const st of model.roundStates) {
+      const death = st.deaths.find(d => d.client === cl);
+      const until = death ? death.tS : st.endS;
+      sinceSample = 0;
+      for (let time = st.startS; time <= until; time += STEP) {
+        live++;
+        const pos = MODEL.positionAt(tracks, cl, time, MODEL.STALE_S);
+        if (pos && pos.ageS <= MODEL.STALE_S) {
+          covered++;
+          sinceSample = 0;
+        } else {
+          sinceSample += STEP;
+          if (sinceSample > liveGapMax) liveGapMax = sinceSample;
+        }
+      }
     }
     const spanS = (t[t.length - 1][0] - t[0][0]) / 100;
     rows.push([
@@ -123,13 +147,15 @@ function inventory(model){
       t.length,
       spanS.toFixed(0) + " s",
       maxGap.toFixed(1) + " s",
-      matchEnd > 0 ? (100 * (1 - gapTotal / matchEnd)).toFixed(0) + "%" : "-"
+      live ? (100 * covered / live).toFixed(0) + "%" : "-",
+      liveGapMax.toFixed(1) + " s"
     ]);
   }
   lines.push(table([
     { label: "cl", right: true }, { label: "name" }, { label: "source" },
     { label: "samples", right: true }, { label: "span", right: true },
-    { label: "max gap", right: true }, { label: "covered", right: true }
+    { label: "raw gap", right: true }, { label: "alive cov", right: true },
+    { label: "alive gap", right: true }
   ], rows));
 
   lines.push("");

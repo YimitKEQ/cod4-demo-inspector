@@ -128,7 +128,7 @@ function renderKillfeed(){
                  el("span", "mute", k.headshot ? "headshot" : "killed"),
                  el("span", teamClass(k.victimTeam), clean(k.victimName)));
     }
-    row.append(el("span", "w", k.weaponLabel));
+    if (k.weaponKnown) row.append(el("span", "w", k.weaponLabel));
     killfeedHost.append(row);
   }
 }

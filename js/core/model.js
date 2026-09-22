@@ -181,6 +181,11 @@ function buildModel(res){
       weaponLabel: k.weaponLabel,
       weaponId: k.weaponId,
       headshot: k.headshot,
+      /* A headshot obituary carries the means of death in eventParm in place
+         of the weapon id, so the weapon behind it is genuinely unknown. Every
+         other means of death (melee, falling, explosive) does describe the
+         real cause, so only this one case is unknown. */
+      weaponKnown: !(k.headshot && k.weapon === "headshot"),
       suicide: k.suicide,
       teamkill: !k.suicide && kTeam !== null && kTeam === vTeam,
       killerPos, victimPos,
