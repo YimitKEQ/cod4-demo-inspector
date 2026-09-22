@@ -1,0 +1,492 @@
+/*!
+ * app.css - the briefing table.
+ *
+ * The look is a 2007 operation briefing: laminated field maps, grease pencil
+ * on acetate, olive drab kit, stencilled crate markings. The map viewport is
+ * the only loud thing on screen; everything around it is quiet and dense.
+ *
+ * Rules this file holds to:
+ *  - one accent, grease yellow, and it only ever means "selected" or "now"
+ *  - team colours only ever mean teams
+ *  - no gradients, no glow, no glass, no shadow used as decoration
+ *  - elevation is the drab against slate step, nothing else
+ *  - sentence case, no letter spaced labels, no all caps
+ *  - panels are square edged like kit; radius only where something is clickable
+ *
+ * Part of the CoD4 Demo Inspector. Free software under the GPL-3.0,
+ * see LICENSE. No warranty of any kind.
+ */
+
+/* ---- type ---- */
+
+@font-face {
+  font-family: "Barlow Condensed"; font-style: normal; font-weight: 400;
+  font-display: swap; src: url("fonts/barlow-condensed-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Barlow Condensed"; font-style: normal; font-weight: 500;
+  font-display: swap; src: url("fonts/barlow-condensed-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Barlow Condensed"; font-style: normal; font-weight: 600;
+  font-display: swap; src: url("fonts/barlow-condensed-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Barlow"; font-style: normal; font-weight: 400;
+  font-display: swap; src: url("fonts/barlow-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Barlow"; font-style: normal; font-weight: 500;
+  font-display: swap; src: url("fonts/barlow-500.woff2") format("woff2");
+}
+
+/* ---- tokens ---- */
+
+:root {
+  --slate:   #2F352C;   /* app background, olive tinted dark */
+  --drab:    #3D4436;   /* panels, raised surfaces */
+  --drab-2:  #454D3D;   /* hover on a panel surface */
+  --webbing: #56604D;   /* borders, dividers, inactive controls */
+  --bone:    #E4DFCF;   /* primary text */
+  --bone-dim:#A8A695;   /* secondary text */
+  --bone-mute:#7D8272;  /* tertiary, units, disabled */
+  --grease:  #E3B538;   /* selection, focus, now. The one accent. */
+  --grease-dim: #8A6F24;
+  --allies:  #7FA3BF;
+  --opfor:   #C4473A;
+
+  --ui: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --prose: "Barlow", system-ui, -apple-system, sans-serif;
+
+  --t-13: 13px; --t-15: 15px; --t-18: 18px; --t-24: 24px; --t-32: 32px;
+
+  --s1: 4px; --s2: 8px; --s3: 16px; --s4: 24px; --s5: 32px;
+
+  --line: 1px solid var(--webbing);
+  --hair: 1px solid rgba(86, 96, 77, 0.45);
+
+  --header-h: 52px;
+  --timeline-h: 116px;
+  --side-w: 400px;
+}
+
+/* ---- reset ---- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--slate);
+  color: var(--bone);
+  font-family: var(--ui);
+  font-size: var(--t-15);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-weight: 600; margin: 0; }
+h2 { font-size: var(--t-18); }
+h3 { font-size: var(--t-15); font-weight: 500; color: var(--bone-dim); }
+p { margin: 0 0 var(--s2); }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--slate); }
+::-webkit-scrollbar-thumb { background: var(--webbing); border: 2px solid var(--slate); }
+::-webkit-scrollbar-thumb:hover { background: #6B7660; }
+
+:focus-visible { outline: 2px solid var(--grease); outline-offset: 1px; }
+
+/* ---- controls ---- */
+
+.btn {
+  background: var(--drab);
+  border: var(--line);
+  border-radius: 2px;
+  color: var(--bone);
+  padding: 5px 11px;
+  font-size: var(--t-13);
+  cursor: pointer;
+}
+.btn:hover { background: var(--drab-2); }
+.btn:active { background: var(--slate); }
+.btn[aria-pressed="true"], .btn.on {
+  background: var(--grease); border-color: var(--grease); color: #23281F;
+}
+.btn:disabled { color: var(--bone-mute); cursor: default; background: var(--drab); }
+.btn-quiet { background: transparent; border-color: transparent; }
+.btn-quiet:hover { background: var(--drab); }
+
+.chip {
+  display: inline-block;
+  border: var(--hair);
+  border-radius: 2px;
+  padding: 0 5px;
+  font-size: 11px;
+  color: var(--bone-dim);
+  white-space: nowrap;
+}
+.chip-hot { border-color: var(--grease-dim); color: var(--grease); }
+.chip-approx { border-style: dashed; color: var(--bone-mute); }
+
+.field {
+  background: var(--slate);
+  border: var(--line);
+  border-radius: 2px;
+  padding: 4px 7px;
+  font-size: var(--t-13);
+  width: 100%;
+}
+.field::placeholder { color: var(--bone-mute); }
+
+/* Team colours. Only ever teams. */
+.team-a { color: var(--allies); }
+.team-b { color: var(--opfor); }
+
+.num { font-variant-numeric: tabular-nums; }
+.dim { color: var(--bone-dim); }
+.mute { color: var(--bone-mute); }
+
+/* ---- app frame ---- */
+
+#app {
+  display: grid;
+  grid-template-rows: var(--header-h) 1fr var(--timeline-h);
+  grid-template-columns: 1fr var(--side-w);
+  grid-template-areas:
+    "header header"
+    "viewport side"
+    "timeline timeline";
+  height: 100%;
+}
+#app.no-side { grid-template-columns: 1fr 0; }
+
+/* ---- header: the score bar ---- */
+
+.header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 0 var(--s3);
+  border-bottom: var(--line);
+  background: var(--drab);
+  min-width: 0;
+}
+
+.score {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  font-size: var(--t-24);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.score .sep { color: var(--bone-mute); font-weight: 400; }
+.score .tname {
+  font-size: var(--t-15); font-weight: 500;
+  max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.header .meta {
+  display: flex; align-items: center; gap: var(--s3);
+  font-size: var(--t-13); color: var(--bone-dim);
+  min-width: 0; overflow: hidden;
+}
+.header .meta span { white-space: nowrap; }
+.header .spacer { flex: 1; }
+.header .actions { display: flex; gap: var(--s1); }
+
+/* ---- viewport ---- */
+
+.viewport {
+  grid-area: viewport;
+  position: relative;
+  background: var(--slate);
+  border-right: var(--line);
+  min-width: 0;
+  overflow: hidden;
+}
+.viewport canvas { display: block; width: 100%; height: 100%; }
+
+.viewport-bar {
+  position: absolute; top: var(--s2); left: var(--s2); right: var(--s2);
+  display: flex; align-items: center; gap: var(--s2);
+  pointer-events: none; z-index: 2;
+}
+.viewport-bar > * { pointer-events: auto; }
+
+/* The layer toggles sit on top of the map, so they stay quiet: an active one
+   is marked by a hairline of grease underneath, the same way a tab is. Five
+   solid accent buttons would shout over the thing they annotate. */
+.viewport-bar .btn {
+  background: rgba(47, 53, 44, 0.88);
+  color: var(--bone-mute);
+  border-bottom: 2px solid transparent;
+  border-radius: 2px 2px 0 0;
+}
+.viewport-bar .btn:hover { color: var(--bone); }
+.viewport-bar .btn.on {
+  background: rgba(47, 53, 44, 0.88);
+  color: var(--bone);
+  border-bottom-color: var(--grease);
+}
+/* Actions in the bar are not layer toggles, so they never take the underline
+   and they stay readable rather than sitting at toggle-off contrast. */
+.viewport-bar .btn-quiet { color: var(--bone-dim); border-bottom-color: transparent; }
+.viewport-bar .btn-quiet:hover { color: var(--bone); background: var(--drab); }
+
+/* The kill feed drawn over the map during playback. Grease pencil on acetate:
+   a flat card, no shadow, hairline rule. */
+.killfeed {
+  position: absolute; top: 44px; right: var(--s2);
+  width: 270px; z-index: 2; pointer-events: none;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.killfeed .kf {
+  background: rgba(47, 53, 44, 0.9);
+  border: var(--hair);
+  border-left: 2px solid var(--webbing);
+  padding: 2px 7px;
+  font-size: var(--t-13);
+  display: flex; gap: 6px; align-items: baseline;
+}
+.killfeed .kf.fresh { border-left-color: var(--grease); }
+.killfeed .kf .w { color: var(--bone-mute); font-size: 11px; margin-left: auto; }
+
+.viewport-empty {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--s2); text-align: center; padding: var(--s4);
+  font-family: var(--prose);
+}
+.viewport-empty h2 { font-family: var(--ui); }
+.viewport-empty p { color: var(--bone-dim); max-width: 46ch; font-size: var(--t-15); }
+
+/* ---- side panel ---- */
+
+.side {
+  grid-area: side;
+  display: flex; flex-direction: column;
+  background: var(--drab);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: var(--line);
+  background: var(--drab);
+  flex: none;
+}
+.tab {
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--bone-dim); padding: 8px 11px; font-size: var(--t-13);
+  cursor: pointer; white-space: nowrap;
+}
+.tab:hover { color: var(--bone); }
+.tab[aria-selected="true"] { color: var(--bone); border-bottom-color: var(--grease); }
+.tab .count { color: var(--bone-mute); margin-left: 4px; }
+
+.panel { flex: 1; overflow-y: auto; min-height: 0; }
+.panel-pad { padding: var(--s3); }
+/* A heading that follows content opens a new block and needs the gap; the
+   first one in a panel does not. */
+.panel-pad > h3 { margin: var(--s4) 0 var(--s2); }
+.panel-pad > h3:first-child { margin-top: 0; }
+.panel > div > h3 { margin: var(--s4) 0 var(--s2); }
+
+/* Two rows: the search gets the full width, the narrow controls share the
+   second. At 400 px a single row squeezes the search box to nothing. */
+.toolbar {
+  display: flex; flex-wrap: wrap; gap: var(--s1);
+  padding: var(--s2);
+  border-bottom: var(--line);
+  align-items: center;
+  flex: none;
+}
+.toolbar .grow { flex: 1 0 100%; min-width: 0; }
+.toolbar select.field { flex: 1 1 auto; min-width: 0; }
+
+/* ---- kill browser ---- */
+
+.kill-list { display: flex; flex-direction: column; }
+
+.kill {
+  display: grid;
+  grid-template-columns: 22px 30px 40px 1fr auto;
+  gap: var(--s2);
+  align-items: center;
+  padding: 6px var(--s2);
+  border-bottom: var(--hair);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+}
+.kill:hover { background: var(--drab-2); }
+.kill[aria-selected="true"] { background: var(--drab-2); border-left-color: var(--grease); }
+.kill.cursor { border-left-color: var(--grease); }
+.kill .rd { color: var(--bone-mute); font-size: var(--t-13); text-align: right; }
+.kill .at { color: var(--bone-dim); font-size: var(--t-13); text-align: right; }
+.kill .who { min-width: 0; }
+.kill .who .line { display: flex; gap: 5px; align-items: baseline; min-width: 0; }
+.kill .who .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kill .who .kills-arrow { color: var(--bone-mute); flex: none; }
+.kill .who .sub {
+  display: flex; gap: 5px; flex-wrap: wrap; margin-top: 2px;
+  font-size: 11px; color: var(--bone-mute);
+}
+.kill .sc {
+  font-size: var(--t-13); color: var(--bone-dim); text-align: right;
+  min-width: 26px;
+}
+.kill .sc.hot { color: var(--grease); }
+.kill .box {
+  width: 13px; height: 13px; border: var(--line); border-radius: 2px;
+  background: var(--slate); display: grid; place-items: center; cursor: pointer;
+}
+.kill .box.on { background: var(--grease); border-color: var(--grease); }
+.kill .box.on::after { content: ""; width: 5px; height: 9px; margin-top: -3px;
+  border: solid #23281F; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+
+/* ---- highlight list ---- */
+
+.hl { display: flex; flex-direction: column; }
+.hl-row {
+  display: grid; grid-template-columns: 22px 34px 1fr auto;
+  gap: var(--s2); align-items: center;
+  padding: 7px var(--s2); border-bottom: var(--hair);
+  cursor: pointer; border-left: 2px solid transparent;
+}
+.hl-row:hover { background: var(--drab-2); }
+.hl-row.cursor, .hl-row[aria-selected="true"] {
+  background: var(--drab-2); border-left-color: var(--grease);
+}
+.hl-row .score {
+  font-size: var(--t-18); font-weight: 600; text-align: right;
+  color: var(--bone-dim);
+}
+.hl-row .score.hot { color: var(--grease); }
+.hl-row .body { min-width: 0; }
+.hl-row .ttl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hl-row .det {
+  font-family: var(--prose); font-size: var(--t-13); color: var(--bone-mute);
+  margin-top: 2px;
+}
+.hl-row .tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+.hl-row .when { font-size: var(--t-13); color: var(--bone-mute); text-align: right; }
+
+/* ---- tables in the side panel ---- */
+
+table.data { width: 100%; border-collapse: collapse; font-size: var(--t-13); }
+table.data th {
+  text-align: left; font-weight: 500; color: var(--bone-mute);
+  padding: 4px var(--s2); border-bottom: var(--line); position: sticky; top: 0;
+  background: var(--drab);
+}
+table.data td { padding: 4px var(--s2); border-bottom: var(--hair); }
+/* The panel runs to the window edge, so the last column needs its own gutter
+   or the numbers sit against the frame. */
+table.data th:last-child, table.data td:last-child { padding-right: var(--s3); }
+table.data th:first-child, table.data td:first-child { padding-left: var(--s3); }
+table.data td.n { text-align: right; }
+table.data tr:hover td { background: var(--drab-2); }
+
+dl.kv { display: grid; grid-template-columns: auto 1fr; gap: 3px var(--s3); margin: 0; }
+dl.kv dt { color: var(--bone-mute); font-size: var(--t-13); }
+dl.kv dd { margin: 0; font-size: var(--t-13); overflow-wrap: anywhere; }
+
+.note {
+  font-family: var(--prose); font-size: var(--t-13); color: var(--bone-dim);
+  border-left: 2px solid var(--webbing); padding: var(--s1) 0 var(--s1) var(--s2);
+  margin-bottom: var(--s2);
+}
+
+.empty {
+  font-family: var(--prose); color: var(--bone-dim); padding: var(--s4) var(--s3);
+  font-size: var(--t-15);
+}
+
+/* ---- timeline ---- */
+
+.timeline {
+  grid-area: timeline;
+  border-top: var(--line);
+  background: var(--drab);
+  display: flex; flex-direction: column;
+  min-width: 0;
+}
+.timeline-controls {
+  display: flex; align-items: center; gap: var(--s2);
+  padding: var(--s1) var(--s2);
+  border-bottom: var(--hair);
+  flex: none;
+}
+.timeline-controls .clock {
+  font-size: var(--t-15); color: var(--bone); min-width: 96px;
+}
+.timeline-controls .clock .of { color: var(--bone-mute); }
+.timeline-controls .rate { color: var(--bone-dim); font-size: var(--t-13); min-width: 40px; }
+.timeline-controls .spacer { flex: 1; }
+.timeline-controls .hint { font-size: var(--t-13); color: var(--bone-mute); }
+.timeline canvas { flex: 1; width: 100%; display: block; cursor: pointer; min-height: 0; }
+
+/* ---- drop target ---- */
+
+.drop {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(47, 53, 44, 0.97);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--s3); text-align: center; padding: var(--s5);
+}
+.drop.hidden { display: none; }
+.drop h1 { font-size: var(--t-32); font-weight: 600; }
+.drop .sub { font-family: var(--prose); color: var(--bone-dim); max-width: 54ch; }
+.drop .target {
+  border: 1px dashed var(--webbing);
+  padding: var(--s5) 64px;
+  display: flex; flex-direction: column; align-items: center; gap: var(--s2);
+}
+.drop.over .target { border-color: var(--grease); border-style: solid; }
+.drop .err { color: var(--opfor); font-family: var(--prose); }
+
+progress {
+  width: 260px; height: 3px; appearance: none; border: none;
+  background: var(--webbing);
+}
+progress::-webkit-progress-bar { background: var(--webbing); }
+progress::-webkit-progress-value { background: var(--grease); }
+
+/* ---- keyboard help ---- */
+
+.help {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(47, 53, 44, 0.94);
+  display: grid; place-items: center; padding: var(--s4);
+}
+.help.hidden { display: none; }
+.help .sheet {
+  background: var(--drab); border: var(--line);
+  padding: var(--s4); max-width: 620px; width: 100%;
+  max-height: 80vh; overflow-y: auto;
+}
+.help h2 { margin-bottom: var(--s3); }
+.help dl { display: grid; grid-template-columns: 130px 1fr; gap: 5px var(--s3); margin: 0; }
+.help dt { color: var(--grease); font-size: var(--t-13); }
+.help dd { margin: 0; font-size: var(--t-13); color: var(--bone-dim); }
+.help .group {
+  grid-column: 1 / -1; color: var(--bone-mute); font-size: var(--t-13);
+  border-bottom: var(--hair); padding-bottom: 3px; margin-top: var(--s2);
+}
+
+kbd {
+  font-family: var(--ui); font-size: 11px;
+  border: var(--hair); border-radius: 2px; padding: 0 4px;
+  color: var(--bone-dim);
+}

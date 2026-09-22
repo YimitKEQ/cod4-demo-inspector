@@ -9,9 +9,13 @@
  * The builder also lays down position tracks so distances and long range
  * detection are exercised rather than skipped.
  *
+ * It doubles as the sample match the app offers when no demo is loaded yet,
+ * so the interface can be opened and judged before any real demo exists.
+ *
  * Part of the CoD4 Demo Inspector. Free software under the GPL-3.0,
  * see LICENSE. No warranty of any kind.
  */
+(function (root) {
 "use strict";
 
 const UNITS_PER_METRE = 39.3701;
@@ -279,4 +283,8 @@ function referenceMatch(){
   });
 }
 
-module.exports = { buildMatch, referenceMatch, WEAPONS, UNITS_PER_METRE };
+const API = { buildMatch, referenceMatch, WEAPONS, UNITS_PER_METRE };
+if (typeof module === "object" && module.exports) module.exports = API;
+root.DM1_SYNTH = API;
+
+})(typeof globalThis !== "undefined" ? globalThis : this);

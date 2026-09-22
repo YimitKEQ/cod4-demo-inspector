@@ -1,41 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CoD4 Demo Inspector</title>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
 
-<div class="wrap">
-  <header>
-    <a class="ghlink" href="https://github.com/TiPSYSPiT/cod4-demo" target="_blank"
-       rel="noopener" title="Project page on GitHub" aria-label="Project page on GitHub">
-      <svg viewBox="0 0 16 16" width="22" height="22" aria-hidden="true" focusable="false">
-        <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .271.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
-      </svg>
-    </a>
-    <p class="eyebrow">.dm_1 &middot; Call of Duty 4 / CoD4X</p>
-    <h1>CoD4 Demo Inspector</h1>
-    <p class="lede">Drop in a demo and it is decoded in your browser. You get teams, player stats, a round-by-round breakdown and the chat log.</p>
+<div id="app" hidden>
+
+  <header class="header">
+    <div class="score" id="score"></div>
+    <div class="meta" id="meta"></div>
+    <div class="spacer"></div>
+    <div class="actions">
+      <button class="btn btn-quiet" id="btn-open">Open demo</button>
+      <button class="btn btn-quiet" id="btn-help" title="?">Keys</button>
+    </div>
   </header>
 
-  <div class="drop" id="drop">
-    <div class="txt">
-      <b>Drop a demo here</b> &ndash; or
-      <button class="btn ghost" id="pick" type="button">choose a file</button>
-      <div class="hint">Client demo from <span class="mono">main/demos</span> or <span class="mono">mods/&lt;mod&gt;/demos</span>, e.g. <span class="mono">demo0025.dm_1</span></div>
+  <section class="viewport" id="viewport">
+    <div class="viewport-bar">
+      <button class="btn on" id="v-trails">Trails</button>
+      <button class="btn on" id="v-aim">Aim</button>
+      <button class="btn on" id="v-kills">Kill lines</button>
+      <button class="btn on" id="v-nades">Grenades</button>
+      <button class="btn on" id="v-names">Names</button>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn btn-quiet" id="v-record" title="Record the viewport to a WebM file">Record clip</button>
     </div>
-    <input type="file" id="file" accept=".dm_1" hidden>
-  </div>
+    <div class="killfeed" id="killfeed"></div>
+  </section>
 
-  <div id="prog" hidden>
-    <progress id="pbar" max="100" value="0"></progress>
-    <div class="status" id="pmsg"></div>
-  </div>
-  <p class="err" id="error" hidden></p>
+  <aside class="side">
+    <nav class="tabs" id="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="highlights">Moments</button>
+      <button class="tab" role="tab" data-tab="kills">Kills</button>
+      <button class="tab" role="tab" data-tab="players">Players</button>
+      <button class="tab" role="tab" data-tab="rounds">Rounds</button>
+      <button class="tab" role="tab" data-tab="chat">Chat</button>
+      <button class="tab" role="tab" data-tab="events">Events</button>
+      <button class="tab" role="tab" data-tab="demo">Demo</button>
+    </nav>
+    <div id="side-body" style="display:flex;flex-direction:column;flex:1;min-height:0"></div>
+  </aside>
 
-  <div id="out"></div>
+  <section class="timeline" id="timeline"></section>
+
 </div>
 
-<script src="js/netfields.js"></script>
-<script src="js/snapshot.js"></script>
-<script src="js/dm1.js"></script>
-<script src="js/app.js"></script>
+<div class="drop" id="drop">
+  <h1>CoD4 Demo Inspector</h1>
+  <p class="sub">Drop a <code>.dm_1</code> demo here and watch the match. Every kill is one click
+     away, nothing is rendered, nothing is uploaded: the file never leaves this machine.</p>
+  <div class="target" id="drop-target">
+    <button class="btn" id="drop-pick">Choose a demo</button>
+    <span class="mute">or drag one onto this window</span>
+    <button class="btn btn-quiet" id="drop-sample">Open a sample match instead</button>
+  </div>
+  <progress id="prog" value="0" max="100" hidden></progress>
+  <div class="mute" id="prog-msg"></div>
+  <div class="err" id="drop-err"></div>
+  <input type="file" id="file" accept=".dm_1,.dm_13,.dm_6" hidden>
+</div>
+
+<div class="help hidden" id="help">
+  <div class="sheet">
+    <h2>Keys</h2>
+    <dl>
+      <div class="group">Playback</div>
+      <dt>Space</dt><dd>Play or pause</dd>
+      <dt>J / L</dt><dd>Slower / faster</dd>
+      <dt>K</dt><dd>Pause</dd>
+      <dt>Left / right</dt><dd>Step a tenth of a second</dd>
+      <dt>Shift + left / right</dt><dd>Jump to the previous or next kill</dd>
+      <dt>Home</dt><dd>Back to the first round</dd>
+
+      <div class="group">Lists</div>
+      <dt>Up / down</dt><dd>Move through the list</dd>
+      <dt>Enter</dt><dd>Play the selected moment</dd>
+      <dt>X</dt><dd>Tick it for rendering</dd>
+      <dt>1 to 7</dt><dd>Switch side panel</dd>
+
+      <div class="group">View</div>
+      <dt>T</dt><dd>Trails</dd>
+      <dt>A</dt><dd>Aim rays</dd>
+      <dt>N</dt><dd>Names</dd>
+      <dt>G</dt><dd>Grenades</dd>
+      <dt>Esc</dt><dd>Close this, or stop a clip</dd>
+      <dt>?</dt><dd>This list</dd>
+    </dl>
+  </div>
+</div>
+
+<script src="js/core/netfields.js"></script>
+<script src="js/core/snapshot.js"></script>
+<script src="js/core/dm1.js"></script>
+<script src="js/core/model.js"></script>
+<script src="js/core/highlights.js"></script>
+<script src="js/ui/state.js"></script>
+<script src="js/ui/viewport.js"></script>
+<script src="js/ui/killbrowser.js"></script>
+<script src="js/ui/timeline.js"></script>
+<script src="js/ui/panels.js"></script>
+<script src="tests/fixtures/synth.js"></script>
+<script src="js/ui/app.js"></script>
+
+</body>
+</html>

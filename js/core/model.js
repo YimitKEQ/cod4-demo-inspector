@@ -237,6 +237,12 @@ function buildModel(res){
     aliveAt,
     grenades: (res.map && res.map.grenades) || [],
     tracks,
+    /* The world rectangle the compass image covers, from configstring 823.
+       Empty when the demo did not carry one, in which case the views fall
+       back to the extent of the tracks. */
+    bounds: (res.map && res.map.bounds) || [],
+    compass: (res.map && res.map.compass) || "",
+    weaponNames: (res.map && res.map.weapons) || [],
     chat: res.chat,
     events: res.events,
     nameOf, teamOf,
