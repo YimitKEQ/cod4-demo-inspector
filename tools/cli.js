@@ -29,7 +29,7 @@ const HL = require("../js/core/highlights.js");
 
 function parseArgs(argv){
   const out = { file: null, top: 10, kills: false, model: null, inventory: false,
-                json: false, quiet: false };
+                json: false, quiet: false, sample: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--top") out.top = parseInt(argv[++i], 10) || 10;
@@ -38,6 +38,7 @@ function parseArgs(argv){
     else if (a === "--inventory") out.inventory = true;
     else if (a === "--json") out.json = true;
     else if (a === "--quiet") out.quiet = true;
+    else if (a === "--sample") out.sample = true;
     else if (a === "--help" || a === "-h") out.help = true;
     else if (!a.startsWith("-")) out.file = a;
   }
@@ -54,6 +55,7 @@ const USAGE = [
   "  --model FILE   write the full match model as JSON",
   "  --inventory    report which fields this demo actually carries",
   "  --json         print the highlight list as JSON instead of a table",
+  "  --sample       use the built in sample match instead of a demo file",
   "  --quiet        no progress output",
   ""
 ].join("\n");
@@ -149,20 +151,31 @@ function inventory(model){
 
 function main(){
   const args = parseArgs(process.argv.slice(2));
-  if (args.help || !args.file) { process.stdout.write(USAGE); process.exit(args.file ? 0 : 1); }
-  if (!fs.existsSync(args.file)) {
-    process.stderr.write("No such demo: " + args.file + "\n");
-    process.exit(1);
+  if (args.help || (!args.file && !args.sample)) {
+    process.stdout.write(USAGE);
+    process.exit(args.file || args.sample ? 0 : 1);
   }
 
-  const bytes = new Uint8Array(fs.readFileSync(args.file));
   const t0 = Date.now();
-  const parsed = DM1.parseDemo(bytes, args.quiet ? null : pct => {
-    process.stderr.write("\rParsing " + String(pct).padStart(3) + "%");
-  }, true);
-  if (!args.quiet) process.stderr.write("\r                \r");
+  let res;
+  if (args.sample) {
+    /* The same fixture the tests assert on, so the cross check and the CLI
+       can both be exercised before any real demo exists. */
+    res = require("../tests/fixtures/synth.js").referenceMatch();
+    if (!args.file) args.file = "sample-match";
+  } else {
+    if (!fs.existsSync(args.file)) {
+      process.stderr.write("No such demo: " + args.file + "\n");
+      process.exit(1);
+    }
+    const bytes = new Uint8Array(fs.readFileSync(args.file));
+    const parsed = DM1.parseDemo(bytes, args.quiet ? null : pct => {
+      process.stderr.write("\rParsing " + String(pct).padStart(3) + "%");
+    }, true);
+    if (!args.quiet) process.stderr.write("\r                \r");
+    res = DM1.analyze(parsed);
+  }
 
-  const res = DM1.analyze(parsed);
   const model = MODEL.buildModel(res);
   const found = HL.detect(model, { top: args.top });
   const parseMs = Date.now() - t0;
@@ -185,7 +198,11 @@ function main(){
       })),
       caps: model.caps,
       grenades: model.grenades,
-      bombTimerS: found.bombTimerS
+      bombFloorS: found.bombFloorS,
+      /* The JS engine's own answer travels with the input, so the Python
+         engine can recompute from the same match and diff against it without
+         a second parse. tools/py/crosscheck.py reads exactly this. */
+      jsHighlights: found.highlights
     };
     fs.writeFileSync(args.model, JSON.stringify(payload, null, 2));
     process.stderr.write("Model written to " + args.model + "\n");

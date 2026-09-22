@@ -153,7 +153,7 @@ function demoPanel(state){
   add("Mod", i.mod || "none (stock)");
   add("Ruleset", clean(i.ruleset) || "unknown");
   add("Server", clean(i.server) || "unknown");
-  add("Protocol", String(i.protocol) + (i.protocol === 6 ? " (stock 1.7)" : ""));
+  add("Protocol", root.DM1_MODEL.protocolLabel(i.protocol));
   add("Recorded by", clean(i.povName) + " (client " + i.povClient + ")");
   add("Length", mmss(i.durationS));
   add("Size", (i.sizeBytes / 1048576).toFixed(1) + " MB");

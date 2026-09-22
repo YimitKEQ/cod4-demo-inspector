@@ -50,10 +50,6 @@ const CFG = {
      defusing team scored no kill in the run up. */
   ninjaQuietS: 10.0,
 
-  /* A defuse this close to detonation is a last second defuse. Only used when
-     the bomb timer could actually be measured from the demo. */
-  lastSecondS: 2.0,
-
   /* Long range thresholds in metres per weapon class. Beyond the threshold a
      kill is long range; the score ramps up to twice the threshold. */
   longRangeM: {
@@ -74,9 +70,12 @@ const CFG = {
     plant: 26,
     defuse: 45,
     ninjaDefuse: 88,
-    lastSecondDefuse: 92,
-    longRangeMin: 45,
-    longRangeMax: 85
+    /* Deliberately below the multikill band. On a real 20 round promod demo
+       the first tuning put six long range kills in the top ten and pushed the
+       aces and clutches out. A long shot is worth seeing; it is not worth
+       more than winning a round on your own. */
+    longRangeMin: 38,
+    longRangeMax: 68
   },
 
   /* Additive bonuses, applied then clamped to 100. */
@@ -155,26 +154,39 @@ function makeHighlight(kind, parts){
 }
 
 /**
- * The bomb timer, measured rather than assumed.
+ * The longest plant to resolution span seen in this demo.
  *
- * In any round where the bomb actually exploded, the time from the plant to
- * the end of the round is the timer. Taking the median across those rounds
- * survives one odd round. Without such a round the timer is unknown and the
- * last second defuse detector stays switched off rather than guessing.
+ * This is deliberately not called the bomb timer. The first version of this
+ * measured the median span of rounds the parser reports as "Bomb exploded"
+ * and confidently returned 28.4 s for a promod match whose timer is 45 s.
+ * The reason is that a round the attackers win by killing the last defender
+ * after planting also reports "Bomb exploded", and those spans can be under a
+ * second. Across two real demos the spans ran from 0.9 s to 41.3 s, so no
+ * average of them means anything.
+ *
+ * What the spans do give is a floor: a bomb that was defused after 41.3 s had
+ * not gone off, so the timer is at least that. A bomb is down from the plant
+ * until it is defused, or until the round ends if nobody defused it, and in
+ * every one of those cases it was down at least that long without the round
+ * outlasting it. The floor is reported in the notes and nothing is claimed
+ * from it.
+ *
+ * The real fix is to read the timer directly. Config string 11 carries the
+ * round timer and, once the bomb is down, the bomb timer; analyze() currently
+ * ignores the second value while a round is running. Capturing it per round
+ * gives the exact expiry, and with it last second defuses. That is a change to
+ * the vendored parser and wants its own pass with the parser checks running.
  */
-function measureBombTimer(model){
-  const spans = [];
+function observeBombFloor(model){
+  let longest = null;
   for (const state of model.roundStates) {
-    const r = model.rounds[state.idx];
-    if (!state.plant || !/exploded/i.test(r.reason || "")) continue;
-    const span = state.endS - state.plant.tS;
-    if (span > 5 && span < 120) spans.push(span);
+    if (!state.plant) continue;
+    const resolvedS = state.defuse ? state.defuse.tS : state.endS;
+    const span = resolvedS - state.plant.tS;
+    if (span <= 0 || span > 120) continue;
+    if (longest === null || span > longest) longest = span;
   }
-  if (!spans.length) return null;
-  spans.sort((a, b) => a - b);
-  const mid = spans.length >> 1;
-  const median = spans.length % 2 ? spans[mid] : (spans[mid - 1] + spans[mid]) / 2;
-  return +median.toFixed(1);
+  return longest === null ? null : +longest.toFixed(1);
 }
 
 /* ---- detectors ---- */
@@ -461,8 +473,8 @@ function detectCollaterals(model, out){
   }
 }
 
-/** Bomb plants and defuses, including the ninja and the last second variety. */
-function detectBomb(model, out, bombTimerS){
+/** Bomb plants and defuses, including the ninja variety. */
+function detectBomb(model, out){
   for (const state of model.roundStates) {
     if (state.plant) {
       const win = windowFor([state.plant.tS]);
@@ -489,21 +501,14 @@ function detectBomb(model, out, bombTimerS){
         k => k.tS >= d.tS - CFG.ninjaQuietS && k.tS <= d.tS && k.killerTeam === defuserTeam);
       const ninja = enemiesAlive >= 1 && quietKills.length === 0;
 
-      let lastSecond = false, remainingS = null;
-      if (bombTimerS !== null && state.plant) {
-        remainingS = +(bombTimerS - (d.tS - state.plant.tS)).toFixed(1);
-        lastSecond = remainingS >= 0 && remainingS <= CFG.lastSecondS;
-      }
-
       let score = CFG.score.defuse;
       const tags = ["Bomb", "Defuse"];
       if (ninja) { score = CFG.score.ninjaDefuse; tags.push("Ninja"); }
-      if (lastSecond) { score = Math.max(score, CFG.score.lastSecondDefuse); tags.push("Last second"); }
 
+      const heldS = state.plant ? +(d.tS - state.plant.tS).toFixed(1) : null;
       let detail = "Round " + state.n + ": defused with " + enemiesAlive +
                    " enemy player" + (enemiesAlive === 1 ? "" : "s") + " still alive";
-      if (remainingS !== null) detail += ", " + remainingS.toFixed(1) + " s left on the bomb";
-      else detail += "; bomb timer never observed in this demo, so the remaining time is unknown";
+      if (heldS !== null) detail += ", " + heldS.toFixed(1) + " s after the plant";
 
       out.push(makeHighlight("defuse", {
         score: clamp100(score),
@@ -522,6 +527,16 @@ function detectBomb(model, out, bombTimerS){
 }
 
 /* ---- assembly ---- */
+
+/** A highlight is scalars plus arrays of scalars, so this is deep enough. */
+function cloneHighlight(h){
+  const copy = {};
+  for (const key of Object.keys(h)) {
+    const v = h[key];
+    copy[key] = Array.isArray(v) ? v.slice() : v;
+  }
+  return copy;
+}
 
 /**
  * Hold a clip to its maximum length. The trim comes off the front, because
@@ -549,7 +564,11 @@ function mergeOverlapping(list){
       x.primary !== null && x.primary === h.primary &&
       x.roundIdx === h.roundIdx &&
       h.startS < x.endS && h.endS > x.startS);
-    if (!host) { kept.push(h); continue; }
+    /* Merging widens the host and absorbs the other one's tags and kills, so
+       the host must be a copy. Merging in place would write those tags back
+       into the raw list, which is what the kill browser reads: a kill inside
+       a multikill would pick up "Opening" from a trade that merged into it. */
+    if (!host) { kept.push(cloneHighlight(h)); continue; }
     host.startS = +Math.min(host.startS, h.startS).toFixed(2);
     host.endS = +Math.max(host.endS, h.endS).toFixed(2);
     for (const t of h.tags) if (host.tags.indexOf(t) < 0) host.tags.push(t);
@@ -565,7 +584,7 @@ function mergeOverlapping(list){
 /**
  * Run every detector and return the highlights plus the per kill tags.
  *
- * Returns { highlights, merged, kills, bombTimerS, notes }. `kills` is the
+ * Returns { highlights, merged, kills, bombFloorS, notes }. `kills` is the
  * model's kill list with tags and a score written onto each one, so the kill
  * browser can sort without re-deriving anything.
  */
@@ -576,17 +595,18 @@ function detect(model, options){
   if (!model.caps.killFeed) {
     notes.push("No obituary feed in this demo, so there is nothing to build highlights from. " +
                "Stats fall back to the scoreboard.");
-    return { highlights: [], merged: [], kills: model.kills, bombTimerS: null, notes };
+    return { highlights: [], merged: [], kills: model.kills, bombFloorS: null, notes };
   }
   if (!model.caps.positions) {
     notes.push("No position tracks in this demo: distances, long range kills and the map " +
                "view are unavailable.");
   }
 
-  const bombTimerS = measureBombTimer(model);
-  if (bombTimerS === null) {
-    notes.push("The bomb never exploded in this demo, so its timer could not be measured. " +
-               "Last second defuses are not detected.");
+  const bombFloorS = observeBombFloor(model);
+  if (bombFloorS !== null) {
+    notes.push("The bomb timer is not read from this demo yet, so how close a defuse came to " +
+               "detonation is not shown. The longest a bomb stayed down here was " +
+               bombFloorS.toFixed(1) + " s.");
   }
 
   const raw = [];
@@ -596,7 +616,7 @@ function detect(model, options){
   detectLongRange(model, raw);
   detectHeadshotStreaks(model, raw);
   detectCollaterals(model, raw);
-  detectBomb(model, raw, bombTimerS);
+  detectBomb(model, raw);
 
   raw.forEach(trimWindow);
   raw.sort((a, b) => b.score - a.score || a.startS - b.startS || a.kind.localeCompare(b.kind));
@@ -636,12 +656,12 @@ function detect(model, options){
     highlights: raw,
     merged: limit ? merged.slice(0, limit) : merged,
     kills: model.kills,
-    bombTimerS,
+    bombFloorS,
     notes
   };
 }
 
-const API = { detect, CFG, weaponClass, weaponBase, measureBombTimer, mergeOverlapping };
+const API = { detect, CFG, weaponClass, weaponBase, observeBombFloor, mergeOverlapping };
 if (typeof module === "object" && module.exports) module.exports = API;
 root.DM1_HIGHLIGHTS = API;
 

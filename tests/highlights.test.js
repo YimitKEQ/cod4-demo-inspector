@@ -235,19 +235,27 @@ describe("highlights: headshot streaks and collaterals", () => {
 });
 
 describe("highlights: the bomb", () => {
-  it("measures the bomb timer from the round that actually exploded", () => {
+  it("reports the longest a bomb stayed down as a floor, not as the timer", () => {
     const res = run();
-    assert.close(res.bombTimerS, 45, 0.2, "plant at 30 s, round ended at 75 s");
+    /* Round 4: down 35 s then defused. Round 5: planted at 30 s into a round
+       that ran 75 s, so down 45 s. The longer of the two is the floor. */
+    assert.close(res.bombFloorS, 45, 0.2, "longest plant to resolution in the fixture");
+    assert.ok(res.notes.some(n => n.indexOf("longest a bomb stayed down") >= 0),
+              "the note should state it is a floor");
   });
 
-  it("stays quiet about last second defuses when no bomb ever exploded", () => {
-    const match = referenceMatch();
-    for (const r of match.rounds) if (r.reason === "Bomb exploded") r.reason = "Time expired";
-    const res = run(MODEL.buildModel(match));
-    assert.equal(res.bombTimerS, null, "with no detonation the timer is unknown");
-    assert.ok(res.notes.some(n => n.indexOf("timer") >= 0), "and it says so");
+  it("never claims how close a defuse came to detonation", () => {
+    const res = run();
     assert.ok(!res.highlights.some(h => h.tags.indexOf("Last second") >= 0),
-              "no last second claim without a measured timer");
+              "the bomb timer is not readable from a demo yet, so nothing is claimed");
+    for (const h of res.highlights.filter(h => h.kind === "defuse"))
+      assert.equal(h.detail.indexOf("left on the bomb"), -1, h.detail);
+  });
+
+  it("says how long the bomb was down before the defuse", () => {
+    const res = run();
+    const d = of(res, "defuse").find(h => h.round === 4);
+    assert.ok(d.detail.indexOf("35.0 s after the plant") >= 0, d.detail);
   });
 
   it("calls the round 4 defuse a ninja", () => {
@@ -360,5 +368,32 @@ describe("highlights: clip windows", () => {
                                          h.tags.indexOf("Won") >= 0);
     const last = m.kills.find(k => k.id === won.killIds[won.killIds.length - 1]);
     assert.close(won.endS, last.tS + HL.CFG.postRollS, 0.01);
+  });
+});
+
+describe("highlights: merging does not corrupt the raw list", () => {
+  it("leaves each raw highlight with only its own tags and kills", () => {
+    const m = build();
+    const res = run(m);
+    for (const h of res.highlights) {
+      if (h.kind !== "multikill") continue;
+      /* Every kill in a multikill must have been made by its own primary. */
+      for (const id of h.killIds) {
+        const k = m.kills.find(x => x.id === id);
+        assert.equal(k.killer, h.primary,
+                     h.title + " claims kill " + id + " by someone else");
+      }
+    }
+  });
+
+  it("does not leak a merged tag back onto an unrelated kill", () => {
+    const m = build();
+    const res = run(m);
+    const openings = res.highlights.filter(h => h.kind === "opening");
+    const openingKills = new Set(openings.map(h => h.killIds[0]));
+    for (const k of res.kills) {
+      if (k.tags.indexOf("Opening") >= 0)
+        assert.ok(openingKills.has(k.id), "kill " + k.id + " is tagged Opening but is not one");
+    }
   });
 });
