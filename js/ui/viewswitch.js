@@ -175,13 +175,17 @@ function createViewSwitch(host, bar, viewport2d, state){
     if (mode === "3d" && vp3d) {
       const cur = vp3d.cameras.mode;
       for (const [id, b] of camButtons) b.classList.toggle("on", id === cur);
-      const s = vp3d.stats;
-      stats.textContent = s
-        ? s.cells.toLocaleString() + " floor cells, " + s.levels.toLocaleString() +
-          " levels, " + s.triangles.toLocaleString() + " triangles"
-        : "";
-      stats.title = "The map is reconstructed from every position players occupied. " +
-                    "It only claims floor where somebody actually stood.";
+      const real = state.geometrySource === "extracted";
+      const g = state.geometryStats, s = vp3d.stats;
+      const tris = real && g ? g.triangles : (s ? s.triangles : 0);
+      stats.textContent = (state.fps ? state.fps + " fps  ·  " : "") +
+        (real ? "extracted map, " : "reconstructed map, ") +
+        tris.toLocaleString() + " triangles";
+      stats.title = real
+        ? "Real geometry from the map's own Radiant source."
+        : "Reconstructed from every position players occupied. It only claims " +
+          "floor where somebody actually stood. Run tools/mapsrc.js on a map " +
+          "source to replace this with the real thing.";
     } else {
       stats.textContent = "";
     }
@@ -197,6 +201,8 @@ function createViewSwitch(host, bar, viewport2d, state){
     }
   });
   state.on("camera", refresh);
+  state.on("fps", refresh);
+  state.on("geometry", refresh);
   state.on("load", () => {
     if (vp3d) vp3d.rebuild();
     refresh();

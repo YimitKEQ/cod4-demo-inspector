@@ -565,6 +565,9 @@ function createViewport(container, state){
       g.clearRect(0, 0, cv.width, cv.height);
       return;
     }
+    /* The 3D view hides this canvas rather than removing it, so without this
+       the flat map kept redrawing behind it sixty times a second. */
+    if (cv.style.visibility === "hidden") return;
     if (!ready) layout();
     const t = state.timeS;
     drawBackdrop();

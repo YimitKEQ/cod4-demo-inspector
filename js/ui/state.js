@@ -30,6 +30,15 @@ function createState(){
     selectedLineup: null,
     selectedRoutes: null,
 
+    /* Frames per second in the 3D view, so performance is a number rather
+       than an impression. */
+    fps: 0,
+
+    /* Whether the 3D map is the real extracted geometry or the reconstruction
+       built from player positions. The difference is worth stating. */
+    geometrySource: null,
+    geometryStats: null,
+
     /* Restrict the heatmap to one player, which is the version that answers
        "where does he always go". Null means everyone. */
     heatClient: null,

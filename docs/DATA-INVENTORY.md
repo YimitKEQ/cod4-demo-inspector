@@ -62,8 +62,16 @@ was alive inside a round, and asks whether they could be placed at all
 | Longest unplaceable stretch while alive, median | 3.0 s |
 | Longest unplaceable stretch while alive, 95th percentile | 25.0 s |
 
-Measured over 308 player-and-demo pairs. The recorder is always 100% with no
-gap, as expected: playerState is in every frame.
+Measured over 308 player-and-demo pairs.
+
+**Correction.** An earlier version of this file said the recorder is exact
+because playerState is in every frame. It is exact but it is not in every
+frame: the client predicts its own movement and the server only corrects it
+occasionally, so across a match that position changes about a hundred times.
+The smooth reading lives in the MSG_FRAME records, at client frame rate.
+Upstream found this and the fix is merged; the recorder's track now runs at a
+0.04 s median gap across 23,449 samples on the demo above. See DECISIONS
+entry 14.
 
 The conclusion for the 3D view is that other players are placeable almost all
 of the time, and the remaining few per cent must be drawn as unknown rather

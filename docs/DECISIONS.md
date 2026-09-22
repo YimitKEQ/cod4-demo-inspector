@@ -126,3 +126,56 @@ detectors, and split both languages together so the mirror holds.
 `js/ui/app.js` at 416 lines is at the same edge. It owns three things: the
 file, the clock and the key bindings. The kill feed overlay is the first thing
 that should move out when it grows.
+
+## 13. Real map geometry from Radiant sources, kept out of the repository
+
+The reconstruction from player positions works on any map with nothing
+installed, and it still does, but it is an inference and it looks like one.
+
+CoD4's stock maps exist as Radiant `.map` sources: plain text, real geometry,
+real material names, real texture coordinates. Infinity Ward released
+mp_backlot's in the mod tools; the rest circulate in the mapping community.
+`tools/mapsrc.js` turns one into `maps3d/<map>/geometry.bin`, and the 3D view
+loads that in place of the reconstruction when it exists.
+
+This beats every other route. Husky and C2M read the map out of a running
+game's memory, which means launching the game and clicking a GUI, and
+OpenAssetTools cannot export GfxWorld or the clip map for any title. A `.map`
+source needs none of it.
+
+Two things the parser has to get right, both of which took a wrong turn first:
+
+- A face line holds three points and then the material. Reading the regex's
+  `lastIndex` after the loop is wrong, because a line with exactly three
+  points makes the next `exec` fail and a failed `exec` resets `lastIndex` to
+  zero. Every material parsed as `"("`, so no caulk or clip brush was ever
+  skipped, and the world bounds came out at fifty thousand units instead of
+  three thousand.
+- Patch winding in the source is inconsistent, so the sign of a surface
+  normal says nothing about which way is up. Floors are detected by being
+  horizontal, not by pointing upwards.
+
+**The extracted geometry is gitignored and stays local.** It is Activision's
+work: the map sources are derivative works under the mod tools EULA, which
+permits non-commercial modding and forbids commercial distribution. The tool
+ships, the output does not. That also means the published site falls back to
+the reconstruction, which is the honest trade and is stated in the UI.
+
+Still missing from the extracted maps: the `misc_model` props, about 2,700 of
+them on mp_crash, which carry much of what a player would recognise. Those are
+XModels inside the fastfiles and need OpenAssetTools to pull out. The world
+shell and terrain are there now; the clutter is not.
+
+## 14. The recorder's own track comes from the frame records
+
+Merged from upstream, and it corrects something this tool had wrong.
+
+The recording player's position in the player state is not a per frame
+reading, it is an occasional server correction: across a whole match it
+changes about a hundred times, because the client predicts its own movement.
+Building the recorder's track from it gives a series of jumps. The MSG_FRAME
+records carry the same position at client frame rate, cleanly.
+
+After the merge the recorder's track on a real demo runs at a 0.04 s median
+gap across 23,449 samples. `docs/DATA-INVENTORY.md` said the recorder was
+exact and smooth before this; it was exact and jumpy.

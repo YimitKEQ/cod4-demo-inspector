@@ -74,16 +74,26 @@ function createTimeline(container, state){
     cv.width = W; cv.height = H;
   }
 
-  function draw(){
-    if (!W || !H) layout();
-    g.fillStyle = theme("--drab");
-    g.fillRect(0, 0, W, H);
-    if (!state.model) return;
+  /* The round blocks, kill ticks and highlight markers never move, so they are
+     drawn once into an offscreen canvas. Only the playhead and the clip
+     bracket are redrawn per frame; before this, 150 kill ticks and 93
+     highlight bars were repainted sixty times a second. */
+  let staticLayer = null, staticKey = "";
 
+  function buildStatic(){
     const m = state.model;
+    const key = m.info.map + "@" + W + "x" + H + "@" +
+                (state.highlights ? state.highlights.merged.length : 0);
+    if (staticLayer && staticKey === key) return staticLayer;
+
+    const off = document.createElement("canvas");
+    off.width = W; off.height = H;
+    const g = off.getContext("2d");
     const sc = v => v * dpr;
 
-    /* Round blocks. */
+    g.fillStyle = theme("--drab");
+    g.fillRect(0, 0, W, H);
+
     g.font = (11 * dpr) + "px 'Barlow Condensed', sans-serif";
     g.textBaseline = "middle";
     g.textAlign = "center";
@@ -93,8 +103,6 @@ function createTimeline(container, state){
       const winnerIsA = r.winner === m.teamNames[0];
       g.fillStyle = theme("--slate");
       g.fillRect(x0, sc(LANE.rounds.y), w, sc(LANE.rounds.h));
-      /* A hairline on the winning side's edge, rather than tinting the whole
-         block, which would make team colour compete with the map. */
       g.fillStyle = winnerIsA ? theme("--allies") : theme("--opfor");
       g.fillRect(x0, sc(LANE.rounds.y), w, sc(2));
       if (w > 16 * dpr) {
@@ -103,7 +111,6 @@ function createTimeline(container, state){
       }
     }
 
-    /* Kill ticks, coloured by the killer's team. */
     for (const k of m.kills) {
       const x = tToX(k.tS);
       const team = k.suicide ? k.victimTeam : k.killerTeam;
@@ -114,7 +121,6 @@ function createTimeline(container, state){
       g.globalAlpha = 1;
     }
 
-    /* Highlight markers. */
     if (state.highlights) {
       for (const h of state.highlights.merged) {
         const x0 = tToX(h.startS), x1 = tToX(h.endS);
@@ -124,6 +130,22 @@ function createTimeline(container, state){
         g.globalAlpha = 1;
       }
     }
+
+    staticLayer = off;
+    staticKey = key;
+    return off;
+  }
+
+  function draw(){
+    if (!W || !H) layout();
+    if (!state.model) {
+      g.fillStyle = theme("--drab");
+      g.fillRect(0, 0, W, H);
+      return;
+    }
+
+    g.drawImage(buildStatic(), 0, 0);
+    const sc = v => v * dpr;
 
     /* The clip window currently loaded, as a bracket under everything. */
     if (state.clip) {
@@ -148,11 +170,17 @@ function createTimeline(container, state){
     g.stroke();
   }
 
+  let clockKey = "";
   function refreshControls(){
     playBtn.textContent = state.playing ? "Pause" : "Play";
     playBtn.classList.toggle("on", state.playing);
     rate.textContent = state.rate + "x";
     const total = state.model ? state.model.info.durationS : 0;
+    /* The clock shows whole seconds, so it only needs rewriting when one
+       ticks over, not on every frame. */
+    const key = mmss(state.timeS) + "/" + mmss(total);
+    if (key === clockKey) return;
+    clockKey = key;
     clock.replaceChildren();
     const now = document.createElement("span");
     now.textContent = mmss(state.timeS);
@@ -203,10 +231,10 @@ function createTimeline(container, state){
     }
   }
 
-  const onResize = () => { layout(); draw(); };
+  const onResize = () => { layout(); staticLayer = null; draw(); };
   window.addEventListener("resize", onResize);
 
-  state.on("load", () => { layout(); draw(); refreshControls(); });
+  state.on("load", () => { layout(); staticLayer = null; draw(); refreshControls(); });
   state.on("time", () => { draw(); refreshControls(); });
   state.on("transport", () => { draw(); refreshControls(); });
   state.on("selection", draw);

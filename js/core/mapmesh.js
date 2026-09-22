@@ -30,10 +30,10 @@
 "use strict";
 
 const CFG = {
-  /* Cell size in world units. 64 units is about 1.6 m, which is fine enough
-     to show a doorway and coarse enough to stay under ~6000 cells on a
-     competitive map. */
-  cell: 64,
+  /* Cell size in world units. 40 units is about a metre: fine enough to show
+     a doorway and a staircase, coarse enough that a competitive map stays
+     around 20k triangles, which is nothing. */
+  cell: 40,
 
   /* Two z values in the same cell belong to the same floor while they are
      closer than this. A standing player is 72 units, so 56 keeps a walkway
@@ -48,8 +48,20 @@ const CFG = {
      lines, not areas, and without this the map reads as spaghetti. */
   dilate: 1,
 
-  /* How tall a wall is where the floor ends. */
-  wallHeight: 96,
+  /* A cell with fewer occupied neighbours than this is a speck, not floor:
+     one player falling past, or a single stray sample. Removing them is what
+     turns a cloud of confetti into a building. */
+  minNeighbours: 3,
+
+  /* Fill a hole when at least this many of its four orthogonal neighbours are
+     floor at a similar height. Closes the pinholes left by dilation. */
+  closeNeighbours: 3,
+
+  /* How tall a wall is where the floor ends, and how far the floor is
+     extruded downwards. The skirt is what stops tiles reading as sheets of
+     paper floating in space. */
+  wallHeight: 110,
+  skirtDepth: 46,
 
   /* A neighbouring level this close counts as connected, so no wall is drawn
      between a floor and the ramp leading off it. */
@@ -147,6 +159,47 @@ function buildOccupancy(tracks, opts){
     for (const [k, v] of added) cells.set(k, v);
   }
 
+  /* Clean up. Dilation closes corridors but also smears isolated samples into
+     little islands, and the raw data has specks of its own where somebody
+     fell past a gap. Two passes fix both: drop cells with almost no
+     neighbours, then fill holes that are almost surrounded. */
+  const neighbourCount = (cx, cy, set) => {
+    let n = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      if (!dx && !dy) continue;
+      if (set.has((cx + dx) + "," + (cy + dy))) n++;
+    }
+    return n;
+  };
+
+  for (const key of [...cells.keys()]) {
+    const [cx, cy] = key.split(",").map(Number);
+    if (neighbourCount(cx, cy, cells) < cfg.minNeighbours) cells.delete(key);
+  }
+
+  const fill = new Map();
+  for (const key of cells.keys()) {
+    const [cx, cy] = key.split(",").map(Number);
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = cx + dx, ny = cy + dy;
+      if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue;
+      const nkey = nx + "," + ny;
+      if (cells.has(nkey) || fill.has(nkey)) continue;
+      let around = 0;
+      const levels = [];
+      for (const [ex, ey] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const c = cells.get((nx + ex) + "," + (ny + ey));
+        if (!c) continue;
+        around++;
+        for (const lv of c.levels)
+          if (!levels.some(x => Math.abs(x.z - lv.z) < cfg.levelGap)) levels.push({ z: lv.z, n: 0 });
+      }
+      if (around >= cfg.closeNeighbours && levels.length)
+        fill.set(nkey, { levels, grown: true });
+    }
+  }
+  for (const [k, v] of fill) cells.set(k, v);
+
   return { cells, cols, rows, minX, minY, maxX, maxY, minZ, maxZ, cell: cfg.cell, cfg };
 }
 
@@ -160,20 +213,22 @@ function buildOccupancy(tracks, opts){
 function buildMesh(occ){
   if (!occ) return null;
   const cfg = occ.cfg;
-  const positions = [], normals = [], uvs = [], indices = [];
+  const positions = [], normals = [], uvs = [], indices = [], colors = [];
   const worldW = occ.maxX - occ.minX, worldH = occ.maxY - occ.minY;
 
   const uvOf = (x, y) => [(x - occ.minX) / worldW, 1 - (y - occ.minY) / worldH];
 
   /** Push a quad from four world space corners with a shared normal. */
-  function quad(a, b, c, d, n){
+  function quad(a, b, c, d, n, shade){
     const base = positions.length / 3;
+    const v = shade === undefined ? 1 : shade;
     for (const p of [a, b, c, d]) {
       /* World Z up to scene Y up. */
       positions.push(p[0], p[2], -p[1]);
       normals.push(n[0], n[2], -n[1]);
       const uv = uvOf(p[0], p[1]);
       uvs.push(uv[0], uv[1]);
+      colors.push(v, v, v);
     }
     indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
   }
@@ -183,6 +238,27 @@ function buildMesh(occ){
     return c ? c.levels : null;
   };
 
+  /**
+   * How enclosed a cell is at a given height, 0 to 1.
+   *
+   * Used to bake ambient occlusion into the vertex colours: floor in the open
+   * stays bright, floor tucked against walls and in corners goes darker. It is
+   * the single cheapest thing that stops a heightfield reading as flat plates,
+   * because it is what gives edges and interiors any sense of depth.
+   *
+   * Kept gentle. Vertex colour multiplies the map texture, so a strong term
+   * here does not read as shadow, it reads as a dark map.
+   */
+  function enclosure(cx, cy, z){
+    let open = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      if (!dx && !dy) continue;
+      const nb = levelsAt(cx + dx, cy + dy);
+      if (nb && nb.some(x => Math.abs(x.z - z) <= cfg.stepTolerance)) open++;
+    }
+    return 1 - open / 8;
+  }
+
   const S = cfg.cell;
   for (const [key, cell] of occ.cells) {
     const [cx, cy] = key.split(",").map(Number);
@@ -191,10 +267,13 @@ function buildMesh(occ){
 
     for (const lv of cell.levels) {
       const z = lv.z;
-      /* Floor tile, facing up. */
-      quad([x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z], [0, 0, 1]);
+      /* Floor tile, facing up, shaded by how boxed in it is. */
+      const ao = 1 - enclosure(cx, cy, z) * 0.28;
+      quad([x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z], [0, 0, 1], ao);
 
-      /* Walls where this level has no neighbour at a similar height. */
+      /* Walls where this level has no neighbour at a similar height. The wall
+         runs from below the floor to above it, so the floor reads as solid
+         ground with thickness rather than as a sheet of paper. */
       const sides = [
         { d: [1, 0], a: [x1, y0, z], b: [x1, y1, z], n: [1, 0, 0] },
         { d: [-1, 0], a: [x0, y1, z], b: [x0, y0, z], n: [-1, 0, 0] },
@@ -205,9 +284,14 @@ function buildMesh(occ){
         const nb = levelsAt(cx + s.d[0], cy + s.d[1]);
         const connected = nb && nb.some(x => Math.abs(x.z - z) <= cfg.stepTolerance);
         if (connected) continue;
-        const top = z + cfg.wallHeight;
-        quad([s.a[0], s.a[1], z], [s.b[0], s.b[1], z],
-             [s.b[0], s.b[1], top], [s.a[0], s.a[1], top], s.n);
+        /* A wall stops short when there is floor above it, so an upper storey
+           is not buried behind the wall of the one below. */
+        const above = nb ? nb.filter(x => x.z > z + cfg.stepTolerance)
+                             .reduce((m, x) => Math.min(m, x.z), Infinity) : Infinity;
+        const top = Math.min(z + cfg.wallHeight, above === Infinity ? Infinity : above - 8);
+        const bottom = z - cfg.skirtDepth;
+        quad([s.a[0], s.a[1], bottom], [s.b[0], s.b[1], bottom],
+             [s.b[0], s.b[1], top], [s.a[0], s.a[1], top], s.n, 0.78);
       }
     }
   }
@@ -216,6 +300,7 @@ function buildMesh(occ){
     positions: new Float32Array(positions),
     normals: new Float32Array(normals),
     uvs: new Float32Array(uvs),
+    colors: new Float32Array(colors),
     indices: positions.length / 3 > 65535
       ? new Uint32Array(indices) : new Uint16Array(indices),
     bounds: { minX: occ.minX, minY: occ.minY, maxX: occ.maxX, maxY: occ.maxY,

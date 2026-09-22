@@ -114,12 +114,27 @@ function renderHeader(){
 const killfeedHost = $("#killfeed");
 const KILLFEED_S = 6;
 
+let killfeedKey = "";
+
+/**
+ * The kill feed only changes when a kill enters or leaves the window, which is
+ * a few times a round, not sixty times a second. Rebuilding this DOM every
+ * frame was a real cost for no visible difference.
+ */
 function renderKillfeed(){
   const m = state.model;
-  killfeedHost.replaceChildren();
-  if (!m || !state.view.killfeed) return;
+  if (!m || !state.view.killfeed) {
+    if (killfeedKey !== "") { killfeedHost.replaceChildren(); killfeedKey = ""; }
+    return;
+  }
   const t = state.timeS;
   const recent = m.kills.filter(k => k.tS <= t && t - k.tS < KILLFEED_S).slice(-5);
+  const fresh = recent.filter(k => t - k.tS < 0.6).length;
+  const key = recent.map(k => k.id).join(",") + "|" + fresh;
+  if (key === killfeedKey) return;
+  killfeedKey = key;
+
+  killfeedHost.replaceChildren();
   for (const k of recent) {
     const row = el("div", "kf" + (t - k.tS < 0.6 ? " fresh" : ""));
     const teamClass = tm => (tm === m.teamNames[0] ? "team-a" : "team-b");
@@ -191,11 +206,16 @@ let recorder = null;
 $("#v-record").addEventListener("click", () => {
   if (recorder) { recorder.stop(); return; }
   if (!state.model) return;
-  if (typeof MediaRecorder === "undefined" || !viewport.canvas.captureStream) {
+  /* Record what is actually on screen. This only ever captured the flat map,
+     so pressing it in 3D silently produced a recording of the hidden 2D
+     canvas. */
+  const target = viewSwitch.mode === "3d" && viewSwitch.viewport3d
+    ? viewSwitch.viewport3d.canvas : viewport.canvas;
+  if (typeof MediaRecorder === "undefined" || !target.captureStream) {
     setError("This browser cannot record the canvas. Chrome and Edge can.");
     return;
   }
-  const stream = viewport.canvas.captureStream(60);
+  const stream = target.captureStream(60);
   const chunks = [];
   const mime = ["video/webm;codecs=vp9", "video/webm"].find(
     t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || "video/webm";
@@ -209,6 +229,7 @@ $("#v-record").addEventListener("click", () => {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = (state.fileName || "clip").replace(/\.[^.]+$/, "") + "-" +
+                 (viewSwitch.mode === "3d" ? "3d-" : "") +
                  Math.round(state.timeS) + "s.webm";
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
