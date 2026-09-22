@@ -120,6 +120,32 @@ function createViewSwitch(host, bar, viewport2d, state){
 
   function toggle(){ setMode(mode === "3d" ? "2d" : "3d"); }
 
+  /* A blank 3D view must never be silent.
+     If the renderer has been running for a few seconds and has still not put
+     a single triangle on screen, something is wrong that the person looking
+     at it cannot diagnose, so say what was found rather than showing them an
+     empty rectangle and letting them guess. */
+  let blankSince = 0;
+  function watchForBlank(){
+    if (mode !== "3d" || !vp3d) { blankSince = 0; return; }
+    if (state.drawnTriangles > 0) { blankSince = 0; return; }
+    if (!blankSince) { blankSince = Date.now(); return; }
+    if (Date.now() - blankSince < 4000) return;
+    blankSince = 0;
+    const l = state.loading;
+    if (l && l.done < l.total) return;   /* still arriving, not yet blank */
+    if (root.APP_REPORT) {
+      root.APP_REPORT("The 3D view is drawing nothing",
+        (state.contextLost
+          ? "The graphics context was lost and has not come back. "
+          : "") +
+        "Geometry: " + (state.geometrySource || "none yet") +
+        "  ·  props: " + (state.propCount || 0) +
+        "  ·  " + (state.fps || 0) + " fps. " +
+        "Press V for the flat map, which always works.");
+    }
+  }
+
   function setCamera(id){
     const v = ensure3d();
     if (!v) return;
@@ -233,6 +259,7 @@ function createViewSwitch(host, bar, viewport2d, state){
   let slowSamples = 0;
   state.on("fps", () => {
     refresh();
+    watchForBlank();
     if (mode !== "3d" || !state.view.props) return;
     /* Never judge the frame rate while the map is still streaming in. Loading
        is bursty by nature, and dropping the props because a download was in

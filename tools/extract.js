@@ -84,6 +84,13 @@ function main(){
     if (!fs.existsSync(path.join("maps3d", "_players", "players.json"))) {
       run("players.js", [models, path.join("maps3d", "_players")]);
     }
+    /* The exporter names each model's textures as .dds files beside it and
+       writes neither the files nor a format a browser can read, so without
+       this step every prop and every character draws flat grey. The images
+       come out of the game's archives under the same names. */
+    run("modeltex.js", [path.join("maps3d", "images"),
+                        path.join(outDir, "props"),
+                        path.join("maps3d", "_players")]);
   } else {
     process.stdout.write("  no prop models: set OAT_MODELS to an " +
       "OpenAssetTools model_export folder to add the map's clutter\n\n");

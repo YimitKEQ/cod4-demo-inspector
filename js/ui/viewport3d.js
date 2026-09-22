@@ -1028,7 +1028,22 @@ function materialColour(name){
     updateKills(t);
     updateNades(t);
     if (!heatBuilt) buildHeat();
+
+    /* A camera with a NaN anywhere in it renders a perfectly clean nothing:
+       three.js builds the matrices, every vertex lands outside the frustum,
+       and the frame comes out as flat background. There is no error and
+       nothing in the console. Rather than show that, put the camera back
+       where it started and carry on. */
+    const cam = cameras.active();
+    if (!Number.isFinite(cam.position.x + cam.position.y + cam.position.z)) {
+      cameras.reset(state.model);
+      cameras.setAspect(cam.aspect || 1);
+    }
+
     renderer.render(scene, cameras.active());
+    /* What actually reached the screen, so a blank view can be told apart
+       from a slow one. */
+    state.drawnTriangles = renderer.info.render.triangles;
 
     /* A frame rate readout, because "janky" should be a number. */
     frames++;
@@ -1119,16 +1134,35 @@ function materialColour(name){
     /* Frame the real geometry, not the reconstruction it replaced. The
        extracted map extends past the playable area (terrain, skybox shells),
        so the camera is given the intersection of the two: the part of the
-       real map that players actually occupied. */
+       real map that players actually occupied.
+
+       That intersection has to be checked. Two boxes that do not overlap
+       intersect to an inside out box, where min is greater than max, and
+       everything downstream then quietly goes wrong in the worst possible
+       way: the span comes out negative, the fog gets a negative near and far,
+       and a negative fog range makes every fragment fully fogged. The result
+       is a view that draws one correct frame from the reconstruction and then
+       turns into a flat rectangle of fog colour the moment the real geometry
+       arrives. It reads exactly like a crash and is nothing of the kind.
+
+       When the two do not overlap, the real map is the honest answer: it is
+       the thing actually on screen. */
     const rb = real.manifest.bounds;
     const pb = mapMesh ? mapMesh.bounds : null;
-    const framed = pb ? {
+    const overlap = pb ? {
       minX: Math.max(rb.minX, pb.minX - 400), maxX: Math.min(rb.maxX, pb.maxX + 400),
       minY: Math.max(rb.minY, pb.minY - 400), maxY: Math.min(rb.maxY, pb.maxY + 400),
       minZ: rb.minZ, maxZ: rb.maxZ
-    } : rb;
+    } : null;
+    const usable = o => o && Number.isFinite(o.minX) && Number.isFinite(o.maxX) &&
+      Number.isFinite(o.minY) && Number.isFinite(o.maxY) &&
+      o.maxX - o.minX > 1 && o.maxY - o.minY > 1;
+    const framed = usable(overlap) ? overlap : rb;
     cameras.setBounds(framed);
-    const span = Math.max(framed.maxX - framed.minX, framed.maxY - framed.minY);
+
+    /* Fog has to stay positive and has to start beyond the map, or the map is
+       inside its own haze. */
+    const span = Math.max(1, framed.maxX - framed.minX, framed.maxY - framed.minY);
     scene.fog.near = span * 1.5;
     scene.fog.far = span * 4.5;
 
@@ -1167,7 +1201,7 @@ function materialColour(name){
     start, stop, resize, rebuild,
     get stats(){ return mapMesh ? mapMesh.stats : null; },
     get running(){ return running; },
-    cameras,
+    cameras, scene, renderer,
     canvas: renderer.domElement
   };
 }

@@ -459,4 +459,5 @@ function main(){
 }
 
 if (require.main === module) main();
-module.exports = { buildIndex, findImage, extract, parseIwi, decodeIwi, writePNG, indexArchive };
+module.exports = { buildIndex, findImage, extract, parseIwi, decodeIwi, writePNG,
+                   indexArchive, readEntry };

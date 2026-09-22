@@ -124,6 +124,10 @@ const viewport = VIEWPORT.createViewport($("#viewport"), state);
 const timeline = TIMELINE.createTimeline($("#timeline"), state);
 const viewSwitch = root.DM1_VIEWSWITCH.createViewSwitch(
   $("#viewport"), document.querySelector(".viewport-bar"), viewport, state);
+/* A handle on the view for the console and for the diagnostic harness, which
+   needs to see what the renderer thinks it is drawing rather than guess from
+   a screenshot. */
+root.APP_VIEWSWITCH = viewSwitch;
 
 /* ---- header ---- */
 

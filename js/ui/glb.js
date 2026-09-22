@@ -25,6 +25,17 @@ const COMPONENT = {
 };
 const COMPONENTS_PER = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4, MAT4: 16 };
 
+/* Every model's colour maps live in one folder, because the same wall texture
+   is shared by a dozen props and downloading it once per model would be
+   absurd. */
+const IMAGE_BASE = "maps3d/images/";
+
+/* Material names carry variant suffixes like "desertshrubs#0". A hash in a URL
+   starts the fragment, so the browser would request "desertshrubs" and throw
+   away the extension with it. tools/modeltex.js writes the files through the
+   same mapping. */
+const safeName = n => String(n).replace(/[^\w.-]/g, "_");
+
 /** Split the container into its JSON and binary chunks. */
 function parseContainer(buffer){
   const dv = new DataView(buffer);
@@ -83,7 +94,7 @@ function readAccessor(json, bin, index){
  * Every primitive in the file becomes a group on a single geometry, so an
  * instanced draw can render the whole prop with a material array.
  */
-function build(THREE, json, bin, baseUrl){
+function build(THREE, json, bin){
   const positions = [], normals = [], uvs = [], indices = [];
   const groups = [];
   const materialOf = [];
@@ -183,9 +194,18 @@ function build(THREE, json, bin, baseUrl){
       out.colorSpace = THREE.SRGBColorSpace;
       out.wrapS = THREE.RepeatWrapping;
       out.wrapT = THREE.RepeatWrapping;
-    } else if (image && image.uri && baseUrl) {
-      out = new THREE.TextureLoader().load(baseUrl + image.uri);
+    } else if (image && image.uri) {
+      /* The exporter names images as .dds files sitting beside the model, and
+         writes neither the files nor a format a browser could decode. The real
+         images were pulled out of the game's archives instead, as PNG, into
+         one shared folder keyed by the same bare name: see tools/modeltex.js.
+         Without this every prop and every character draws flat grey. */
+      const bare = image.uri.split("/").pop().replace(/\.[^.]+$/, "").toLowerCase();
+      out = new THREE.TextureLoader().load(IMAGE_BASE + safeName(bare) + ".png");
       out.colorSpace = THREE.SRGBColorSpace;
+      out.wrapS = THREE.RepeatWrapping;
+      out.wrapT = THREE.RepeatWrapping;
+      out.flipY = false;
     }
     textureCache.set(tex.index, out);
     return out;
@@ -222,8 +242,7 @@ function load(THREE, url){
     .then(buf => {
       const parsed = parseContainer(buf);
       if (!parsed || !parsed.bin) throw new Error("not a binary glTF: " + url);
-      const built = build(THREE, parsed.json, parsed.bin,
-                          url.slice(0, url.lastIndexOf("/") + 1));
+      const built = build(THREE, parsed.json, parsed.bin);
       if (!built) throw new Error("no geometry in " + url);
       return built;
     });

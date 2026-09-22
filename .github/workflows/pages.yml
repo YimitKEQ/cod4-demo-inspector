@@ -40,6 +40,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # Pages caches for ten minutes with no fingerprint in the filename, so
+      # without this a visitor who returns just after a deploy is served the
+      # previous scripts and the fix looks like it never shipped.
+      - run: node tools/stamp.js index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: "."
