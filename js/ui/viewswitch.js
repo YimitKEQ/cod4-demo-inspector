@@ -180,7 +180,8 @@ function createViewSwitch(host, bar, viewport2d, state){
       const tris = real && g ? g.triangles : (s ? s.triangles : 0);
       stats.textContent = (state.fps ? state.fps + " fps  ·  " : "") +
         (real ? "extracted map, " : "reconstructed map, ") +
-        tris.toLocaleString() + " triangles";
+        tris.toLocaleString() + " triangles" +
+        (state.propCount ? "  ·  " + state.propCount.toLocaleString() + " props" : "");
       stats.title = real
         ? "Real geometry from the map's own Radiant source."
         : "Reconstructed from every position players occupied. It only claims " +

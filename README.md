@@ -9,12 +9,14 @@ GPL-3.0, whose `.dm_1` parser does the hard part.
 
 ## What works now
 
-- **3D.** The map is rebuilt from where players actually walked and draped with
-  its own minimap, so it reads as the real place at real heights with no game
-  assets extracted. mp_crash comes out as 9,212 triangles with a mean error of
-  7 units against the positions it was built from. Six cameras: free fly,
-  orbit, follow, the recorder's own eyes, another player's eyes (marked
-  approximate) and a tactical plan view.
+- **3D, with the real map.** Point the tools at your own CoD4 install and the
+  view loads the map's actual geometry, the game's own textures and its props:
+  mp_crash is 8,761 triangles across 36 materials plus 2,454 instanced props.
+  Players are soldier figures at CoD4's proportions facing where they were
+  actually looking. Six cameras: free fly, orbit, follow, the recorder's own
+  eyes, another player's eyes (marked approximate) and a tactical plan view.
+  Without an install it falls back to a reconstruction built from where players
+  walked, which works on any map and says so.
 - **Watch the kill.** Pick any kill and the camera frames it from the side and
   swings around the shot at half speed. One key, `R`.
 - **Coach.** What the team does that an opponent can read: repeated grenade
@@ -47,6 +49,27 @@ No build step, no dependencies.
 ```
 python -m http.server 8899
 ```
+
+### Getting the real map into 3D
+
+Needs CoD4 installed. Geometry comes from the map's Radiant `.map` source
+(Infinity Ward released mp_backlot's in the mod tools; the others circulate in
+the mapping community), textures come straight out of your `main/*.iwd`
+archives, and props need one run of OpenAssetTools:
+
+```
+Unlinker.exe --model-format GLB --include-assets xmodel,material,image   --search-path "<CoD4>/main" -o dump "<CoD4>/zone/english/mp_crash.ff"
+
+set OAT_MODELS=dump/model_export
+node tools/extract.js mp_crash.map mp_crash
+```
+
+The map name must match what the demo reports, so a backlot source is built
+twice, once as `mp_backlot` and once as `mp_backlot_x`.
+
+Everything this writes lands in `maps3d/`, which is gitignored on purpose: the
+geometry, textures and models are Activision's. The tools ship, the output does
+not, which is why the published site shows the reconstruction.
 
 Open `http://127.0.0.1:8899/index.html` and drop a demo on it. Press `?` for
 the keys. With no demo to hand, the empty state offers a sample match.

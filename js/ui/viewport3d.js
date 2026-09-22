@@ -86,7 +86,8 @@ function createViewport3D(container, state){
   const gNades = new THREE.Group();
   const gHeat = new THREE.Group();
   const gOverlay = new THREE.Group();
-  scene.add(gMap, gPlayers, gTrails, gKills, gNades, gHeat, gOverlay);
+  const gProps = new THREE.Group();
+  scene.add(gMap, gProps, gPlayers, gTrails, gKills, gNades, gHeat, gOverlay);
 
   let occupancy = null;
   let mapMesh = null;
@@ -751,6 +752,81 @@ function materialColour(name){
     }
   }
 
+  /* ---- props ---- */
+
+  /**
+   * The map's clutter: foliage, rubble, barriers, vehicles.
+   *
+   * A stock map places a couple of thousand of these from a couple of dozen
+   * models, so each model is drawn once as an instanced mesh however many
+   * times it appears. mp_crash is 2,454 placements in 34 draw calls.
+   *
+   * Placement maths. The models come out of the dump already converted from
+   * CoD's Z up to glTF's Y up, which is a quarter turn about X; call that M.
+   * A prop's rotation is given in CoD's own frame, so the rotation to apply in
+   * the scene is M R M inverse, and its position is simply M applied to the
+   * origin. Getting this wrong lays every tree on its side.
+   */
+  function loadProps(){
+    clearGroup(gProps);
+    if (!state.view.props) { state.propCount = 0; state.emit("geometry"); return; }
+    const map = state.model.info.map;
+    const base = "maps3d/" + map + "/";
+
+    fetch(base + "props.json")
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("none"))))
+      .then(spec => {
+        const inst = spec.instances;
+        const perModel = new Map();
+        for (let i = 0; i < inst.model.length; i++) {
+          const m = inst.model[i];
+          if (!perModel.has(m)) perModel.set(m, []);
+          perModel.get(m).push(i);
+        }
+
+        const qM = new THREE.Quaternion().setFromAxisAngle(
+          new THREE.Vector3(1, 0, 0), -Math.PI / 2);
+        const qMi = qM.clone().invert();
+        const ax = new THREE.Vector3(1, 0, 0);
+        const ay = new THREE.Vector3(0, 1, 0);
+        const az = new THREE.Vector3(0, 0, 1);
+        const D = Math.PI / 180;
+
+        let placed = 0;
+        spec.models.forEach((model, mi) => {
+          const rows = perModel.get(mi);
+          if (!rows || !rows.length) return;
+          root.DM1_GLB.load(THREE, base + "props/" + model.file).then(built => {
+            const mesh = new THREE.InstancedMesh(
+              built.geometry, built.materials, rows.length);
+            mesh.frustumCulled = false;
+            const mat = new THREE.Matrix4();
+            const pos = new THREE.Vector3();
+            const scl = new THREE.Vector3();
+            rows.forEach((i, n) => {
+              /* CoD angles are pitch, yaw, roll about Y, Z and X. */
+              const q = new THREE.Quaternion()
+                .setFromAxisAngle(az, inst.yaw[i] * D)
+                .multiply(new THREE.Quaternion().setFromAxisAngle(ay, inst.pitch[i] * D))
+                .multiply(new THREE.Quaternion().setFromAxisAngle(ax, inst.roll[i] * D));
+              const qScene = qM.clone().multiply(q).multiply(qMi);
+              V(inst.x[i], inst.y[i], inst.z[i], pos);
+              const k = inst.scale[i] || 1;
+              scl.set(k, k, k);
+              mat.compose(pos, qScene, scl);
+              mesh.setMatrixAt(n, mat);
+            });
+            mesh.instanceMatrix.needsUpdate = true;
+            gProps.add(mesh);
+            placed += rows.length;
+            state.propCount = placed;
+            state.emit("geometry");
+          }).catch(() => { /* one model missing is not a failure */ });
+        });
+      })
+      .catch(() => { state.propCount = 0; });
+  }
+
   /* ---- x-ray ---- */
 
   let xrayOn = null;
@@ -863,6 +939,20 @@ function materialColour(name){
     gMap.add(new THREE.Mesh(geo, mats.length ? mats : new THREE.MeshStandardMaterial({
       color: 0x8A9380, roughness: 0.92, side: THREE.DoubleSide })));
 
+    /* A ground plane under everything. The extracted shell has gaps where a
+       surface was caulk or a brush was never drawn, and without this you see
+       straight through them into the void, which reads as broken rather than
+       as missing. */
+    const b = real.manifest.bounds;
+    const pad = 1500;
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry((b.maxX - b.minX) + pad * 2, (b.maxY - b.minY) + pad * 2),
+      new THREE.MeshStandardMaterial({ color: 0x5E6656, roughness: 1 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    V((b.minX + b.maxX) / 2, (b.minY + b.maxY) / 2, b.minZ - 12, ground.position);
+    gMap.add(ground);
+
     xrayOn = null;
     state.texturedGroups = ranges.filter(r => textures[r.material]).length;
     state.totalGroups = ranges.length;
@@ -900,12 +990,14 @@ function materialColour(name){
     roundCache = null;
     cameras.reset(state.model);
     buildOverlay();
+    loadProps();
     ready = true;
     loadTexture();
   }
 
   state.on("load", () => { if (state.model) rebuild(); });
   state.on("view", () => { heatBuilt = false; });
+  state.on("props", loadProps);
   state.on("heat", () => { heatBuilt = false; });
   state.on("overlay", buildOverlay);
   window.addEventListener("resize", resize);

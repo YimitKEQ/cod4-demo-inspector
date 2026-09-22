@@ -41,7 +41,12 @@ const SKIP_MATERIALS = new Set([
   "caulk", "sky", "clip", "player_clip", "playerclip", "clip_player",
   "nodraw", "hint", "skip", "trigger", "origin", "portal", "areaportal",
   "clip_vehicle", "clipnosight", "clip_missile", "volume", "water_clip",
-  "lightgrid_volume", "clusterportal", "donotenter", "mantle_on", "mantle_over"
+  "lightgrid_volume", "clusterportal", "donotenter", "mantle_on", "mantle_over",
+  /* Editor volume markers. Named conservatively: a material called plainly
+     "water" or "fog" can be a real surface on some map, and dropping real
+     geometry is worse than keeping a marker. */
+  "watervolume", "water_volume", "fogvolume", "lightgrid",
+  "trigger_hurt", "trigger_multiple", "trigger_radius", "autosave", "hintskip"
 ]);
 
 const EPS = 0.01;
@@ -249,7 +254,8 @@ function build(src){
     /* Anything beginning with one of these is an editor or compiler surface
        rather than something the player ever sees. toolFlags in particular was
        putting a few hundred solid black boxes into the middle of the map. */
-    return !/^(caulk|clip|nodraw|hint|skip|trigger|portal|sky_|tool|editor|utility)/.test(m);
+    return !/^(caulk|clip|nodraw|hint|skip|trigger|portal|sky_|tool|editor|utility|fog_|volume_)/.test(m) &&
+           !/(_volume|_trigger|_hint)$/.test(m);
   };
 
   /* One index list per material, so every surface can wear its own texture.

@@ -75,7 +75,8 @@ function createState(){
 
     /* View switches. */
     view: { trails: true, aimRays: true, killLines: true, grenades: true,
-            heatmap: false, names: true, killfeed: true, xray: false }
+            heatmap: false, names: true, killfeed: true, xray: false,
+            props: true }
   };
 
   /** Subscribe. Returns an unsubscribe function. */

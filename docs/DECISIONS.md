@@ -179,3 +179,44 @@ records carry the same position at client frame rate, cleanly.
 After the merge the recorder's track on a real demo runs at a 0.04 s median
 gap across 23,449 samples. `docs/DATA-INVENTORY.md` said the recorder was
 exact and smooth before this; it was exact and jumpy.
+
+## 15. The game's own textures and models, read directly
+
+Two more routes opened up, both of which need nothing but the installed game.
+
+**Textures.** `main/*.iwd` are ordinary zip archives and the `.iwi` files inside
+them are a short header over DXT data. Node's zlib handles the zip, a DXT1/3/5
+decoder and a small PNG writer handle the rest, so `tools/iwd.js` needs no
+external tooling at all. 6,561 images indexed across the install.
+
+Two traps. IWI stores mipmaps **smallest first**, and the four offsets after
+the dimensions are the ends of each level with level zero the largest, so the
+full resolution image runs from `mipOffsets[1]` to `mipOffsets[0]`, not from
+the start of the data. Decoding from the start produces convincing noise.
+And material names are not image names: `ch_rubble01` is stored as
+`ch_rubble01_col`, `me_trash01` as `trash01_col`. The resolver tries the known
+transformations in order of confidence, then a token match needing more than
+half the words, and anything still unresolved is tinted from its own name
+rather than given someone else's picture. 34 of mp_crash's 36 materials and 38
+of mp_backlot's 42 resolve.
+
+**Props.** The `.map` source lists every prop as a `misc_model` with an origin,
+Euler angles and a scale. mp_crash has 2,433 placements of only 25 models, so
+they draw as instances: one call per model whatever the count.
+
+The models themselves are the one thing that needs OpenAssetTools, because
+they live in the fastfiles. `Unlinker.exe --model-format GLB` dumps them, and
+`js/ui/glb.js` reads the small part of glTF they use rather than restructuring
+the app around modules to get three.js's own loader. Node transforms have to be
+baked while walking the hierarchy: the palm tree carries its Z up to Y up
+conversion as a rotation on its root node, so ignoring them lays it on its side.
+
+Placement maths worth writing down. The dump is already converted from CoD's Z
+up to glTF's Y up, which is a quarter turn about X; call it M. A prop's
+rotation is given in CoD's frame, so the scene rotation is `M R M⁻¹` and the
+position is `M` applied to the origin.
+
+`tools/extract.js` runs geometry, textures and props in one command.
+
+**All of it stays local.** `maps3d/` is gitignored. The tools ship, the output
+does not, so the published site falls back to the reconstruction and says so.
