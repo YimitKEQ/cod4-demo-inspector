@@ -54,8 +54,16 @@ function stamp(htmlFile){
       return head + url + "?v=" + h + tail;
     });
 
+  /* One id for the whole bundle, shown in the app, so "which build am I
+     looking at" is answerable from a screenshot instead of a guess. */
+  const build = crypto.createHash("sha1").update(html).digest("hex").slice(0, 7);
+  const meta = '<meta name="dm1-build" content="' + build + '">';
+  html = /<meta name="dm1-build"/.test(html)
+    ? html.replace(/<meta name="dm1-build" content="[^"]*">/, meta)
+    : html.replace("</title>", ["</title>", meta].join("\n"));
+
   fs.writeFileSync(htmlFile, html);
-  return { changed, missing };
+  return { changed, missing, build };
 }
 
 function main(){
