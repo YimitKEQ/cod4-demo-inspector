@@ -19,3 +19,6 @@ Thumbs.db
 # Local config with machine paths
 tools/config.local.json
 .claude/settings.local.json
+
+# The personal brief this was built from stays local
+HANDOFF.md

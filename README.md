@@ -36,10 +36,9 @@ GPL-3.0, whose `.dm_1` parser does the hard part.
 - **A command line.** `node tools/cli.js demo.dm_1` for the summary and the top
   moments, with no browser involved.
 
-Still to come: real map geometry extracted from the game (Husky can do it for
-CoD4 and is a library, so it can be driven headless), the analytics that need
-collision geometry for line of sight, and the one pass batch renderer. See
-`HANDOFF.md` and `docs/DECISIONS.md`.
+Still to come: real map geometry extracted from the game, the analytics that
+need collision geometry for line of sight, and the one pass batch renderer that
+turns ticked kills into real MP4s. See `docs/ROADMAP.md`.
 
 ## Running it
 
