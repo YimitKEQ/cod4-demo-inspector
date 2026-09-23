@@ -39,6 +39,9 @@ function parseInfoString(text){
 
 function pick(raw){
   const out = {};
+  /* Every first person animation name too ("reloadAnim", "sprintInAnim"...):
+     the viewmodel plays them by the weapon animation number in the demo. */
+  for (const [k, v] of Object.entries(raw)) if (/Anim$/.test(k) && v) out[k] = v;
   for (const [k, isNum] of Object.entries(KEEP)) {
     if (raw[k] === undefined || raw[k] === "") continue;
     out[k] = isNum ? Number(raw[k]) : raw[k];

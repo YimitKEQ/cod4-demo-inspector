@@ -19,6 +19,25 @@
 
 const ROOT_BONE = "__skel";
 
+/* The inverse of the exporter's Z up to Y up turn, -90 degrees about X. */
+const Y_UP_INVERSE = [Math.SQRT1_2, 0, 0, Math.SQRT1_2];
+
+/** Quaternion product a * b, both [x, y, z, w]. */
+function mulQuat(a, b){
+  return [
+    a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
+    a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+    a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
+    a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
+  ];
+}
+
+/** Rotate a vector by a unit quaternion. */
+function rotateByQuat(q, v){
+  const p = mulQuat(mulQuat(q, [v[0], v[1], v[2], 0]), [-q[0], -q[1], -q[2], q[3]]);
+  return [p[0], p[1], p[2]];
+}
+
 /** Scene roots of a parsed GLB, falling back to every top level node. */
 function sceneRoots(json){
   const scene = json.scenes && json.scenes[json.scene || 0];
@@ -28,12 +47,16 @@ function sceneRoots(json){
   return json.nodes.map((_, i) => i).filter(i => !children.has(i));
 }
 
-/** Merge the skeleton nodes of several parts into one list, parents first. */
-function mergeSkeleton(parts){
+/**
+ * Merge the skeleton nodes of several parts into one list, parents first.
+ * attach maps a part's top bone to the bone of an earlier part it hangs from:
+ * a first person gun's j_gun rides on the arms' tag_weapon.
+ */
+function mergeSkeleton(parts, attach){
   const nodes = [];
   const seen = new Set([ROOT_BONE]);
   nodes.push({ name: ROOT_BONE, parent: null, t: [0, 0, 0], r: [0, 0, 0, 1], s: [1, 1, 1] });
-  for (const { json } of parts) {
+  parts.forEach(({ json }, partIndex) => {
     const walk = (i, parentName, isRoot) => {
       const n = json.nodes[i];
       if (!n || n.mesh !== undefined) return;
@@ -46,10 +69,30 @@ function mergeSkeleton(parts){
                      t: n.translation || [0, 0, 0], r: n.rotation || [0, 0, 0, 1],
                      s: n.scale || [1, 1, 1] });
       }
-      for (const c of (n.children || [])) walk(c, name, false);
+      for (const c of (n.children || [])) {
+        const childName = json.nodes[c] && json.nodes[c].name;
+        /* "*" hangs every top bone of a later part (a gun's j_gun and its
+           silencer bone alike) from the named bone of an earlier one. */
+        const hook = isRoot && attach && childName && partIndex > 0 &&
+          (attach[childName] || attach["*"]);
+        if (hook && seen.has(hook)) {
+          walk(c, hook, false);
+          /* The exporter puts its Z up to Y up quarter turn on each file's top
+             bones. Under another bone that turn is already applied higher up,
+             so it comes off here; left on, a gun whose clip does not rotate
+             j_gun lies rolled onto its side. */
+          const hooked = nodes[nodes.length - 1] && nodes.find(x => x.name === childName);
+          if (hooked) {
+            hooked.r = mulQuat(Y_UP_INVERSE, hooked.r);
+            hooked.t = rotateByQuat(Y_UP_INVERSE, hooked.t);
+          }
+        } else {
+          walk(c, name, false);
+        }
+      }
     };
     for (const r of sceneRoots(json)) walk(r, null, true);
-  }
+  });
   return nodes;
 }
 
@@ -109,7 +152,7 @@ function skinnedGeometry(THREE, json, bin){
  * The materials come from glb.js so textures resolve exactly as they do for
  * props; its baked geometry is thrown away.
  */
-function loadTemplate(THREE, urls){
+function loadTemplate(THREE, urls, attach){
   return Promise.all(urls.map(url => fetch(url)
     .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error("missing " + url))))
     .then(buf => root.DM1_GLB.parseContainer(buf))))
@@ -125,7 +168,7 @@ function loadTemplate(THREE, urls){
         meshes.push(g);
       }
       if (!meshes.length) throw new Error("no skinned meshes in " + urls.join(", "));
-      return { nodes: mergeSkeleton(parts), meshes };
+      return { nodes: mergeSkeleton(parts, attach), meshes };
     });
 }
 

@@ -185,9 +185,13 @@ function buildClips(THREE, anims, rest){
           b.qt.map(f => f / fps), b.q));
       }
       if (b.p && b.pt) {
+        /* Body clips move bones by small offsets on the rest pose; first
+           person weapon clips give the positions themselves (tag_torso
+           animates to exactly its rest position). The packer says which. */
+        const base = c.absoluteTrans ? { x: 0, y: 0, z: 0 } : r.p;
         const vals = new Array(b.p.length);
         for (let k = 0; k < b.p.length; k += 3) {
-          vals[k] = r.p.x + b.p[k]; vals[k + 1] = r.p.y + b.p[k + 1]; vals[k + 2] = r.p.z + b.p[k + 2];
+          vals[k] = base.x + b.p[k]; vals[k + 1] = base.y + b.p[k + 1]; vals[k + 2] = base.z + b.p[k + 2];
         }
         tracks.push(new THREE.VectorKeyframeTrack(bone + ".position", b.pt.map(f => f / fps), vals));
       }
