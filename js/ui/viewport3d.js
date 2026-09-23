@@ -639,38 +639,89 @@ function materialColour(name){
       })
       .catch(() => {});
   }
+  /* Who wears what: characters.js, fed by maps3d/_players/characters.json. */
+  const wardrobe = root.DM1_CHARACTERS ? root.DM1_CHARACTERS.createWardrobe(THREE) : null;
+  let animSpec = null;
+  const clipsByCharacter = new Map();
+
   function loadPlayerModels(){
     loadWeapons();
-    if (playerModels) { applyPlayerModels(); return; }
-    const SK = root.DM1_SKINNED, PA = root.DM1_PLAYERANIM;
-    if (!SK || !PA) return;
-    const anims = fetch("maps3d/_players/anims.json")
-      .then(r => (r.ok ? r.json() : null)).catch(() => null);
-    fetch("maps3d/_players/players.json")
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error("none"))))
-      .then(spec => anims.then(animSpec => {
-        const jobs = [];
-        playerModels = {};
-        for (const side of ["allies", "opfor"]) {
-          const entry = spec.sides && spec.sides[side];
-          if (!entry) continue;
-          const urls = [entry.body, entry.head].filter(Boolean).map(f => "maps3d/_players/" + f);
-          track("bodies", 1);
-          jobs.push(SK.loadTemplate(THREE, urls)
-            .then(template => {
-              /* Clips are built against one instance's rest pose; every
-                 instance of a template shares that rest pose. */
-              const probe = SK.instantiate(THREE, template);
-              const clips = animSpec ? PA.buildClips(THREE, animSpec, probe.rest) : new Map();
-              playerModels[side] = { template, clips };
-              tick();
-            })
-            .catch(err => { console.warn("player model " + side + ": " + err.message); tick(); }));
-        }
-        return Promise.all(jobs);
-      }))
-      .then(() => applyPlayerModels())
-      .catch(() => { playerModels = null; });
+    if (playerModels || !wardrobe) return;
+    playerModels = true;
+    track("bodies", 1);
+    Promise.all([
+      fetch("maps3d/_players/characters.json").then(r => (r.ok ? r.json() : null)),
+      fetch("maps3d/_players/anims.json").then(r => (r.ok ? r.json() : null))
+    ]).then(([spec, anims]) => {
+      wardrobe.setSpec(spec);
+      animSpec = anims;
+      state.playerModels = !!spec;
+      tick();
+    }).catch(err => { console.warn("characters: " + err.message); tick(); });
+  }
+
+  /** The animation clips for a character, built once against its rest pose. */
+  function clipsFor(name, soldier){
+    if (!clipsByCharacter.has(name)) {
+      const PA = root.DM1_PLAYERANIM;
+      clipsByCharacter.set(name, animSpec && PA ? PA.buildClips(THREE, animSpec, soldier.rest) : new Map());
+    }
+    return clipsByCharacter.get(name);
+  }
+
+  /**
+   * Put the right uniform on a player for this round: his side at the time,
+   * the map's faction set, his primary weapon's class. Decided once per
+   * round; the model swaps in place when its files have loaded.
+   */
+  function dressPlayer(node, client, round, roundIdx){
+    const CH = root.DM1_CHARACTERS, SK = root.DM1_SKINNED, PA = root.DM1_PLAYERANIM;
+    if (!wardrobe || !wardrobe.spec || !CH || !SK || !PA || !round) return;
+    if (node.dressedFor === roundIdx) return;
+    node.dressedFor = roundIdx;
+    const m = state.model;
+    const want = CH.characterFor(wardrobe.spec, m, mapFolder(m.info.map), client, round, weaponDefs);
+    if (!want || node.charName === want) return;
+    node.dressing = want;
+    wardrobe.template(want).then(tpl => {
+      if (!tpl || node.dressing !== want) return;
+      const soldier = SK.instantiate(THREE, tpl);
+      if (node.body && node.body.parent) node.body.parent.remove(node.body);
+      if (node.gun && node.gun.parent) node.gun.parent.remove(node.gun);
+      node.gun = null; node.gunFile = undefined;
+      node.holder.add(soldier.group);
+      node.body = soldier.group;
+      node.soldier = soldier;
+      node.charName = want;
+      const clips = clipsFor(want, soldier);
+      node.animator = clips.size ? new PA.Animator(THREE, soldier, clips) : null;
+      node.real = true;
+      /* A team ring on the ground so sides stay readable at a glance: two
+         soldiers two hundred units apart are not obviously enemies. It sits
+         at the feet, where it labels the model without hiding it. */
+      if (!node.band) {
+        node.band = new THREE.Mesh(
+          new THREE.RingGeometry(15, 19, 28),
+          new THREE.MeshBasicMaterial({ color: node.colour, transparent: true,
+                                        opacity: 0.9, side: THREE.DoubleSide, depthWrite: false })
+        );
+        node.band.rotation.x = -Math.PI / 2;
+        node.band.position.y = 1.5;
+        node.holder.add(node.band);
+      }
+      node.parts = soldier.meshes.concat([node.band]);
+      state.emit("geometry");
+    });
+  }
+
+  /** The first person arms the recorder's character wears. */
+  function handsFor(client, tS){
+    const CH = root.DM1_CHARACTERS;
+    const node = players && players.get(client);
+    const spec = wardrobe && wardrobe.spec;
+    if (!spec || !node || !node.charName) return null;
+    const c = spec.chars[node.charName];
+    return c && c.hands ? c.hands : null;
   }
 
   /* World weapon models, loaded once per file and shared by every holder. */
@@ -708,43 +759,6 @@ function materialColour(name){
       hand.add(mesh);
       node.gun = mesh;
     });
-  }
-
-  /** Swap each player's placeholder figure for an animated soldier. */
-  function applyPlayerModels(){
-    if (!playerModels) return;
-    const SK = root.DM1_SKINNED, PA = root.DM1_PLAYERANIM;
-    const m = state.model;
-    for (const [client, node] of players) {
-      const side = m.teamOf(client) === m.teamNames[0] ? "allies" : "opfor";
-      const model = playerModels[side];
-      if (!model || node.real) continue;
-
-      const soldier = SK.instantiate(THREE, model.template);
-      node.holder.remove(node.body);
-      node.holder.add(soldier.group);
-      node.body = soldier.group;
-      node.soldier = soldier;
-      node.parts = soldier.meshes;
-      node.animator = model.clips.size ? new PA.Animator(THREE, soldier, model.clips) : null;
-      node.real = true;
-
-      /* A team ring on the ground so sides stay readable at a glance: two
-         brown soldiers two hundred units apart are not obviously enemies. It
-         sits at the feet rather than around the chest, where a band reads as
-         a pool float and hides the model it is meant to label. */
-      const band = new THREE.Mesh(
-        new THREE.RingGeometry(15, 19, 28),
-        new THREE.MeshBasicMaterial({ color: node.colour, transparent: true,
-                                      opacity: 0.9, side: THREE.DoubleSide, depthWrite: false })
-      );
-      band.rotation.x = -Math.PI / 2;
-      band.position.y = 1.5;
-      node.holder.add(band);
-      node.parts.push(band);
-    }
-    state.playerModels = true;
-    state.emit("geometry");
   }
 
   function buildPlayers(){
@@ -909,6 +923,7 @@ function materialColour(name){
       }
       V(px, py, pz, node.holder.position);
 
+      dressPlayer(node, client, round, round ? round.idx : -1);
       if (node.animator && PA) {
         const v = PA.velocityAt(tr, pos.sample);
         const dir = PA.directionOf(v.vx, v.vy, pos.yaw);
@@ -1283,22 +1298,51 @@ function materialColour(name){
 
         track("props", spec.models.length);
 
-        /* One model at a time.
-           Firing thirty four parallel downloads and uploading every mesh and
-           texture to the GPU in the same handful of frames is what made a
-           frame take long enough for the driver to give up on it. Sequential
-           loading spreads the work over many frames and keeps every one of
-           them short. */
+        /* Downloads run six at a time; building and uploading to the GPU stays
+           one model per frame. Uploading every mesh and texture in the same
+           handful of frames once made a frame long enough for the driver to
+           give up on it, so that part stays spread out. Downloading strictly
+           one at a time, as before, cost a network round trip per model and
+           left a map filling in for many seconds. */
         const queue = spec.models.map((model, mi) => ({ model, mi }));
         let placed = 0;
+        const PREFETCH = 6;
+        const pending = new Map();
+        let ahead = 0;
+        const prefetch = () => {
+          while (ahead < queue.length && pending.size < PREFETCH + 1) {
+            const job = queue[ahead++];
+            pending.set(job, fetch(base + "props/" + job.model.file)
+              .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error("missing " + job.model.file)))));
+          }
+        };
+        const buildFrom = (job, buf) => {
+          const parsed = root.DM1_GLB.parseContainer(buf);
+          const built = parsed && parsed.bin ? root.DM1_GLB.build(THREE, parsed.json, parsed.bin, job.model.styles) : null;
+          if (!built) throw new Error("no geometry in " + job.model.file);
+          return built;
+        };
 
+        /* Several models per frame, as long as the frame stays under a
+           budget; a GPU upload spike is what the one-per-frame rule guarded
+           against, and a small budget guards against it just as well. */
+        const FRAME_BUDGET_MS = 8;
+        let frameStart = performance.now();
+        const continueSoon = () => {
+          if (performance.now() - frameStart < FRAME_BUDGET_MS) next();
+          else requestAnimationFrame(() => { frameStart = performance.now(); next(); });
+        };
         const next = () => {
+          prefetch();
           const job = queue.shift();
           if (!job) return;
+          ahead = Math.max(0, ahead - 1);
+          const download = pending.get(job);
+          pending.delete(job);
           const rows = perModel.get(job.mi);
           if (!rows || !rows.length) { tick(); return next(); }
 
-          root.DM1_GLB.load(THREE, base + "props/" + job.model.file, job.model.styles).then(built => {
+          (download || Promise.reject(new Error("not fetched"))).then(buf => buildFrom(job, buf)).then(built => {
             const mesh = new THREE.InstancedMesh(
               built.geometry, built.materials, rows.length);
             const mat = new THREE.Matrix4();
@@ -1347,10 +1391,10 @@ function materialColour(name){
             state.propCount = placed;
             tick();
             state.emit("geometry");
-            /* Yield a frame before the next one so the view stays alive
-               while the map fills in. */
-            requestAnimationFrame(next);
-          }).catch(() => { tick(); requestAnimationFrame(next); });
+            /* Keep going within this frame while it stays short, then yield,
+               so the view stays alive while the map fills in. */
+            continueSoon();
+          }).catch(() => { tick(); continueSoon(); });
         };
         next();
       })
@@ -1442,7 +1486,8 @@ function materialColour(name){
     if (cameras.mode !== "eyes" || !m.pov || !P || !state.view.viewmodel) { viewmodel.hide(); return; }
     const ps = P.stateAt(m.pov, t);
     const name = ps && m.weaponFiles[ps.weapon];
-    viewmodel.update(cameras.active(), name ? String(name).toLowerCase() : null, ps, lastStep);
+    viewmodel.update(cameras.active(), name ? String(name).toLowerCase() : null, ps, lastStep,
+                     ps ? handsFor(ps.client, t) : null);
     viewmodel.render(renderer);
   }
 
@@ -1722,7 +1767,8 @@ function materialColour(name){
       for (const [client, node] of players || []) {
         const a = node.animator && node.animator.current;
         out.push({ client, visible: node.holder.visible, real: !!node.real,
-                   clip: a ? a.getClip().name : null });
+                   clip: a ? a.getClip().name : null, character: node.charName || null,
+                   gun: node.gunFile || null });
       }
       return out;
     }

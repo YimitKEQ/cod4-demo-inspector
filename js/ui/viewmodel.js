@@ -45,15 +45,19 @@ function createViewmodel(THREE){
   function setWeapons(spec){ weapons = spec; }
 
   /** Load a weapon's arms, gun and clips once; resolves to a ready rig. */
-  function loadWeapon(name){
-    if (cache.has(name)) return cache.get(name);
+  function loadWeapon(name, hands){
+    const key = name + "|" + (hands || "");
+    if (cache.has(key)) return cache.get(key);
     /* Asked before the weapon list arrived: say no without remembering it,
        or the gun would never load once the list is there. */
     if (!weapons) return Promise.resolve(null);
     const w = weapons[name];
     const SK = root.DM1_SKINNED, PA = root.DM1_PLAYERANIM;
     if (!w || !w.viewFile || !SK || !PA) return Promise.resolve(null);
-    const urls = [w.handFile, w.viewFile].filter(Boolean).map(f => "maps3d/weapons/view/" + f);
+    /* The arms are the character's own (setViewmodel in its script), the gun
+       the weapon's; the weapon's default arms stand in when the character's
+       are not known. */
+    const urls = [hands || w.handFile, w.viewFile].filter(Boolean).map(f => "maps3d/weapons/view/" + f);
     const job = Promise.all([
       SK.loadTemplate(THREE, urls, { "*": "tag_weapon" }),
       w.animFile ? fetch("maps3d/weapons/anims/" + w.animFile).then(r => (r.ok ? r.json() : null)) : null
@@ -64,13 +68,13 @@ function createViewmodel(THREE){
         (Array.isArray(m.material) ? m.material : [m.material]).forEach(mt => { mt.transparent = false; });
       });
       const clips = anims ? PA.buildClips(THREE, anims, soldier.rest) : new Map();
-      return { name, soldier, clips, byNumber: (anims && anims.byNumber) || {},
+      return { name, key, soldier, clips, byNumber: (anims && anims.byNumber) || {},
                mixer: new THREE.AnimationMixer(soldier.group), action: null, lastAnim: -1, ads: null };
     }).catch(err => {
       console.warn("first person weapon " + name + ": " + (err && err.message ? err.message : err));
       return null;
     });
-    cache.set(name, job);
+    cache.set(key, job);
     return job;
   }
 
@@ -119,18 +123,19 @@ function createViewmodel(THREE){
    * Per frame, in first person only. weaponName is the raw weapon file name,
    * state the pov state (weapAnim, ads), dt the match time step.
    */
-  function update(mainCamera, weaponName, state, dt){
+  function update(mainCamera, weaponName, state, dt, hands){
     camera.position.copy(mainCamera.position);
     camera.quaternion.copy(mainCamera.quaternion);
     if (camera.aspect !== mainCamera.aspect) { camera.aspect = mainCamera.aspect; camera.updateProjectionMatrix(); }
 
     if (!weaponName) { show(null); return; }
-    if (!current || current.name !== weaponName) {
-      if (loading !== weaponName && weapons) {
-        loading = weaponName;
-        loadWeapon(weaponName).then(rig => { if (loading === weaponName) show(rig); });
+    const key = weaponName + "|" + (hands || "");
+    if (!current || current.key !== key) {
+      if (loading !== key && weapons) {
+        loading = key;
+        loadWeapon(weaponName, hands).then(rig => { if (loading === key) show(rig); });
       }
-      if (!current || current.name !== weaponName) return;
+      if (!current || current.key !== key) return;
     }
     if (state) {
       playAnim(current, state.weapAnim | 0);

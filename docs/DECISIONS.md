@@ -339,3 +339,19 @@ kill followed within 0.12 s.
 **Grenades.** A frag or flashbang missile stops being sent when it goes off,
 so its last sample is the detonation; smoke pops on landing and stands about
 16 s.
+
+## 2026-09-23: soldiers dressed as promod dressed them
+
+Each map's script sets the faction set per side (`game["allies_soldiertype"]`:
+desert, urban or woodland). Promod's `_teams.gsc` maps set and class to an
+mptype script, which names a character, whose script sets the body, attaches
+the head and sets the first person arms. Promod picks the class from the
+primary weapon (`playerModelForWeapon`: SMG specops, assault rifle assault,
+sniper, shotgun recon). The demo gives each player's weapons and, from the
+client state, his side over time (sides swap at half time), so every soldier
+wears his real uniform and the recorder's first person arms are his
+character's. `tools/characters.js` resolves the chain; `js/ui/characters.js`
+applies it per round.
+
+Props now download six at a time and build within an 8 ms frame budget; one
+request per model, in series, left maps filling in for many seconds.
