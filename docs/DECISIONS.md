@@ -310,3 +310,32 @@ shaded side is not black.
 **Missing scenery.** Destructible cars and the S&D bomb sites are
 `script_model` entities, not static models, so the world dump never had them.
 They come from the map's entity string now (Crash has 11 cars).
+
+## 2026-09-23: stretched textures, weapons, bullets, grenades
+
+**Stretched textures were a converter bug.** A fallback read a surface's
+indices as absolute when all of them happened to fall inside its own vertex
+span. On big surfaces that happens by chance, and it wired triangles to
+vertices across the map (179 garbage triangles on Strike, 277 on Bog).
+Indices are always relative to the surface's first vertex now.
+
+**First person weapon.** The player state's `weapAnim` is the game's
+weapAnimNumber_t; every value in a real demo arrives with its matching weapon
+state (13 reload with RELOADING, 11 raise with RAISING, 23 to 25 with the three
+sprint states), which fixes the table in `tools/weaponmodels.js`. The gun
+viewmodel's top bones (j_gun, and on silenced guns `silerncer_geo`, the game's
+own spelling) hang from the arms' `tag_weapon`, and lose the exporter's Z up
+turn there. Weapon clips store absolute bone translations, unlike body clips,
+which store offsets on the rest pose. Drawn in its own pass over a cleared
+depth buffer, as the game does.
+
+**Every shot is in the demo.** Player entities and the player state carry a
+four slot event ring (`events[]`, `eventSequence`). Event 26 is a shot (2,828
+in a 150 kill match, 98 per cent while the shooter's firing flag is set), 28
+the last round of a magazine. Tracers run from the shooter's eye along his aim
+at that instant to the first wall (collision grid), or to the victim when a
+kill followed within 0.12 s.
+
+**Grenades.** A frag or flashbang missile stops being sent when it goes off,
+so its last sample is the detonation; smoke pops on landing and stands about
+16 s.

@@ -622,12 +622,21 @@ function materialColour(name){
    */
   let playerModels = null;
   let weaponsLoaded = false;
+  let weaponDefs = null;
+  /* The first person gun and arms, drawn in their own pass (viewmodel.js). */
+  const viewmodel = root.DM1_VIEWMODEL ? root.DM1_VIEWMODEL.createViewmodel(THREE) : null;
+  let lastStep = 0;
   function loadWeapons(){
     if (weaponsLoaded) return;
     weaponsLoaded = true;
     fetch("maps3d/_players/weapons.json")
       .then(r => (r.ok ? r.json() : null))
-      .then(spec => { if (spec && spec.weapons) cameras.setWeapons(spec.weapons); })
+      .then(spec => {
+        if (!spec || !spec.weapons) return;
+        weaponDefs = spec.weapons;
+        cameras.setWeapons(spec.weapons);
+        viewmodel.setWeapons(spec.weapons);
+      })
       .catch(() => {});
   }
   function loadPlayerModels(){
@@ -664,6 +673,43 @@ function materialColour(name){
       .catch(() => { playerModels = null; });
   }
 
+  /* World weapon models, loaded once per file and shared by every holder. */
+  const worldGuns = new Map();
+  function worldGun(file){
+    if (!worldGuns.has(file)) {
+      worldGuns.set(file, root.DM1_GLB.load(THREE, "maps3d/weapons/world/" + file).catch(() => null));
+    }
+    return worldGuns.get(file);
+  }
+
+  /**
+   * Put the weapon a player is carrying into his right hand. The model is
+   * baked Y up; the hand bone lives in the game's Z up frame, so a quarter
+   * turn about X takes the model back into it.
+   */
+  function updateHeldWeapon(node, weaponId){
+    if (!node.soldier || !weaponDefs) return;
+    const show = !!state.view.weapons;
+    const file = show ? (() => {
+      const wf = state.model.weaponFiles[weaponId];
+      const def = wf && weaponDefs[String(wf).toLowerCase()];
+      return def && def.worldFile;
+    })() : null;
+    if (node.gunFile === file) return;
+    node.gunFile = file;
+    if (node.gun) { node.gun.parent && node.gun.parent.remove(node.gun); node.gun = null; }
+    const hand = node.soldier.bones.get("tag_weapon_right");
+    if (!file || !hand) return;
+    worldGun(file).then(built => {
+      if (!built || node.gunFile !== file) return;
+      const mesh = new THREE.Mesh(built.geometry, built.materials);
+      mesh.rotation.x = Math.PI / 2;
+      mesh.castShadow = true;
+      hand.add(mesh);
+      node.gun = mesh;
+    });
+  }
+
   /** Swap each player's placeholder figure for an animated soldier. */
   function applyPlayerModels(){
     if (!playerModels) return;
@@ -678,6 +724,7 @@ function materialColour(name){
       node.holder.remove(node.body);
       node.holder.add(soldier.group);
       node.body = soldier.group;
+      node.soldier = soldier;
       node.parts = soldier.meshes;
       node.animator = model.clips.size ? new PA.Animator(THREE, soldier, model.clips) : null;
       node.real = true;
@@ -825,6 +872,7 @@ function materialColour(name){
     const dt = animT === null ? 0 : t - animT;
     animT = t;
     const step = dt > 0 && dt < 0.5 ? dt : 0;
+    lastStep = step;
     if (PA && animCalibFor !== m) { animCalib = PA.calibrate(m.tracks); animCalibFor = m; }
     /* Looking through the recorder's eyes, his own body would fill the
        screen from the inside. */
@@ -865,6 +913,7 @@ function materialColour(name){
         const v = PA.velocityAt(tr, pos.sample);
         const dir = PA.directionOf(v.vx, v.vy, pos.yaw);
         const pick = PA.roleForSample(animCalib, cur, v.speed, dir);
+        updateHeldWeapon(node, cur[5]);
         node.animator.update(pick.role, pick.rate, step);
       }
       /* CoD yaw 0 looks along world +X. A three.js object with rotation.y = 0
@@ -1338,6 +1387,65 @@ function materialColour(name){
     cameras.setAspect(rect.width / rect.height);
   }
 
+  /* ---- bullets, explosions, flashes, smoke (combatfx.js) ---- */
+  let worldGrid = null;
+  const combatFx = root.DM1_COMBATFX ? root.DM1_COMBATFX.createCombatFx(THREE, scene) : null;
+  /* Eye height by stance, the game's standing, crouched and prone values. */
+  const EYE_BY_STANCE = { stand: 60, crouch: 40, prone: 11 };
+  const _aimEye = new THREE.Vector3(), _aimDir = new THREE.Vector3(), _chest = new THREE.Vector3();
+
+  /** Where a player's eye was and where he aimed, at an instant, in scene space. */
+  function aimAt(client, tS){
+    const m = state.model, P = root.DM1_POV;
+    const D = Math.PI / 180;
+    let x, y, z, pitch, yaw;
+    const ps = m.pov && P ? P.stateAt(m.pov, tS) : null;
+    const view = ps && ps.client === client ? P.viewAt(m.pov, tS) : null;
+    if (view) {
+      x = view.x; y = view.y; z = view.z + ps.eyeHeight; pitch = view.pitch; yaw = view.yaw;
+    } else {
+      const pos = MODEL.positionAt(m.tracks, client, tS, 0.5);
+      if (!pos) return null;
+      const sample = m.tracks[String(client)][pos.sample];
+      const stance = root.DM1_PLAYERANIM ? root.DM1_PLAYERANIM.stanceOf(sample[6]) : "stand";
+      x = pos.x; y = pos.y; z = pos.z + EYE_BY_STANCE[stance];
+      pitch = sample[7] !== null && sample[7] !== undefined ? sample[7] : 0;
+      yaw = pos.yaw;
+    }
+    const cp = Math.cos(pitch * D);
+    V(x, y, z, _aimEye);
+    V(cp * Math.cos(yaw * D), cp * Math.sin(yaw * D), -Math.sin(pitch * D), _aimDir);
+    return { eye: _aimEye, dir: _aimDir };
+  }
+
+  function updateCombatFx(t){
+    if (!combatFx) return;
+    const C = root.DM1_COLLIDE;
+    combatFx.update({
+      model: state.model, t,
+      aimAt,
+      raycast: (o, d, max) => (worldGrid && C ? C.raycast(worldGrid, o.x, o.y, o.z, d.x, d.y, d.z, max) : Infinity),
+      victimChest: (kill, tS) => {
+        const pos = MODEL.positionAt(state.model.tracks, kill.victim, tS, 0.5);
+        return pos ? V(pos.x, pos.y, pos.z + 44, _chest) : null;
+      },
+      toScene: (x, y, z, into) => V(x, y, z, into),
+      showTracers: !!state.view.tracers,
+      showNadeFx: !!state.view.nadeFx
+    });
+  }
+
+  /** The recorder's own weapon, in first person only. */
+  function drawViewmodel(t){
+    if (!viewmodel) return;
+    const m = state.model, P = root.DM1_POV;
+    if (cameras.mode !== "eyes" || !m.pov || !P || !state.view.viewmodel) { viewmodel.hide(); return; }
+    const ps = P.stateAt(m.pov, t);
+    const name = ps && m.weaponFiles[ps.weapon];
+    viewmodel.update(cameras.active(), name ? String(name).toLowerCase() : null, ps, lastStep);
+    viewmodel.render(renderer);
+  }
+
   function frame(now){
     if (!running) return;
     raf = requestAnimationFrame(frame);
@@ -1351,6 +1459,7 @@ function materialColour(name){
     updateTrails(t, round);
     updateKills(t);
     updateNades(t);
+    updateCombatFx(t);
     if (!heatBuilt) buildHeat();
 
     /* A camera with a NaN anywhere in it renders a perfectly clean nothing:
@@ -1368,6 +1477,7 @@ function materialColour(name){
     sky.position.copy(cam.position);
 
     renderer.render(scene, cameras.active());
+    drawViewmodel(t);
     /* What actually reached the screen, so a blank view can be told apart
        from a slow one. */
     state.drawnTriangles = renderer.info.render.triangles;
@@ -1398,6 +1508,7 @@ function materialColour(name){
   /** Swap the reconstruction for real geometry once it has loaded. */
   function applyRealGeometry(real){
     cameras.setCollider(null);
+    worldGrid = null;
     if (!real) { state.geometrySource = "reconstructed"; state.emit("geometry"); return; }
     clearGroup(gMap);
 
@@ -1499,6 +1610,7 @@ function materialColour(name){
     if (C) {
       const solid = ranges.filter(r => r.count && !r.alphaTest && !r.blend && !r.decal);
       const grid = C.buildGrid(geo.attributes.position.array, geo.index.array, solid);
+      worldGrid = grid;
       cameras.setCollider(grid ? (o, d, max) => C.raycast(grid, o.x, o.y, o.z, d.x, d.y, d.z, max) : null);
     }
 
@@ -1601,7 +1713,7 @@ function materialColour(name){
     start, stop, resize, rebuild,
     get stats(){ return mapMesh ? mapMesh.stats : null; },
     get running(){ return running; },
-    cameras, scene, renderer,
+    cameras, scene, renderer, viewmodel,
     canvas: renderer.domElement,
     /** What each player is showing, for probes and tests: visible, animated
         and which clip is playing. */

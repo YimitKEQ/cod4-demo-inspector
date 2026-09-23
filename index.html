@@ -22,11 +22,23 @@
 
   <section class="viewport" id="viewport">
     <div class="viewport-bar">
-      <button class="btn on" id="v-trails">Trails</button>
-      <button class="btn on" id="v-aim">Aim</button>
-      <button class="btn on" id="v-kills">Kill lines</button>
-      <button class="btn on" id="v-nades">Grenades</button>
-      <button class="btn on" id="v-names">Names</button>
+      <details class="layers" id="v-layers">
+        <summary class="btn" title="Choose what is drawn over the match">Layers</summary>
+        <div class="layers-menu" role="menu">
+          <p class="layers-head">Overlays</p>
+          <label><input type="checkbox" data-view="trails"> Trails <kbd>T</kbd></label>
+          <label><input type="checkbox" data-view="aimRays"> Aim <kbd>A</kbd></label>
+          <label><input type="checkbox" data-view="killLines"> Kill lines</label>
+          <label><input type="checkbox" data-view="names"> Names <kbd>N</kbd></label>
+          <p class="layers-head">Combat</p>
+          <label><input type="checkbox" data-view="grenades"> Grenade paths <kbd>G</kbd></label>
+          <label><input type="checkbox" data-view="nadeFx"> Explosions, flashes, smoke</label>
+          <label><input type="checkbox" data-view="tracers"> Bullets <kbd>B</kbd></label>
+          <p class="layers-head">First person</p>
+          <label><input type="checkbox" data-view="viewmodel"> Weapon in hand</label>
+          <label><input type="checkbox" data-view="weapons"> Weapons on players</label>
+        </div>
+      </details>
       <button class="btn" id="v-heat" title="Where people spend their time (H)">Heat</button>
       <button class="btn" id="v-xray" title="See players through walls in 3D (X)">X-ray</button>
       <span class="spacer" style="flex:1"></span>
@@ -120,6 +132,8 @@
 <script src="js/core/pov.js"></script>
 <script src="js/ui/skinned.js"></script>
 <script src="js/ui/playeranim.js"></script>
+<script src="js/ui/viewmodel.js"></script>
+<script src="js/ui/combatfx.js"></script>
 <script src="js/ui/collide.js"></script>
 <script src="js/ui/cameras3d.js"></script>
 <script src="js/ui/viewport3d.js"></script>

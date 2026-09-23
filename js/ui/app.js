@@ -230,18 +230,30 @@ state.on("transport", () => { if (state.playing) lastFrame = performance.now(); 
 
 /* ---- view toggles ---- */
 
-const toggles = [
-  ["#v-trails", "trails"], ["#v-aim", "aimRays"], ["#v-kills", "killLines"],
-  ["#v-nades", "grenades"], ["#v-names", "names"], ["#v-heat", "heatmap"],
-  ["#v-xray", "xray"]
-];
+const toggles = [["#v-heat", "heatmap"], ["#v-xray", "xray"]];
 for (const [sel, key] of toggles) {
   const btn = $(sel);
   btn.addEventListener("click", () => state.toggleView(key));
 }
-state.on("view", () => {
-  for (const [sel, key] of toggles) $(sel).classList.toggle("on", state.view[key]);
+/* Everything drawn over the match lives in one Layers menu, so the bar
+   stays readable however many layers there are. */
+const layerBoxes = [...document.querySelectorAll("#v-layers input[data-view]")];
+for (const box of layerBoxes) {
+  box.addEventListener("change", () => {
+    if (!!state.view[box.dataset.view] !== box.checked) state.toggleView(box.dataset.view);
+  });
+}
+/* Clicking anywhere else closes the menu. */
+document.addEventListener("click", e => {
+  const menu = $("#v-layers");
+  if (menu.open && !menu.contains(e.target)) menu.open = false;
 });
+function syncViewControls(){
+  for (const [sel, key] of toggles) $(sel).classList.toggle("on", state.view[key]);
+  for (const box of layerBoxes) box.checked = !!state.view[box.dataset.view];
+}
+state.on("view", syncViewControls);
+syncViewControls();
 
 /* ---- clip recording straight off the canvas ---- */
 
@@ -496,6 +508,7 @@ window.addEventListener("keydown", e => {
     case "a": case "A": state.toggleView("aimRays"); break;
     case "n": case "N": state.toggleView("names"); break;
     case "g": case "G": state.toggleView("grenades"); break;
+    case "b": case "B": state.toggleView("tracers"); break;
     case "[": case "]": {
       const i = TAB_KEYS.indexOf(state.tab);
       const next = (i + (e.key === "]" ? 1 : TAB_KEYS.length - 1)) % TAB_KEYS.length;

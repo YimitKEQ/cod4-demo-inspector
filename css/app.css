@@ -576,3 +576,29 @@ kbd {
   font-size: var(--t-13);
   color: var(--bone);
 }
+
+/* ---- layers menu ---- */
+.layers { position: relative; pointer-events: auto; }
+.layers > summary { list-style: none; user-select: none; }
+.layers > summary::-webkit-details-marker { display: none; }
+.layers[open] > summary { background: var(--grease); border-color: var(--grease); color: #23281F; }
+.layers-menu {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 5;
+  min-width: 220px; padding: 6px 0;
+  background: var(--drab); border: var(--line); border-radius: 2px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.layers-head {
+  margin: 6px 12px 2px; font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--bone-dim);
+}
+.layers-menu label {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 12px; font-size: var(--t-13); color: var(--bone); cursor: pointer;
+}
+.layers-menu label:hover { background: var(--drab-2); }
+.layers-menu input { accent-color: var(--grease); margin: 0; }
+.layers-menu kbd {
+  margin-left: auto; font-family: inherit; font-size: 11px; color: var(--bone-mute);
+  border: var(--hair); border-radius: 2px; padding: 0 4px;
+}
