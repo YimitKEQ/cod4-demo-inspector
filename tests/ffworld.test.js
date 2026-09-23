@@ -65,7 +65,19 @@ describe("ffworld", () => {
       { indices: [0, 1, 2, 0, 1, 2] });
     const w = FF.readWorld(spec, bin);
     assert.equal([...w.index].join(), "0,2,1,3,5,4");
-    assert.equal(w.indexing.relative, 1);
+    assert.equal(w.badSurfaces, 0);
+  });
+
+  it("never reads indices as absolute, even when they fit the surface's span", () => {
+    /* Surface two starts at vertex 3 with indices 3, 4, 5: all inside its own
+       span 3..8 by chance. Relative is still right: 6, 7, 8. */
+    const pts = [];
+    for (let i = 0; i < 9; i++) pts.push([i, i % 2, 0]);
+    const { spec, bin } = makeWorld(pts,
+      [[0, 0, 3, 1, 0, 0, 0], [0, 3, 6, 1, 3, 0, 0]], [plain("a")],
+      { indices: [0, 1, 2, 3, 4, 5] });
+    const w = FF.readWorld(spec, bin);
+    assert.equal([...w.index].slice(3).join(), "6,8,7");
   });
 
   it("winds triangles counter clockwise around their normal, as WebGL expects", () => {

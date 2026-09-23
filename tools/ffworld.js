@@ -122,10 +122,7 @@ function colourImageOf(material){
 /**
  * The world as flat typed arrays plus index ranges grouped by material.
  *
- * Surface indices are stored relative to the surface's first vertex. That
- * is checked rather than assumed: if every index already falls inside the
- * surface's own span they are treated as absolute instead, so a dump from a
- * build that resolves them differently still comes out right.
+ * Surface indices are relative to the surface's first vertex, always.
  */
 function readWorld(spec, bin){
   const n = spec.vertexCount;
@@ -170,7 +167,7 @@ function readWorld(spec, bin){
   const sky = new Set(spec.skySurfaces || []);
   const styles = spec.materials.map(drawStyle);
   const perMaterial = new Map();
-  let relative = 0, absolute = 0;
+  let badSurfaces = 0;
 
   for (let s = 0; s < spec.surfaces.length; s++) {
     const surf = spec.surfaces[s];
@@ -181,13 +178,13 @@ function readWorld(spec, bin){
 
     const first = surf[fFirst], count = surf[fCount];
     const base = surf[fBase], triCount = surf[fTri];
-    let inside = true;
-    for (let k = 0; k < triCount * 3; k++) {
-      const v = idx[base + k];
-      if (v < first || v >= first + count) { inside = false; break; }
-    }
-    const offset = inside ? 0 : first;
-    if (inside) absolute++; else relative++;
+    /* Indices are always relative to the surface's first vertex. An earlier
+       version also accepted them as absolute when they all happened to fall
+       inside the surface's own span; on surfaces with many vertices that is
+       common by chance, and it wired triangles to vertices across the map,
+       which showed as textures stretched through the whole screen. */
+    const offset = first;
+    if (count && Math.max(...idx.subarray(base, base + triCount * 3)) >= count) badSurfaces++;
 
     /* One range per material and lightmap bank: a material that spans two
        banks needs two draws, one per lightmap texture. Index 31 is the
@@ -258,7 +255,7 @@ function readWorld(spec, bin){
   return {
     position, normal, uv, uv1, color, index, ranges,
     bounds: { minX: minB[0], minY: minB[1], minZ: minB[2], maxX: maxB[0], maxY: maxB[1], maxZ: maxB[2] },
-    indexing: { relative, absolute }
+    badSurfaces
   };
 }
 
@@ -697,7 +694,7 @@ function main(){
   process.stdout.write("\n  " + map + "\n");
   process.stdout.write("    " + (world.index.length / 3).toLocaleString() + " triangles, " +
     world.ranges.length + " materials, " + mb(geoBytes) +
-    " (indices: " + world.indexing.relative + " relative, " + world.indexing.absolute + " absolute surfaces)\n");
+    (world.badSurfaces ? ", " + world.badSurfaces + " surfaces index past their own vertices" : "") + "\n");
   process.stdout.write("    " + tex.count + " colour maps, " + mb(tex.bytes) +
     (tex.missing.length ? ", unresolved: " + tex.missing.length : "") + "\n");
   process.stdout.write("    " + props.placed.toLocaleString() + " props of " + props.models + " models, " +
