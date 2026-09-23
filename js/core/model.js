@@ -303,6 +303,8 @@ function buildModel(res){
     weaponFiles: (res.map && res.map.weaponFiles) || [],
     /* The recorder's view at full client rate; see js/core/pov.js. */
     pov: (res.map && res.map.pov) || null,
+    /* Every shot fired, [ms since start, client]; from the event queues. */
+    shots: (res.map && res.map.shots) || [],
     chat: res.chat,
     events: res.events,
     nameOf, teamOf,

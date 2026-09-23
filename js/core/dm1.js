@@ -290,6 +290,7 @@ function* parseDemoSteps(bytes, deep){
     out.events = snaps.events;
     out.clientTeams = snaps.clientTeams;
     out.tracks = snaps.tracks;
+    out.playerEvents = snaps.playerEvents;
     out.missiles = snaps.missiles;
     out.viewSamples = snaps.viewSamples;
     out.baselines = snaps.baselines.size;
@@ -994,7 +995,22 @@ function buildMap(d, t0){
   const weaponFiles = (d.configstrings.get(CS_WEAPON_LIST) || "").split(/\s+/).filter(Boolean);
   return { compass: parts[0] || "", bounds,
            center: d.configstrings.get(12) || "", tracks, weapons, weaponFiles,
-           grenades: buildGrenades(d, t0), pov: buildPov(d, t0) };
+           grenades: buildGrenades(d, t0), pov: buildPov(d, t0), shots: buildShots(d, t0) };
+}
+
+/* Entity event numbers for a weapon being fired. 26 is every shot (2,828 in a
+   150 kill promod match, 98 per cent of them while the shooter's firing flag
+   is set); 28 is the last round of a magazine. */
+const EV_FIRE_WEAPON = new Set([26, 28]);
+
+/** Every shot fired: [ms since start, client], in time order. */
+function buildShots(d, t0){
+  const out = [];
+  for (const [t, client, ev] of (d.playerEvents || [])) {
+    if (EV_FIRE_WEAPON.has(ev) && client >= 0 && client < 64) out.push([t - t0, client]);
+  }
+  out.sort((a, b) => a[0] - b[0]);
+  return out;
 }
 
 /**

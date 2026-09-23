@@ -102,7 +102,8 @@ function stateAt(pov, tS){
   return {
     client: a[1], eFlags: a[2], pmFlags: a[3],
     eyeHeight: num(4, STAND_EYE), ads: Math.max(0, Math.min(1, num(5, 0))),
-    weaponState: a[6], lean: num(7, 0), weapon: a[8], legsAnim: a[9], torsoAnim: a[10]
+    weaponState: a[6], lean: num(7, 0), weapon: a[8], legsAnim: a[9], torsoAnim: a[10],
+    weapAnim: a[11] | 0
   };
 }
 

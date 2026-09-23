@@ -92,6 +92,10 @@ const E_FLAGS = ENT_IDX.get("lerp.eFlags");
 const E_LEGS = ENT_IDX.get("legsAnim");
 const E_TORSO = ENT_IDX.get("torsoAnim");
 const E_MOVEDIR = ENT_IDX.get("lerp.u.player.movementDir");
+/* A player's recent events: a four slot ring indexed by eventSequence. */
+const E_EVSEQ = ENT_IDX.get("eventSequence");
+const E_EVENTS = [0, 1, 2, 3].map(i => ENT_IDX.get("events[" + i + "]"));
+const E_EVPARMS = [0, 1, 2, 3].map(i => ENT_IDX.get("eventParms[" + i + "]"));
 /** eType of a living player; corpses and objects have other values. */
 const ET_PLAYER = 1;
 /* Thrown grenades are missiles. launchTime identifies each throw uniquely -
@@ -125,6 +129,10 @@ const PS_LEGS = PS_IDX.get("legsAnim");
 const PS_TORSO = PS_IDX.get("torsoAnim");
 /* The first person weapon animation playing (idle, fire, reload, sprint). */
 const PS_WEAPANIM = PS_IDX.get("weapAnim");
+/* The followed player's own event queue, same ring as on entities. */
+const PS_EVSEQ = PS_IDX.get("eventSequence");
+const PS_EVENTS = [0, 1, 2, 3].map(i => PS_IDX.get("events[" + i + "]"));
+const PS_EVPARMS = [0, 1, 2, 3].map(i => PS_IDX.get("eventParms[" + i + "]"));
 const C_TEAM = CS_IDX.get("team");
 
 /* ---- bit reader with CoD4 semantics ---- */
@@ -232,6 +240,10 @@ function SnapshotReader(protocol){
   // the map view. Rounded to whole units; a map does not need more. The weapon
   // is the one currently held, not the loadout.
   this.tracks = new Map();
+  // [serverTime, client, event, eventParm] for every event a player entity
+  // raised (firing, among others), taken from its four slot event queue.
+  this.playerEvents = [];
+  this.lastEventSeq = new Map();
   // "weaponId:launchTime" -> [[serverTime, x, y, z, vx, vy, vz, trTime, ground]]
   // Flight paths of the throws, with the trajectory parameters of the last state.
   this.missiles = new Map();
@@ -493,6 +505,20 @@ SnapshotReader.prototype.deltaEntity = function(m, time, to, num, old, msgSeq){
              u2f(st[E_VEL[0]]) | 0, u2f(st[E_VEL[1]]) | 0, u2f(st[E_VEL[2]]) | 0,
              st[E_TRTIME], st[E_GROUND]]);
   } else if (etype === ET_PLAYER && num < MAX_CLIENTS) {
+    /* Events raised since the last snapshot. The sequence is a byte and
+       wraps; more than four behind means some were lost, and only the four
+       still in the ring can be read. */
+    const seq = st[E_EVSEQ] & 255;
+    const last = this.lastEventSeq.get(num);
+    if (last !== undefined && seq !== last) {
+      let n = (seq - last + 256) & 255;
+      if (n > 4) n = 4;
+      for (let k = n; k >= 1; k--) {
+        const slot = (seq - k + 256) & 3;
+        this.playerEvents.push([time, num, st[E_EVENTS[slot]] | 0, st[E_EVPARMS[slot]] | 0]);
+      }
+    }
+    this.lastEventSeq.set(num, seq);
     // Entity numbers below MAX_CLIENTS belong to that client slot.
     let tr = this.tracks.get(num);
     if (!tr) { tr = []; this.tracks.set(num, tr); }
@@ -607,6 +633,22 @@ SnapshotReader.prototype.readDeltaPlayerState = function(m, time, frm){
   // The player being followed does not appear as an entity - his position is
   // only here. ClientNum says whose it is (after your own death that is the
   // team mate currently being spectated).
+  /* The followed player is not an entity, so his events (his shots among
+     them) only arrive here. Keyed like the entities, by client number. */
+  {
+    const seq = to[PS_EVSEQ] & 255, client = to[PS_CLIENTNUM];
+    const key = "ps" + client;
+    const last = this.lastEventSeq.get(key);
+    if (last !== undefined && seq !== last) {
+      let n = (seq - last + 256) & 255;
+      if (n > 4) n = 4;
+      for (let k = n; k >= 1; k--) {
+        const slot = (seq - k + 256) & 3;
+        this.playerEvents.push([time, client, to[PS_EVENTS[slot]] | 0, to[PS_EVPARMS[slot]] | 0, 1]);
+      }
+    }
+    this.lastEventSeq.set(key, seq);
+  }
   const px = u2f(to[PS_POS[0]]) | 0, py = u2f(to[PS_POS[1]]) | 0;
   if (px || py) {
     this.viewSamples.push([time, to[PS_CLIENTNUM], px, py,
