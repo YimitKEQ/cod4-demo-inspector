@@ -1,0 +1,293 @@
+{
+ "format": "dm1-characters-1",
+ "note": "Promod's soldier sets, the characters they dress, and each map's factions. Activision's.",
+ "classByWeapon": {
+  "smg": "SPECOPS",
+  "assault": "ASSAULT",
+  "sniper": "SNIPER",
+  "shotgun": "RECON"
+ },
+ "sets": {
+  "desert": {
+   "allies": {
+    "SNIPER": "character_mp_usmc_sniper",
+    "SUPPORT": "character_mp_usmc_support",
+    "ASSAULT": "character_mp_usmc_assault",
+    "RECON": "character_mp_usmc_recon",
+    "SPECOPS": "character_mp_usmc_specops"
+   },
+   "axis": {
+    "SNIPER": "character_mp_arab_regular_sniper",
+    "SUPPORT": "character_mp_arab_regular_support",
+    "ASSAULT": "character_mp_arab_regular_assault",
+    "RECON": "character_mp_arab_regular_engineer",
+    "SPECOPS": "character_mp_arab_regular_cqb"
+   }
+  },
+  "urban": {
+   "allies": {
+    "SNIPER": "character_mp_sas_urban_sniper",
+    "SUPPORT": "character_mp_sas_urban_support",
+    "ASSAULT": "character_mp_sas_urban_assault",
+    "RECON": "character_mp_sas_urban_recon",
+    "SPECOPS": "character_mp_sas_urban_specops"
+   },
+   "axis": {
+    "SNIPER": "character_mp_opforce_urban_sniper",
+    "SUPPORT": "character_mp_opforce_urban_support",
+    "ASSAULT": "character_mp_opforce_urban_assault",
+    "RECON": "character_mp_opforce_urban_engineer",
+    "SPECOPS": "character_mp_opforce_urban_cqb"
+   }
+  },
+  "woodland": {
+   "allies": {
+    "SNIPER": "character_mp_usmc_woodland_sniper",
+    "SUPPORT": "character_mp_usmc_woodland_support",
+    "ASSAULT": "character_mp_usmc_woodland_assault",
+    "RECON": "character_mp_usmc_woodland_recon",
+    "SPECOPS": "character_mp_usmc_woodland_specops"
+   },
+   "axis": {
+    "SNIPER": "character_mp_opforce_sniper",
+    "SUPPORT": "character_mp_opforce_support",
+    "ASSAULT": "character_mp_opforce_assault",
+    "RECON": "character_mp_opforce_engineer",
+    "SPECOPS": "character_mp_opforce_cqb"
+   }
+  }
+ },
+ "chars": {
+  "character_mp_usmc_sniper": {
+   "body": "body_mp_usmc_sniper.glb",
+   "head": "head_mp_usmc_tactical_baseball_cap.glb",
+   "hands": "viewmodel_base_viewhands.glb"
+  },
+  "character_mp_usmc_support": {
+   "body": "body_mp_usmc_support.glb",
+   "head": "head_mp_usmc_shaved_head.glb",
+   "hands": "viewmodel_base_viewhands.glb"
+  },
+  "character_mp_usmc_assault": {
+   "body": "body_mp_usmc_assault.glb",
+   "head": "head_mp_usmc_tactical_mich.glb",
+   "hands": "viewmodel_base_viewhands.glb"
+  },
+  "character_mp_usmc_recon": {
+   "body": "body_mp_usmc_recon.glb",
+   "head": "head_mp_usmc_nomex.glb",
+   "hands": "viewmodel_base_viewhands.glb"
+  },
+  "character_mp_usmc_specops": {
+   "body": "body_mp_usmc_specops.glb",
+   "head": "head_mp_usmc_tactical_mich_stripes_nomex.glb",
+   "hands": "viewmodel_base_viewhands.glb"
+  },
+  "character_mp_arab_regular_sniper": {
+   "body": "body_mp_arab_regular_sniper.glb",
+   "head": "head_mp_arab_regular_sadiq.glb",
+   "hands": "viewhands_desert_opfor.glb"
+  },
+  "character_mp_arab_regular_support": {
+   "body": "body_mp_arab_regular_support.glb",
+   "head": "head_mp_arab_regular_asad.glb",
+   "hands": "viewhands_desert_opfor.glb"
+  },
+  "character_mp_arab_regular_assault": {
+   "body": "body_mp_arab_regular_assault.glb",
+   "head": "head_mp_arab_regular_suren.glb",
+   "hands": "viewhands_desert_opfor.glb"
+  },
+  "character_mp_arab_regular_engineer": {
+   "body": "body_mp_arab_regular_engineer.glb",
+   "head": "head_mp_arab_regular_ski_mask.glb",
+   "hands": "viewhands_desert_opfor.glb"
+  },
+  "character_mp_arab_regular_cqb": {
+   "body": "body_mp_arab_regular_cqb.glb",
+   "head": "head_mp_arab_regular_headwrap.glb",
+   "hands": "viewhands_desert_opfor.glb"
+  },
+  "character_mp_sas_urban_sniper": {
+   "body": "body_mp_sas_urban_sniper.glb",
+   "hands": "viewhands_black_kit.glb"
+  },
+  "character_mp_sas_urban_support": {
+   "body": "body_mp_sas_urban_support.glb",
+   "hands": "viewhands_black_kit.glb"
+  },
+  "character_mp_sas_urban_assault": {
+   "body": "body_mp_sas_urban_assault.glb",
+   "hands": "viewhands_black_kit.glb"
+  },
+  "character_mp_sas_urban_recon": {
+   "body": "body_mp_sas_urban_recon.glb",
+   "hands": "viewhands_black_kit.glb"
+  },
+  "character_mp_sas_urban_specops": {
+   "body": "body_mp_sas_urban_specops.glb",
+   "hands": "viewhands_black_kit.glb"
+  },
+  "character_mp_opforce_urban_sniper": {
+   "body": "body_mp_opforce_sniper_urban.glb",
+   "head": "head_mp_opforce_justin.glb",
+   "hands": "viewhands_op_force.glb"
+  },
+  "character_mp_opforce_urban_support": {
+   "body": "body_mp_opforce_support.glb",
+   "head": "head_mp_opforce_3hole_mask.glb",
+   "hands": "viewhands_op_force.glb"
+  },
+  "character_mp_opforce_urban_assault": {
+   "body": "body_mp_opforce_assault.glb",
+   "head": "head_mp_opforce_headwrap.glb",
+   "hands": "viewhands_op_force.glb"
+  },
+  "character_mp_opforce_urban_engineer": {
+   "body": "body_mp_opforce_eningeer.glb",
+   "head": "head_mp_opforce_gasmask.glb",
+   "hands": "viewhands_op_force.glb"
+  },
+  "character_mp_opforce_urban_cqb": {
+   "body": "body_mp_opforce_cqb.glb",
+   "head": "head_mp_opforce_gasmask.glb",
+   "hands": "viewhands_op_force.glb"
+  },
+  "character_mp_usmc_woodland_sniper": {
+   "body": "body_mp_usmc_woodland_sniper.glb",
+   "head": "head_mp_usmc_ghillie.glb",
+   "hands": "viewhands_marine_sniper.glb"
+  },
+  "character_mp_usmc_woodland_support": {
+   "body": "body_mp_usmc_woodland_support.glb",
+   "head": "head_mp_usmc_shaved_head.glb",
+   "hands": "viewhands_sas_woodland.glb"
+  },
+  "character_mp_usmc_woodland_assault": {
+   "body": "body_mp_usmc_woodland_assault.glb",
+   "head": "head_mp_usmc_tactical_mich.glb",
+   "hands": "viewhands_sas_woodland.glb"
+  },
+  "character_mp_usmc_woodland_recon": {
+   "body": "body_mp_usmc_woodland_recon.glb",
+   "head": "head_mp_usmc_nomex.glb",
+   "hands": "viewhands_sas_woodland.glb"
+  },
+  "character_mp_usmc_woodland_specops": {
+   "body": "body_mp_usmc_woodland_specops.glb",
+   "head": "head_mp_usmc_tactical_mich_stripes_nomex.glb",
+   "hands": "viewhands_sas_woodland.glb"
+  },
+  "character_mp_opforce_sniper": {
+   "body": "body_mp_opforce_sniper.glb",
+   "head": "head_mp_opforce_ghillie.glb",
+   "hands": "viewhands_marine_sniper.glb"
+  },
+  "character_mp_opforce_support": {
+   "body": "body_mp_opforce_support.glb",
+   "head": "head_mp_opforce_3hole_mask.glb",
+   "hands": "viewhands_op_force.glb"
+  },
+  "character_mp_opforce_assault": {
+   "body": "body_mp_opforce_assault.glb",
+   "head": "head_mp_opforce_headwrap.glb",
+   "hands": "viewhands_op_force.glb"
+  },
+  "character_mp_opforce_engineer": {
+   "body": "body_mp_opforce_eningeer.glb",
+   "head": "head_mp_opforce_gasmask.glb",
+   "hands": "viewhands_op_force.glb"
+  },
+  "character_mp_opforce_cqb": {
+   "body": "body_mp_opforce_cqb.glb",
+   "head": "head_mp_opforce_gasmask.glb",
+   "hands": "viewhands_op_force.glb"
+  }
+ },
+ "maps": {
+  "mp_backlot": {
+   "allies": "desert",
+   "axis": "desert"
+  },
+  "mp_bloc": {
+   "allies": "woodland",
+   "axis": "woodland"
+  },
+  "mp_bog": {
+   "allies": "desert",
+   "axis": "desert"
+  },
+  "mp_broadcast": {
+   "allies": "desert",
+   "axis": "desert"
+  },
+  "mp_carentan": {
+   "allies": "urban",
+   "axis": "urban"
+  },
+  "mp_cargoship": {
+   "allies": "woodland",
+   "axis": "woodland"
+  },
+  "mp_citystreets": {
+   "allies": "desert",
+   "axis": "desert"
+  },
+  "mp_convoy": {
+   "allies": "desert",
+   "axis": "desert"
+  },
+  "mp_countdown": {
+   "allies": "woodland",
+   "axis": "woodland"
+  },
+  "mp_crash": {
+   "allies": "desert",
+   "axis": "desert"
+  },
+  "mp_crash_snow": {
+   "allies": "desert",
+   "axis": "desert"
+  },
+  "mp_creek": {
+   "allies": "woodland",
+   "axis": "woodland"
+  },
+  "mp_crossfire": {
+   "allies": "desert",
+   "axis": "desert"
+  },
+  "mp_farm": {
+   "allies": "woodland",
+   "axis": "woodland"
+  },
+  "mp_killhouse": {
+   "allies": "woodland",
+   "axis": "woodland"
+  },
+  "mp_overgrown": {
+   "allies": "woodland",
+   "axis": "woodland"
+  },
+  "mp_pipeline": {
+   "allies": "woodland",
+   "axis": "woodland"
+  },
+  "mp_shipment": {
+   "allies": "woodland",
+   "axis": "woodland"
+  },
+  "mp_showdown": {
+   "allies": "desert",
+   "axis": "desert"
+  },
+  "mp_strike": {
+   "allies": "desert",
+   "axis": "desert"
+  },
+  "mp_vacant": {
+   "allies": "woodland",
+   "axis": "woodland"
+  }
+ }
+}
