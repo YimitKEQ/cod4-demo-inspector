@@ -236,6 +236,9 @@ function SnapshotReader(protocol){
   this.nullPs = new Array(PS_SIZE).fill(0);
   this.events = [];
   this.clientTeams = new Map();
+  // client -> [[serverTime, team], ...] every time the side changed. The
+  // sides swap at half time, and a soldier's uniform follows his side.
+  this.clientSides = new Map();
   // clientIndex -> [[serverTime, x, y, z, yaw, weaponId]] - movement tracks for
   // the map view. Rounded to whole units; a map does not need more. The weapon
   // is the one currently held, not the loadout.
@@ -581,6 +584,9 @@ SnapshotReader.prototype.deltaClient = function(m, time, to, num, old, unchanged
     if (!teams) { teams = new Map(); this.clientTeams.set(num, teams); }
     const team = state[C_TEAM];
     if (!teams.has(team)) teams.set(team, time);
+    let sides = this.clientSides.get(num);
+    if (!sides) { sides = []; this.clientSides.set(num, sides); }
+    if (!sides.length || sides[sides.length - 1][1] !== team) sides.push([time, team]);
   }
   this.parseClients[this.parseClientsNum++ & (MAX_PARSE_CLIENTS - 1)] = [num, state];
   to.numClients++;

@@ -289,6 +289,7 @@ function* parseDemoSteps(bytes, deep){
   if (snaps) {
     out.events = snaps.events;
     out.clientTeams = snaps.clientTeams;
+    out.clientSides = snaps.clientSides;
     out.tracks = snaps.tracks;
     out.playerEvents = snaps.playerEvents;
     out.missiles = snaps.missiles;
@@ -995,13 +996,27 @@ function buildMap(d, t0){
   const weaponFiles = (d.configstrings.get(CS_WEAPON_LIST) || "").split(/\s+/).filter(Boolean);
   return { compass: parts[0] || "", bounds,
            center: d.configstrings.get(12) || "", tracks, weapons, weaponFiles,
-           grenades: buildGrenades(d, t0), pov: buildPov(d, t0), shots: buildShots(d, t0) };
+           grenades: buildGrenades(d, t0), pov: buildPov(d, t0), shots: buildShots(d, t0),
+           sides: buildSides(d, t0) };
 }
 
 /* Entity event numbers for a weapon being fired. 26 is every shot (2,828 in a
    150 kill promod match, 98 per cent of them while the shooter's firing flag
    is set); 28 is the last round of a magazine. */
 const EV_FIRE_WEAPON = new Set([26, 28]);
+
+/* team_t in the client state. */
+const TEAM_NAMES = { 1: "axis", 2: "allies" };
+
+/** Each client's side over time: { client: [[ms since start, "axis"|"allies"], ...] }. */
+function buildSides(d, t0){
+  const out = {};
+  for (const [client, list] of (d.clientSides || new Map())) {
+    const rows = list.filter(([, team]) => TEAM_NAMES[team]).map(([t, team]) => [t - t0, TEAM_NAMES[team]]);
+    if (rows.length) out[String(client)] = rows;
+  }
+  return out;
+}
 
 /** Every shot fired: [ms since start, client], in time order. */
 function buildShots(d, t0){

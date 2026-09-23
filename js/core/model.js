@@ -305,6 +305,8 @@ function buildModel(res){
     pov: (res.map && res.map.pov) || null,
     /* Every shot fired, [ms since start, client]; from the event queues. */
     shots: (res.map && res.map.shots) || [],
+    /* Each client's real side over time; the sides swap at half time. */
+    sides: (res.map && res.map.sides) || {},
     chat: res.chat,
     events: res.events,
     nameOf, teamOf,
